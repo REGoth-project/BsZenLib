@@ -55,6 +55,7 @@ int main(int argc, char** argv)
   VDFS::FileIndex vdf;
   vdf.loadVDF(dataDir + "/Worlds.vdf");
   vdf.loadVDF(dataDir + "/Textures.vdf");
+  vdf.loadVDF(dataDir + "/Meshes.vdf");
   vdf.finalizeLoad();
 
   if (vdf.getKnownFiles().empty())
@@ -62,6 +63,11 @@ int main(int argc, char** argv)
     std::cout << "No files loaded into the VDFS - is the datapath correct?" << std::endl;
     return -1;
   }
+
+  // for (auto& s : vdf.getKnownFiles())
+  // {
+  //   gDebug().logDebug(s.c_str());
+  // }
 
   VideoMode videoMode(1280, 720);
   Application::startUp(videoMode, "zen-bs", false);

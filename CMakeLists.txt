@@ -6,7 +6,7 @@ if(CMAKE_CXX_COMPILER_ID MATCHES "Clang" OR
    CMAKE_CXX_COMPILER_ID MATCHES "AppleClang" OR
    CMAKE_CXX_COMPILER_ID MATCHES "GNU")
    # This is what the example file does, is this really needed at a global scale?
-   set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -fno-rtti")
+   set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -fno-rtti -g")
 endif()
 
 # Make sure to use the C++14 standard
@@ -32,7 +32,7 @@ add_subdirectory(lib/ZenLib)
 #                               Add main library                              #
 ###############################################################################
 add_library(BsZenLib
-  src/ImportWorldMesh.cpp
+  src/ImportStaticMesh.cpp
   src/ImportTexture.cpp
   src/ImportZEN.cpp
   )

@@ -1,32 +1,56 @@
-/**
- * # Import World Mesh
- *
- * This Module is able to take a zCMesh produced by ZenLib and turn it into a bs::Mesh.
- */
-
-#include "ImportWorldMesh.hpp"
-
+#include "ImportStaticMesh.hpp"
 #include "ImportTexture.hpp"
+#include <Components/BsCRenderable.h>
 #include <RenderAPI/BsVertexDataDesc.h>
 #include <Resources/BsBuiltinResources.h>
+#include <Scene/BsPrefab.h>
+#include <Scene/BsSceneObject.h>
 #include <vdfs/fileIndex.h>
 #include <zenload/zCMesh.h>
+#include <zenload/zCProgMeshProto.h>
 
-static bs::SPtr<bs::VertexDataDesc> makeVertexDataDescForZenLibVertex();
-static bs::MESH_DESC meshDescForPackedMesh(const ZenLoad::PackedMesh& packedMesh);
-static void fillMeshDataFromPackedMesh(bs::HMesh target, const ZenLoad::PackedMesh& packedMesh);
-static void transferVertices(bs::SPtr<bs::MeshData> target, const ZenLoad::PackedMesh& packedMesh);
-static void transferIndices(bs::SPtr<bs::MeshData> target, const ZenLoad::PackedMesh& packedMesh);
+using namespace bs;
+
+static SPtr<VertexDataDesc> makeVertexDataDescForZenLibVertex();
+static MESH_DESC meshDescForPackedMesh(const ZenLoad::PackedMesh& packedMesh);
+static void fillMeshDataFromPackedMesh(HMesh target, const ZenLoad::PackedMesh& packedMesh);
+static void transferVertices(SPtr<MeshData> target, const ZenLoad::PackedMesh& packedMesh);
+static void transferIndices(SPtr<MeshData> target, const ZenLoad::PackedMesh& packedMesh);
+static Vector<HMaterial> materialsFromStaticMesh(const ZenLoad::PackedMesh& packedMesh,
+                                                 const VDFS::FileIndex& vdfs);
 
 // - Implementation --------------------------------------------------------------------------------
 
-bs::HMesh BsZenLib::ImportMeshFromZEN(/* const */ ZenLoad::zCMesh& zenMesh)
+HSceneObject BsZenLib::ImportStaticMeshWithMaterials(const std::string& name,
+                                                     const ZenLoad::PackedMesh& packedMesh,
+                                                     const VDFS::FileIndex& vdfs)
 {
-  using namespace bs;
+  HMesh mesh = ImportStaticMesh(packedMesh);
+  Vector<HMaterial> materials = materialsFromStaticMesh(packedMesh, vdfs);
 
-  ZenLoad::PackedMesh packedMesh;
-  zenMesh.packMesh(packedMesh, 0.01f);
+  if (!mesh)
+  {
+    gDebug().logWarning("Load Failed (Mesh): " + String(name.c_str()));
+    return {};
+  }
 
+  if (materials.empty())
+  {
+    gDebug().logWarning("Load Failed (Materials): " + String(name.c_str()));
+    return {};
+  }
+
+  HSceneObject so = SceneObject::create(name.c_str());
+
+  HRenderable renderable = so->addComponent<CRenderable>();
+  renderable->setMesh(mesh);
+  renderable->setMaterials(materials);
+
+  return so;
+}
+
+HMesh BsZenLib::ImportStaticMesh(const ZenLoad::PackedMesh& packedMesh)
+{
   MESH_DESC desc = meshDescForPackedMesh(packedMesh);
 
   HMesh mesh = Mesh::create(desc);
@@ -36,10 +60,8 @@ bs::HMesh BsZenLib::ImportMeshFromZEN(/* const */ ZenLoad::zCMesh& zenMesh)
   return mesh;
 }
 
-static bs::MESH_DESC meshDescForPackedMesh(const ZenLoad::PackedMesh& packedMesh)
+static MESH_DESC meshDescForPackedMesh(const ZenLoad::PackedMesh& packedMesh)
 {
-  using namespace bs;
-
   MESH_DESC desc = {};
 
   for (const auto& submesh : packedMesh.subMeshes)
@@ -56,15 +78,13 @@ static bs::MESH_DESC meshDescForPackedMesh(const ZenLoad::PackedMesh& packedMesh
   desc.numVertices = packedMesh.vertices.size();
 
   desc.vertexDesc = makeVertexDataDescForZenLibVertex();
-  desc.usage = MU_CPUCACHED; // To create our physics mesh later
+  desc.usage = MU_CPUCACHED;  // To create our physics mesh later
 
   return desc;
 }
 
-static bs::SPtr<bs::VertexDataDesc> makeVertexDataDescForZenLibVertex()
+static SPtr<VertexDataDesc> makeVertexDataDescForZenLibVertex()
 {
-  using namespace bs;
-
   SPtr<VertexDataDesc> vertexDataDesc = VertexDataDesc::create();
   vertexDataDesc->addVertElem(VET_FLOAT3, VES_POSITION);
   vertexDataDesc->addVertElem(VET_FLOAT3, VES_NORMAL);
@@ -76,10 +96,8 @@ static bs::SPtr<bs::VertexDataDesc> makeVertexDataDescForZenLibVertex()
   return vertexDataDesc;
 }
 
-static void fillMeshDataFromPackedMesh(bs::HMesh target, const ZenLoad::PackedMesh& packedMesh)
+static void fillMeshDataFromPackedMesh(HMesh target, const ZenLoad::PackedMesh& packedMesh)
 {
-  using namespace bs;
-
   // Allocate a buffer big enough to hold what we specified in the MESH_DESC
   SPtr<MeshData> meshData = target->allocBuffer();
 
@@ -89,10 +107,8 @@ static void fillMeshDataFromPackedMesh(bs::HMesh target, const ZenLoad::PackedMe
   target->writeData(meshData, false);
 }
 
-static void transferVertices(bs::SPtr<bs::MeshData> target, const ZenLoad::PackedMesh& packedMesh)
+static void transferVertices(SPtr<MeshData> target, const ZenLoad::PackedMesh& packedMesh)
 {
-  using namespace bs;
-
   assert(target->getNumVertices() == packedMesh.vertices.size());
 
   UINT8* vertices = target->getElementData(VES_POSITION);
@@ -100,10 +116,8 @@ static void transferVertices(bs::SPtr<bs::MeshData> target, const ZenLoad::Packe
          sizeof(ZenLoad::WorldVertex) * packedMesh.vertices.size());
 }
 
-static void transferIndices(bs::SPtr<bs::MeshData> target, const ZenLoad::PackedMesh& packedMesh)
+static void transferIndices(SPtr<MeshData> target, const ZenLoad::PackedMesh& packedMesh)
 {
-  using namespace bs;
-
   UINT32* pIndices = target->getIndices32();
   size_t writtenSoFar = 0;
 
@@ -114,27 +128,19 @@ static void transferIndices(bs::SPtr<bs::MeshData> target, const ZenLoad::Packed
   }
 }
 
-bs::Vector<bs::HMaterial> BsZenLib::ImportMaterialsFromZENMesh(/* const */ ZenLoad::zCMesh& zenMesh,
-                                                               const VDFS::FileIndex& vdfs)
+static Vector<HMaterial> materialsFromStaticMesh(const ZenLoad::PackedMesh& packedMesh,
+                                                 const VDFS::FileIndex& vdfs)
 {
-  using namespace bs;
-
-  // FIXME: This reorders the list of materials and puts them into the submeshes
-  //        We don't want to pack the mesh twice, so either somehow don't reorder
-  //        or get the reordered list without packing...
-  ZenLoad::PackedMesh packedMesh;
-  zenMesh.packMesh(packedMesh, 0.01f, false);
-
   HShader shader = gBuiltinResources().getBuiltinShader(BuiltinShader::Standard);
 
-  bs::Vector<HMaterial> materials;
+  Vector<HMaterial> materials;
   for (const auto& m : packedMesh.subMeshes)
   {
     // TODO: Transfer more properties
 
     materials.push_back(Material::create(shader));
 
-    HTexture albedo = ImportTexture(m.material.texture, vdfs);
+    HTexture albedo = BsZenLib::ImportTexture(m.material.texture, vdfs);
 
     materials.back()->setTexture("gAlbedoTex", albedo);
   }
