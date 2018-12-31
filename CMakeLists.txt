@@ -25,37 +25,30 @@ if (BSZENLIB_DOWNLOAD_BSF_BINARIES)
 
   message(STATUS "Downloading prebuilt bs:f...")
 
-  include(ExternalProject)
+  include(FetchContent)
 
   set(bsf_INSTALL_DIR ${CMAKE_BINARY_DIR}/bsf-binaries)
 
   if (WIN32)
-    ExternalProject_Add(BsfBinaries
+    FetchContent_Declare(bsfBinaries
       SOURCE_DIR ${bsf_INSTALL_DIR}
-      URL        http://nightly.bsframework.io/releases/bsf_v1.0.0b_win64.zip
-      CONFIGURE_COMMAND ""
-      BUILD_COMMAND     ""
-      INSTALL_COMMAND   ""
+      URL        https://dilborceisv8p.cloudfront.net/bsf_2018.12.31_win64.zip
       )
   elseif (APPLE)
-    ExternalProject_Add(BsfBinaries
+    FetchContent_Declare(bsfBinaries
       SOURCE_DIR ${bsf_INSTALL_DIR}
-      URL        http://nightly.bsframework.io/releases/bsf_v1.0.0b_osx.tar.gz
-      CONFIGURE_COMMAND ""
-      BUILD_COMMAND     ""
-      INSTALL_COMMAND   ""
+      URL        https://dilborceisv8p.cloudfront.net/bsf_2018.12.31_osx.tar.gz
       )
   elseif (UNIX)
-    ExternalProject_Add(BsfBinaries
+    FetchContent_Declare(bsfBinaries
       SOURCE_DIR ${bsf_INSTALL_DIR}
-      URL        http://nightly.bsframework.io/releases/bsf_v1.0.0b_linux.tar.gz
-      CONFIGURE_COMMAND ""
-      BUILD_COMMAND     ""
-      INSTALL_COMMAND   ""
+      URL        https://dilborceisv8p.cloudfront.net/bsf_2018.12.31_linux.tar.gz
       )
   else()
     message(FATAL_ERROR "No prebuilt binaries available for this platform!")
   endif()
+
+  FetchContent_Populate(bsfBinaries)
 
 endif()
 
