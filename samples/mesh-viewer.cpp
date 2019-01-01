@@ -57,14 +57,13 @@ int main(int argc, char** argv)
 {
   VDFS::FileIndex::initVDFS(argv[0]);
 
-  if (argc < 3)
+  if (argc < 2)
   {
-    std::cout << "Usage: zen-bs <path/to/gothic/data> <meshfile.3ds>" << std::endl;
+    std::cout << "Usage: mesh-viewer <path/to/gothic/data>" << std::endl;
     return -1;
   }
 
   const std::string dataDir = argv[1];
-  const std::string zenFile = argv[2];
 
   VDFS::FileIndex vdf;
   vdf.loadVDF(dataDir + "/Meshes.vdf");
@@ -78,7 +77,7 @@ int main(int argc, char** argv)
   }
 
   VideoMode videoMode(1280, 720);
-  Application::startUp(videoMode, "zen-bs-vob", false);
+  Application::startUp(videoMode, "mesh-viewer", false);
 
   // Add a scene object containing a camera component
   HSceneObject sceneCameraSO = SceneObject::create("SceneCamera");
