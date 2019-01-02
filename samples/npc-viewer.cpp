@@ -3,27 +3,23 @@
 #include "BsFPSCamera.h"
 #include "BsObjectRotator.h"
 #include <assert.h>
-#include <BsZenLib/ImportSkeletalMesh.hpp>
 #include <BsZenLib/ImportStaticMesh.hpp>
 #include <BsZenLib/ImportZEN.hpp>
 #include <Components/BsCCamera.h>
 #include <Components/BsCLight.h>
 #include <Components/BsCRenderable.h>
-#include <Debug/BsDebugDraw.h>
 #include <GUI/BsCGUIWidget.h>
 #include <GUI/BsGUILabel.h>
 #include <GUI/BsGUIListBox.h>
 #include <GUI/BsGUIPanel.h>
 #include <Input/BsVirtualInput.h>
-#include <Renderer/BsLight.h>
 #include <Resources/BsBuiltinResources.h>
 #include <Scene/BsSceneObject.h>
 #include <vdfs/fileIndex.h>
-#include <zenload/zCModelMeshLib.h>
 #include <zenload/zCProgMeshProto.h>
+#include <Renderer/BsLight.h>
 
 using namespace bs;
-
 
 /** Registers a common set of keys/buttons that are used for controlling the examples. */
 static void setupInputConfig()
@@ -43,34 +39,18 @@ static void setupInputConfig()
 
 static HSceneObject loadMesh(const String& file, const VDFS::FileIndex& vdfs)
 {
-  if (file.find(".MRM") != String::npos)
-  {
-    ZenLoad::zCProgMeshProto progMesh(file.c_str(), vdfs);
+  ZenLoad::zCProgMeshProto progMesh(file.c_str(), vdfs);
 
-    if (progMesh.getNumSubmeshes() == 0) return {};
+  if (progMesh.getNumSubmeshes() == 0) return {};
 
-    ZenLoad::PackedMesh packedMesh;
-    progMesh.packMesh(packedMesh, 0.01f);
+  ZenLoad::PackedMesh packedMesh;
+  progMesh.packMesh(packedMesh, 0.01f);
 
-    HSceneObject so = BsZenLib::ImportStaticMeshWithMaterials(file.c_str(), packedMesh, vdfs);
+  HSceneObject so = BsZenLib::ImportStaticMeshWithMaterials(file.c_str(), packedMesh, vdfs);
 
-    return so;
-  }
-  else if (file.find(".MDL") != String::npos)
-  {
-    HSceneObject so = BsZenLib::ImportSkeletalMeshWithMaterials(file.c_str(), vdfs);
+  if (!so) return {};
 
-    if (!so)
-      return {};
-
-    so->addComponent<ObjectRotator>();
-
-    return so;
-  }
-  else
-  {
-    return {};
-  }
+  return so;
 }
 
 int main(int argc, char** argv)
@@ -88,7 +68,6 @@ int main(int argc, char** argv)
   VDFS::FileIndex vdf;
   vdf.loadVDF(dataDir + "/Meshes.vdf");
   vdf.loadVDF(dataDir + "/Textures.vdf");
-  vdf.loadVDF(dataDir + "/Anims.vdf");
   vdf.finalizeLoad();
 
   if (vdf.getKnownFiles().empty())
@@ -124,7 +103,7 @@ int main(int argc, char** argv)
   sceneCamera->getViewport()->setClearColorValue(gray);
 
   // Position the camera
-  sceneCameraSO->setPosition(Vector3(3.0f, 2.0f, 3.0f) * 16.0f);
+  sceneCameraSO->setPosition(Vector3(3.0f, 2.0f, 3.0f));
   sceneCameraSO->lookAt(Vector3(0, 0, 0));
 
   // Add shown mesh
@@ -145,11 +124,6 @@ int main(int argc, char** argv)
 
   for (const std::string& f : vdf.getKnownFiles())
   {
-    if (f.find(".MDL") != std::string::npos)
-    {
-      listBoxElements.push_back(HString(f.c_str()));
-    }
-
     if (f.find(".MRM") != std::string::npos)
     {
       listBoxElements.push_back(HString(f.c_str()));
@@ -158,38 +132,28 @@ int main(int argc, char** argv)
 
   GUIListBox* listBox = mainPanel->addNewElement<GUIListBox>(listBoxElements);
 
-  auto showMesh = [&](String newMesh) {
-    gDebug().logDebug("User selected element: \"" + newMesh + "\"");
-
-    HSceneObject newSO = loadMesh(newMesh, vdf);
-
-    if (newSO)
-    {
-      Sphere bounds = newSO->getComponent<CRenderable>()->getBounds().getSphere();
-      sceneCameraSO->setPosition(bounds.getCenter() +
-                                 Vector3(2.0f, 1.0f, 2.0f).normalize() * bounds.getRadius() * 0.5f);
-    }
-
-    if (shownMeshSO)
-    {
-      shownMeshSO->destroy(true);
-    }
-
-    shownMeshSO = newSO;
-  };
-
-  showMesh("SHEEP_BODY.MDL");
-
   listBox->onSelectionToggled.connect([&](UINT32 idx, bool enabled) {
     String newMesh = listBoxElements[idx].getValue();
 
-    showMesh(newMesh);
+    gDebug().logDebug("User selected element: \"" + newMesh + "\"");
+
+    HSceneObject newSO = loadMesh(newMesh, vdf);
+    newSO->addComponent<ObjectRotator>();
+
+    shownMeshSO->destroy(true);
+
+    shownMeshSO = newSO;
+
+    Sphere bounds = newSO->getComponent<CRenderable>()->getBounds().getSphere();
+    sceneCameraSO->setPosition(bounds.getCenter() +
+                               Vector3(2.0f, 1.0f, 2.0f).normalize() * bounds.getRadius() * 0.2f);
   });
 
   listBox->setPosition(10, 10);
   listBox->setWidth(200);
 
   setupInputConfig();
+
   Application::instance().runMainLoop();
   Application::shutDown();
   return 0;
