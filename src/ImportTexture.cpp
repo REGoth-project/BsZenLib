@@ -67,7 +67,7 @@ static bs::HTexture createRGBA8Texture(bs::UINT32 width, bs::UINT32 height,
   TEXTURE_DESC desc = {};
   desc.type = TEX_TYPE_2D;
   desc.width = width;
-  desc.height = width;
+  desc.height = height;
   desc.format = PF_RGBA8;
 
   HTexture texture = Texture::create(desc);
@@ -78,6 +78,8 @@ static bs::HTexture createRGBA8Texture(bs::UINT32 width, bs::UINT32 height,
 
   std::vector<Color> colors;
   size_t numPixels = desc.width * desc.height;
+
+  assert(numPixels * 4 == rgbaData.size());
 
   for (size_t i = 0; i < numPixels; i++)
   {
