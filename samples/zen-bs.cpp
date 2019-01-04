@@ -8,8 +8,13 @@
 #include <Components/BsCRenderable.h>
 #include <Input/BsVirtualInput.h>
 #include <Scene/BsSceneObject.h>
+#include <Scene/BsPrefab.h>
 #include <vdfs/fileIndex.h>
 #include <Scene/BsSceneObject.h>
+#include <Resources/BsResources.h>
+#include <BsZenLib/ImportPath.hpp>
+#include <Resources/BsResourceManifest.h>
+#include <FileSystem/BsFileSystem.h>
 
 /** Registers a common set of keys/buttons that are used for controlling the examples. */
 static void setupInputConfig()
@@ -49,28 +54,34 @@ int main(int argc, char** argv)
     return -1;
   }
 
-  const std::string dataDir = argv[1];
-  const std::string zenFile = argv[2];
+  const String dataDir = argv[1];
+  const String zenFile = argv[2];
 
-  VDFS::FileIndex vdf;
-  vdf.loadVDF(dataDir + "/Worlds.vdf");
-  vdf.loadVDF(dataDir + "/Textures.vdf");
-  vdf.loadVDF(dataDir + "/Meshes.vdf");
-  vdf.finalizeLoad();
+  VDFS::FileIndex vdfs;
+  vdfs.loadVDF((dataDir + "/Worlds.vdf").c_str());
+  vdfs.loadVDF((dataDir + "/Textures.vdf").c_str());
+  vdfs.loadVDF((dataDir + "/Meshes.vdf").c_str());
+  vdfs.finalizeLoad();
 
-  if (vdf.getKnownFiles().empty())
+  if (vdfs.getKnownFiles().empty())
   {
     std::cout << "No files loaded into the VDFS - is the datapath correct?" << std::endl;
     return -1;
   }
 
-  // for (auto& s : vdf.getKnownFiles())
+  // for (auto& s : vdfs.getKnownFiles())
   // {
   //   gDebug().logDebug(s.c_str());
   // }
 
   VideoMode videoMode(1280, 720);
   Application::startUp(videoMode, "zen-bs", false);
+  
+  if (FileSystem::exists(BsZenLib::GothicPathToCachedManifest("resources")))
+  {
+	  auto prevManifest = ResourceManifest::load(BsZenLib::GothicPathToCachedManifest("resources"), BsZenLib::GetCacheDirectory());
+	  gResources().registerResourceManifest(prevManifest);
+  }
 
   // Add a scene object containing a camera component
   HSceneObject sceneCameraSO = SceneObject::create("SceneCamera");
@@ -82,9 +93,9 @@ int main(int argc, char** argv)
   auto rs = sceneCamera->getRenderSettings();
 
   rs->screenSpaceReflections.enabled = false;
-  rs->ambientOcclusion.enabled = false;
+  rs->ambientOcclusion.enabled = true;
   rs->enableIndirectLighting = true;
-  rs->enableFXAA = false;
+  rs->enableFXAA = true;
   rs->enableHDR = false;
   rs->enableTonemapping = false;
 
@@ -94,13 +105,34 @@ int main(int argc, char** argv)
   sceneCameraSO->setPosition(Vector3(0.0f, 20.0f, 0.0f));
   sceneCameraSO->lookAt(Vector3(0, 0, 0));
   sceneCameraSO->addComponent<FPSCamera>();
-
+  
   // Import a Gothic ZEN
-  HSceneObject worldSO = BsZenLib::ImportZEN(zenFile, vdf);
+  HPrefab worldPrefab;
+  if (BsZenLib::HasCachedZEN(zenFile))
+  {
+	  worldPrefab = BsZenLib::LoadCachedZEN(zenFile);
+  }
+  else
+  {
+	  worldPrefab = BsZenLib::ImportAndCacheZEN(zenFile.c_str(), vdfs);
+  }
+   
+  if (!worldPrefab)
+  {
+	  gDebug().logError("Failed to load ZEN: " + zenFile);
+	  return -1;
+  }
+
+  worldPrefab.blockUntilLoaded();
+  worldPrefab->instantiate();
 
   setupInputConfig();
 
   Application::instance().runMainLoop();
+
+  SPtr<ResourceManifest> manifest = gResources().getResourceManifest("Default");
+  ResourceManifest::save(manifest, BsZenLib::GothicPathToCachedManifest("resources"), BsZenLib::GetCacheDirectory());
+
   Application::shutDown();
   return 0;
 }

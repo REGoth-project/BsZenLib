@@ -8,12 +8,8 @@ namespace VDFS
 
 namespace BsZenLib
 {
-  /**
-   * Import a Gothic ZEN-World into bs:f.
-   *
-   * @param zen ZEN-File to load.
-   *
-   * @return bs:f-Mesh containing the Data from the Gothic mesh.
-   */
-  bs::HSceneObject ImportZEN(const std::string& zen, const VDFS::FileIndex& vdfs);
+	bs::HPrefab LoadCachedZEN(const bs::String& zen);
+	bool HasCachedZEN(const bs::String& zen);
+	bs::HSceneObject ImportZEN(const std::string& zen, const VDFS::FileIndex& vdfs);
+	bs::HPrefab ImportAndCacheZEN(const std::string& zen, const VDFS::FileIndex& vdfs);
 }  // namespace BsZenLib

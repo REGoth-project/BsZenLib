@@ -26,16 +26,57 @@
 #include <vdfs/fileIndex.h>
 #include <zenload/ztex2dds.h>
 #include <Image/BsColor.h>
+#include <Resources/BsResources.h>
+#include "ImportPath.hpp"
+#include <FileSystem/BsFileSystem.h>
 
-static std::vector<uint8_t> readCompiledTexture(const std::string& path,
+static std::vector<uint8_t> readCompiledTexture(const bs::String& path,
                                                 const VDFS::FileIndex& vdfs);
-static std::string replaceExtension(const std::string& path, const std::string& newExtension);
-static bs::HTexture createRGBA8Texture(bs::UINT32 width, bs::UINT32 height,
-                                       const std::vector<uint8_t>& rgbaData);
+static bs::String replaceExtension(const bs::String& path, const bs::String& newExtension);
+static bs::HTexture createRGBA8Texture(const bs::String& name, bs::UINT32 width, bs::UINT32 height,
+	const std::vector<uint8_t>& rgbaData);
+static bs::HTexture createDXTnTexture(const bs::String& name,
+	std::vector<uint8_t>& ddsData, const ZenLoad::DDSURFACEDESC2& surfaceDesc);
 
 // - Implementation --------------------------------------------------------------------------------
 
-bs::HTexture BsZenLib::ImportTexture(const std::string& path, const VDFS::FileIndex& vdfs)
+
+bool BsZenLib::HasCachedTexture(const bs::String& virtualFilePath)
+{
+	using namespace bs;
+
+	return FileSystem::isFile(GothicPathToCachedAsset(virtualFilePath.c_str()));
+}
+
+bs::HTexture BsZenLib::LoadCachedTexture(const bs::String& virtualFilePath)
+{
+	using namespace bs;
+
+	Path path = GothicPathToCachedAsset(virtualFilePath.c_str());
+
+	return gResources().load<Texture>(path);
+}
+
+bs::HTexture BsZenLib::ImportAndCacheTexture(const bs::String& virtualFilePath, const VDFS::FileIndex& vdfs)
+{
+	using namespace bs;
+
+	gDebug().logDebug("Caching Texture: " + virtualFilePath);
+
+	HTexture fromOriginal = ImportTexture(virtualFilePath, vdfs);
+
+	if (!fromOriginal)
+		return {};
+
+	const bool overwrite = false;
+	Path path = GothicPathToCachedAsset(virtualFilePath.c_str());
+
+	gResources().save(fromOriginal, path, overwrite);
+
+	return fromOriginal;
+}
+
+bs::HTexture BsZenLib::ImportTexture(const bs::String& path, const VDFS::FileIndex& vdfs)
 {
   using namespace bs;
 
@@ -50,16 +91,18 @@ bs::HTexture BsZenLib::ImportTexture(const std::string& path, const VDFS::FileIn
   std::vector<uint8_t> ddsData;
   ZenLoad::convertZTEX2DDS(ztexData, ddsData);
 
-  std::vector<uint8_t> rgbaData;
-  ZenLoad::convertDDSToRGBA8(ddsData, rgbaData);
-
   ZenLoad::DDSURFACEDESC2 surfaceDesc = ZenLoad::getSurfaceDesc(ddsData);
 
-  return createRGBA8Texture(surfaceDesc.dwWidth, surfaceDesc.dwHeight, rgbaData);
+  return createDXTnTexture(path, ddsData, surfaceDesc);
+
+  // Commented out: Optionally convert to RGBA8, which is easier to work with
+  //std::vector<uint8_t> rgbaData;
+  //ZenLoad::convertDDSToRGBA8(ddsData, rgbaData);
+  //return createRGBA8Texture(surfaceDesc.dwWidth, surfaceDesc.dwHeight, rgbaData);
 }
 
 
-static bs::HTexture createRGBA8Texture(bs::UINT32 width, bs::UINT32 height,
+static bs::HTexture createRGBA8Texture(const bs::String& name, bs::UINT32 width, bs::UINT32 height,
                                        const std::vector<uint8_t>& rgbaData)
 {
   using namespace bs;
@@ -92,23 +135,83 @@ static bs::HTexture createRGBA8Texture(bs::UINT32 width, bs::UINT32 height,
   pixelData->setColors(colors.data(), colors.size());
 
   texture->writeData(pixelData);
+  texture->setName(name);
 
   return texture;
 }
 
-
-static std::vector<uint8_t> readCompiledTexture(const std::string& path, const VDFS::FileIndex& vdfs)
+static bs::HTexture createDXTnTexture(const bs::String& name,
+	std::vector<uint8_t>& ddsData, const ZenLoad::DDSURFACEDESC2& surfaceDesc)
 {
-  std::string compiledFile = replaceExtension(path, "-C.TEX");
+	using namespace bs;
+
+	TEXTURE_DESC desc = {};
+	desc.type = TEX_TYPE_2D;
+	desc.width = surfaceDesc.dwWidth;
+	desc.height = surfaceDesc.dwHeight;
+	desc.numMips = surfaceDesc.dwMipMapCount;
+
+	switch (surfaceDesc.ddpfPixelFormat.dwFourCC)
+	{
+	case MAKEFOURCC('D', 'X', 'T', '1'):
+		desc.format = PF_BC1;
+		break;
+
+	case MAKEFOURCC('D', 'X', 'T', '3'):
+		desc.format = PF_BC2;
+		break;
+
+	case MAKEFOURCC('D', 'X', 'T', '5'):
+		desc.format = PF_BC3;
+		break;
+	default:
+		BS_EXCEPT(InternalErrorException, "Cannot import DXTn-texture " + name + ", unsupported FOURCC!")
+	}
+
+	HTexture texture = Texture::create(desc);
+
+	for (size_t i = 0; i < surfaceDesc.dwMipMapCount; i++)
+	{
+		UINT32 mipWidth, mipHeight, mipDepth;
+		PixelUtil::getSizeForMipLevel(desc.width, desc.height, 1, i, mipWidth, mipHeight, mipDepth);
+
+		SPtr<PixelData> pixelData = PixelData::create(mipWidth,   //
+			mipHeight,  //
+			mipDepth,   //
+			desc.format);
+
+		size_t mipOffset = ZenLoad::getMipFileOffsetFromDDS(ddsData, i);
+
+		UINT8* imageStart = (UINT8*)&ddsData[mipOffset];
+
+		pixelData->setExternalBuffer(imageStart);
+
+		texture->writeData(pixelData, 0, i);
+	}
+
+	texture->setName(name);
+
+	return texture;
+}
+
+
+static std::vector<uint8_t> readCompiledTexture(const bs::String& path, const VDFS::FileIndex& vdfs)
+{
+	bs::String compiledFile = path;
+	
+	if (compiledFile.find(".TGA") != bs::String::npos)
+	{
+		compiledFile = replaceExtension(path, "-C.TEX");
+	}
 
   std::vector<uint8_t> fileData;
-  vdfs.getFileData(compiledFile, fileData);
+  vdfs.getFileData(compiledFile.c_str(), fileData);
 
   return fileData;
 }
 
 
-static std::string replaceExtension(const std::string& path, const std::string& newExtension)
+static bs::String replaceExtension(const bs::String& path, const bs::String& newExtension)
 {
   // assert(path.length() >= 4);
 

@@ -21,6 +21,11 @@
 #include <vdfs/fileIndex.h>
 #include <zenload/zCModelMeshLib.h>
 #include <zenload/zCProgMeshProto.h>
+#include <Resources/BsResources.h>
+#include <BsZenLib/ImportPath.hpp>
+#include <Resources/BsResourceManifest.h>
+#include <FileSystem/BsFileSystem.h>
+#include <BsZenLib/ImportTexture.hpp>
 
 using namespace bs;
 
@@ -43,29 +48,41 @@ static void setupInputConfig()
 
 static HSceneObject loadMesh(const String& file, const VDFS::FileIndex& vdfs)
 {
+	using namespace bs;
+
   if (file.find(".MRM") != String::npos)
   {
-    ZenLoad::zCProgMeshProto progMesh(file.c_str(), vdfs);
+	  HPrefab mesh;
+	  if (FileSystem::isFile(BsZenLib::GothicPathToCachedAsset(file.c_str())))
+	  {
+		  mesh = BsZenLib::LoadCachedStaticMeshPrefab(file.c_str());
+	  }
+	  else
+	  {
+		  mesh = BsZenLib::ImportAndCacheStaticMeshPrefab(file.c_str(), vdfs);
+	  }
 
-    if (progMesh.getNumSubmeshes() == 0) return {};
+	  if (!mesh)
+		  return {};
 
-    ZenLoad::PackedMesh packedMesh;
-    progMesh.packMesh(packedMesh, 0.01f);
-
-    HSceneObject so = BsZenLib::ImportStaticMeshWithMaterials(file.c_str(), packedMesh, vdfs);
-
-    return so;
+    return mesh->instantiate();
   }
   else if (file.find(".MDL") != String::npos)
   {
-    HSceneObject so = BsZenLib::ImportSkeletalMeshWithMaterials(file.c_str(), vdfs);
+	  HPrefab mesh;
+	  if (FileSystem::isFile(BsZenLib::GothicPathToCachedAsset(file.c_str())))
+	  {
+		  mesh = BsZenLib::LoadCachedSkeletalMeshPrefab(file.c_str());
+	  }
+	  else
+	  {
+		  mesh = BsZenLib::ImportAndCacheSkeletalMeshPrefab(file.c_str(), vdfs);
+	  }
 
-    if (!so)
-      return {};
+	  if (!mesh)
+		  return {};
 
-    so->addComponent<ObjectRotator>();
-
-    return so;
+	  return mesh->instantiate();
   }
   else
   {
@@ -99,6 +116,12 @@ int main(int argc, char** argv)
 
   VideoMode videoMode(1280, 720);
   Application::startUp(videoMode, "mesh-viewer", false);
+
+  if (FileSystem::exists(BsZenLib::GothicPathToCachedManifest("resources")))
+  {
+	  auto prevManifest = ResourceManifest::load(BsZenLib::GothicPathToCachedManifest("resources"), BsZenLib::GetCacheDirectory());
+	  gResources().registerResourceManifest(prevManifest);
+  }
 
   // Add a scene object containing a camera component
   HSceneObject sceneCameraSO = SceneObject::create("SceneCamera");
@@ -143,11 +166,15 @@ int main(int argc, char** argv)
 
   Vector<HString> listBoxElements;
 
+  
   for (const std::string& f : vdf.getKnownFiles())
   {
     if (f.find(".MDL") != std::string::npos)
     {
       listBoxElements.push_back(HString(f.c_str()));
+
+	  //gDebug().logDebug("Caching: " + String(f.c_str()));
+	  //BsZenLib::ImportAndCacheSkeletalMesh(f.c_str(), vdf);
     }
 
     if (f.find(".MRM") != std::string::npos)
@@ -155,6 +182,7 @@ int main(int argc, char** argv)
       listBoxElements.push_back(HString(f.c_str()));
     }
   }
+
 
   GUIListBox* listBox = mainPanel->addNewElement<GUIListBox>(listBoxElements);
 
@@ -168,6 +196,8 @@ int main(int argc, char** argv)
       Sphere bounds = newSO->getComponent<CRenderable>()->getBounds().getSphere();
       sceneCameraSO->setPosition(bounds.getCenter() +
                                  Vector3(2.0f, 1.0f, 2.0f).normalize() * bounds.getRadius() * 0.5f);
+
+	  newSO->addComponent<ObjectRotator>();
     }
 
     if (shownMeshSO)
@@ -191,6 +221,10 @@ int main(int argc, char** argv)
 
   setupInputConfig();
   Application::instance().runMainLoop();
+
+  SPtr<ResourceManifest> manifest = gResources().getResourceManifest("Default");
+  ResourceManifest::save(manifest, BsZenLib::GothicPathToCachedManifest("resources"), BsZenLib::GetCacheDirectory());
+
   Application::shutDown();
   return 0;
 }

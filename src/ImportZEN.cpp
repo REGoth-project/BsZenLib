@@ -15,14 +15,42 @@
 #include <zenload/zCMesh.h>
 #include <zenload/zCProgMeshProto.h>
 #include <zenload/zenParser.h>
+#include <FileSystem/BsFileSystem.h>
+#include "ImportPath.hpp"
 
 using namespace bs;
 
-static HSceneObject addWorldMesh(ZenLoad::ZenParser& zenParser, const VDFS::FileIndex& vdfs);
+static HSceneObject addWorldMesh(const bs::String& worldName, ZenLoad::ZenParser& zenParser, const VDFS::FileIndex& vdfs);
 static HSceneObject addStaticMeshObject(const String& file, const VDFS::FileIndex& vdfs);
 static HSceneObject walkTree(const ZenLoad::zCVobData& root, const VDFS::FileIndex& vdfs);
 
 // - Implementation --------------------------------------------------------------------------------
+
+bool BsZenLib::HasCachedZEN(const bs::String& zen)
+{
+	return FileSystem::isFile(GothicPathToCachedWorld(zen.c_str()));
+}
+
+bs::HPrefab BsZenLib::LoadCachedZEN(const bs::String& zen)
+{
+	return gResources().loadAsync<Prefab>(GothicPathToCachedWorld(zen));
+}
+
+bs::HPrefab BsZenLib::ImportAndCacheZEN(const std::string& zen, const VDFS::FileIndex& vdfs)
+{
+	HSceneObject worldSO = ImportZEN(zen, vdfs);
+
+	if (!worldSO)
+		return {};
+
+	HPrefab worldPrefab = Prefab::create(worldSO);
+	worldSO->destroy(true);
+
+	const bool overwrite = false;
+	gResources().save(worldPrefab, BsZenLib::GothicPathToCachedWorld(zen.c_str()), overwrite);
+
+	return worldPrefab;
+}
 
 HSceneObject BsZenLib::ImportZEN(const std::string& zen, const VDFS::FileIndex& vdfs)
 {
@@ -45,7 +73,7 @@ HSceneObject BsZenLib::ImportZEN(const std::string& zen, const VDFS::FileIndex& 
   zenParser.readWorld(world);
   (void)world;  // TODO: Make use of this
 
-  HSceneObject worldMeshSO = addWorldMesh(zenParser, vdfs);
+  HSceneObject worldMeshSO = addWorldMesh(zen.c_str(), zenParser, vdfs);
 
   if (!worldMeshSO) return {};
 
@@ -60,16 +88,27 @@ HSceneObject BsZenLib::ImportZEN(const std::string& zen, const VDFS::FileIndex& 
   return worldSO;
 }
 
-static HSceneObject addWorldMesh(ZenLoad::ZenParser& zenParser, const VDFS::FileIndex& vdfs)
+static HSceneObject addWorldMesh(const bs::String& worldName, ZenLoad::ZenParser& zenParser, const VDFS::FileIndex& vdfs)
 {
   ZenLoad::PackedMesh packedMesh;
   zenParser.getWorldMesh()->packMesh(packedMesh, 0.01f);
 
-  HSceneObject so = BsZenLib::ImportStaticMeshWithMaterials("WorldMesh", packedMesh, vdfs);
+  String meshFileName = worldName + ".worldmesh";
 
-  if (!so) return {};
+  HPrefab prefab;
+  if (FileSystem::isFile(BsZenLib::GothicPathToCachedAsset(meshFileName)))
+  {
+	  prefab = BsZenLib::LoadCachedStaticMeshPrefab(meshFileName);
+  }
+  else
+  {
+	  prefab = BsZenLib::ImportAndCacheStaticMeshPrefab(meshFileName, packedMesh, vdfs);
+  }
 
-  return so;
+  if (!prefab)
+	  return {};
+
+  return prefab->instantiate();
 }
 
 static HSceneObject walkTree(const ZenLoad::zCVobData& root, const VDFS::FileIndex& vdfs)
@@ -102,36 +141,19 @@ static HSceneObject walkTree(const ZenLoad::zCVobData& root, const VDFS::FileInd
 
 static HSceneObject addStaticMeshObject(const String& file, const VDFS::FileIndex& vdfs)
 {
-  HSceneObject so;
+	HPrefab prefab;
 
-  // FIXME: Figure out how the resource manager works and register the so there
-  static std::map<String, HSceneObject> s_cache;
-
-  if (s_cache.find(file) != s_cache.end())
+  if (FileSystem::isFile(BsZenLib::GothicPathToCachedAsset(file)))
   {
-    so = s_cache.at(file);
+	  prefab = BsZenLib::LoadCachedStaticMeshPrefab(file);
   }
   else
   {
-    gDebug().logDebug("Loading zCProgMeshProto: " + file);
-
-    ZenLoad::zCProgMeshProto progMesh(file.c_str(), vdfs);
-
-    if (progMesh.getNumSubmeshes() == 0)
-    {
-      gDebug().logWarning("File not found (zCProgMeshProto): " + String(file.c_str()));
-      return {};
-    }
-
-    ZenLoad::PackedMesh packedMesh;
-    progMesh.packMesh(packedMesh, 0.01f);
-
-    so = BsZenLib::ImportStaticMeshWithMaterials(file.c_str(), packedMesh, vdfs);
-
-    s_cache[file] = so;
+	  prefab = BsZenLib::ImportAndCacheStaticMeshPrefab(file, vdfs);
   }
 
-  if (!so) return {};
+  if (!prefab)
+	  return {};
 
-  return so;
+  return prefab->instantiate();
 }
