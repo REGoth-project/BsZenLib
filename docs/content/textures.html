@@ -1,0 +1,274 @@
+
+
+<!DOCTYPE html>
+<!--[if IE 8]><html class="no-js lt-ie9" lang="en" > <![endif]-->
+<!--[if gt IE 8]><!--> <html class="no-js" lang="en" > <!--<![endif]-->
+<head>
+  <meta charset="utf-8">
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  
+  <title>Importing Textures &mdash; BsZenLib  documentation</title>
+  
+
+  
+  
+  
+  
+
+  
+
+  
+  
+    
+
+  
+
+  <link rel="stylesheet" href="../_static/css/theme.css" type="text/css" />
+  <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" />
+    <link rel="prev" title="Virtual File System" href="vdfs.html" /> 
+
+  
+  <script src="../_static/js/modernizr.min.js"></script>
+
+</head>
+
+<body class="wy-body-for-nav">
+
+   
+  <div class="wy-grid-for-nav">
+
+    
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search">
+          
+
+          
+            <a href="../index.html" class="icon icon-home"> BsZenLib
+          
+
+          
+          </a>
+
+          
+            
+            
+          
+
+          
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+
+          
+        </div>
+
+        <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="main navigation">
+          
+            
+            
+              
+            
+            
+              <p class="caption"><span class="caption-text">Contents:</span></p>
+<ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="vdfs.html">Virtual File System</a></li>
+<li class="toctree-l1 current"><a class="current reference internal" href="#">Importing Textures</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="#functions">Functions</a></li>
+</ul>
+</li>
+</ul>
+
+            
+          
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
+
+      
+      <nav class="wy-nav-top" aria-label="top navigation">
+        
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../index.html">BsZenLib</a>
+        
+      </nav>
+
+
+      <div class="wy-nav-content">
+        
+        <div class="rst-content">
+        
+          
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<div role="navigation" aria-label="breadcrumbs navigation">
+
+  <ul class="wy-breadcrumbs">
+    
+      <li><a href="../index.html">Docs</a> &raquo;</li>
+        
+      <li>Importing Textures</li>
+    
+    
+      <li class="wy-breadcrumbs-aside">
+        
+            
+            <a href="../_sources/content/textures.rst.txt" rel="nofollow"> View page source</a>
+          
+        
+      </li>
+    
+  </ul>
+
+  
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+            
+  <div class="section" id="importing-textures">
+<h1>Importing Textures<a class="headerlink" href="#importing-textures" title="Permalink to this headline">¶</a></h1>
+<div class="section" id="functions">
+<h2>Functions<a class="headerlink" href="#functions" title="Permalink to this headline">¶</a></h2>
+<p>Import and Cache Textures. </p>
+<dl class="type">
+<dt id="_CPPv38BsZenLib">
+<span id="_CPPv28BsZenLib"></span><span id="BsZenLib"></span><span class="target" id="namespace_bs_zen_lib"></span><em class="property">namespace </em><code class="descname">BsZenLib</code><a class="headerlink" href="#_CPPv38BsZenLib" title="Permalink to this definition">¶</a><br /></dt>
+<dd><div class="breathe-sectiondef docutils container">
+<p class="breathe-sectiondef-title rubric">Functions</p>
+<dl class="function">
+<dt id="_CPPv3N8BsZenLib13ImportTextureERKN2bs6StringERKN4VDFS9FileIndexE">
+<span id="_CPPv2N8BsZenLib13ImportTextureERKN2bs6StringERKN4VDFS9FileIndexE"></span><span id="BsZenLib::ImportTexture__bs::StringCR.VDFS::FileIndexCR"></span><span class="target" id="_import_texture_8hpp_1a4deb3f9e80cf9872007b2f6982f65b6c"></span>bs::HTexture <code class="descname">ImportTexture</code><span class="sig-paren">(</span><em class="property">const</em> bs::String &amp;<em>virtualFilePath</em>, <em class="property">const</em> VDFS::FileIndex &amp;<em>vdfs</em><span class="sig-paren">)</span><a class="headerlink" href="#_CPPv3N8BsZenLib13ImportTextureERKN2bs6StringERKN4VDFS9FileIndexE" title="Permalink to this definition">¶</a><br /></dt>
+<dd><p>Import a Gothic zTEX-Texture without saving the results to disk. </p>
+<p>While the creators of Gothic worked mostly with TGA-files, the engine converted/compressed them automatically to a DDS like format, called zTEX. Given an input file <code class="docutils literal notranslate"><span class="pre">IMAGE.TGA</span></code>, the engine would produce a file called <code class="docutils literal notranslate"><span class="pre">IMAGE-C.TEX</span></code>, called the <em>compiled</em> file.</p>
+<p>This function will interpret these .TEX-files and load them into a BsTexture.</p>
+<p><dl class="docutils">
+<dt><strong>Note</strong></dt>
+<dd>Given a .TGA-file as input, this function will automatically look for the correct compiled .TEX-file.</dd>
+<dt><strong>Return</strong></dt>
+<dd>BsTexture containing the Data from the Gothic zTEX. Empty handle if importing failed. </dd>
+<dt><strong>Parameters</strong></dt>
+<dd><ul class="breatheparameterlist first last simple">
+<li><code class="docutils literal notranslate"><span class="pre">virtualFilePath</span></code>: Path to .TGA or .TEX file in the VDFS. </li>
+<li><code class="docutils literal notranslate"><span class="pre">vdfs</span></code>: Virtual Filesystem to load the texture from.</li>
+</ul>
+</dd>
+</dl>
+</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="_CPPv3N8BsZenLib21ImportAndCacheTextureERKN2bs6StringERKN4VDFS9FileIndexE">
+<span id="_CPPv2N8BsZenLib21ImportAndCacheTextureERKN2bs6StringERKN4VDFS9FileIndexE"></span><span id="BsZenLib::ImportAndCacheTexture__bs::StringCR.VDFS::FileIndexCR"></span><span class="target" id="_import_texture_8hpp_1a60e663f964b62430d06422f93ee1b4b6"></span>bs::HTexture <code class="descname">ImportAndCacheTexture</code><span class="sig-paren">(</span><em class="property">const</em> bs::String &amp;<em>virtualFilePath</em>, <em class="property">const</em> VDFS::FileIndex &amp;<em>vdfs</em><span class="sig-paren">)</span><a class="headerlink" href="#_CPPv3N8BsZenLib21ImportAndCacheTextureERKN2bs6StringERKN4VDFS9FileIndexE" title="Permalink to this definition">¶</a><br /></dt>
+<dd><p>Import a Gothic zTEX-Texture and save the results to disk. </p>
+<p>Imports the given zTEX-Texture and saves them into the cache-folder. The imported texture will also be added to the default resource manifest.</p>
+<p>See also <a class="reference internal" href="#_import_texture_8hpp_1a4deb3f9e80cf9872007b2f6982f65b6c"><span class="std std-ref">ImportTexture()</span></a>.</p>
+<p><dl class="docutils">
+<dt><strong>Return</strong></dt>
+<dd>BsTexture containing the Data from the Gothic zTEX. Empty handle if importing failed. </dd>
+<dt><strong>Parameters</strong></dt>
+<dd><ul class="breatheparameterlist first last simple">
+<li><code class="docutils literal notranslate"><span class="pre">virtualFilePath</span></code>: Path to .TGA or .TEX file in the VDFS. </li>
+<li><code class="docutils literal notranslate"><span class="pre">vdfs</span></code>: Virtual Filesystem to load the texture from.</li>
+</ul>
+</dd>
+</dl>
+</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="_CPPv3N8BsZenLib17LoadCachedTextureERKN2bs6StringE">
+<span id="_CPPv2N8BsZenLib17LoadCachedTextureERKN2bs6StringE"></span><span id="BsZenLib::LoadCachedTexture__bs::StringCR"></span><span class="target" id="_import_texture_8hpp_1abe49106b60725256a1d02b7caa070f95"></span>bs::HTexture <code class="descname">LoadCachedTexture</code><span class="sig-paren">(</span><em class="property">const</em> bs::String &amp;<em>virtualFilePath</em><span class="sig-paren">)</span><a class="headerlink" href="#_CPPv3N8BsZenLib17LoadCachedTextureERKN2bs6StringE" title="Permalink to this definition">¶</a><br /></dt>
+<dd></dd></dl>
+
+<dl class="function">
+<dt id="_CPPv3N8BsZenLib16HasCachedTextureERKN2bs6StringE">
+<span id="_CPPv2N8BsZenLib16HasCachedTextureERKN2bs6StringE"></span><span id="BsZenLib::HasCachedTexture__bs::StringCR"></span><span class="target" id="_import_texture_8hpp_1a13f83b0d314d32e6d2453268adb13799"></span>bool <code class="descname">HasCachedTexture</code><span class="sig-paren">(</span><em class="property">const</em> bs::String &amp;<em>virtualFilePath</em><span class="sig-paren">)</span><a class="headerlink" href="#_CPPv3N8BsZenLib16HasCachedTextureERKN2bs6StringE" title="Permalink to this definition">¶</a><br /></dt>
+<dd></dd></dl>
+
+</div>
+</dd></dl>
+
+</div>
+</div>
+
+
+           </div>
+           
+          </div>
+          <footer>
+  
+    <div class="rst-footer-buttons" role="navigation" aria-label="footer navigation">
+      
+      
+        <a href="vdfs.html" class="btn btn-neutral" title="Virtual File System" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left"></span> Previous</a>
+      
+    </div>
+  
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>
+        &copy; Copyright 2019, Andre Taulien
+
+    </p>
+  </div>
+  Built with <a href="http://sphinx-doc.org/">Sphinx</a> using a <a href="https://github.com/rtfd/sphinx_rtd_theme">theme</a> provided by <a href="https://readthedocs.org">Read the Docs</a>. 
+
+</footer>
+
+        </div>
+      </div>
+
+    </section>
+
+  </div>
+  
+
+
+  
+
+    
+    
+      <script type="text/javascript" id="documentation_options" data-url_root="../" src="../_static/documentation_options.js"></script>
+        <script type="text/javascript" src="../_static/jquery.js"></script>
+        <script type="text/javascript" src="../_static/underscore.js"></script>
+        <script type="text/javascript" src="../_static/doctools.js"></script>
+        <script type="text/javascript" src="../_static/language_data.js"></script>
+    
+
+  
+
+  <script type="text/javascript" src="../_static/js/theme.js"></script>
+
+  <script type="text/javascript">
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>
