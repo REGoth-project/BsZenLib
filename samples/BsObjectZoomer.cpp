@@ -11,13 +11,15 @@ namespace bs
 
     ObjectZoomer::ObjectZoomer(const HSceneObject& parent)
         : Component(parent)
-        , dist(-2.f)
 	{
 		// Set a name for the component, so we can find it later if needed
         setName("ObjectZoomer");
 
 		// Get handles for key bindings. Actual keys attached to these bindings will be registered during app start-up.
         mZoomAxis = VirtualAxis("Zoom");
+
+        const Transform &transform = SO()->getTransform();
+        dist = transform.getPosition().x;
 	}
 
     void ObjectZoomer::update()
