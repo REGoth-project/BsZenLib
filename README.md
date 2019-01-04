@@ -1,6 +1,6 @@
 # BsZenLib
 
-Importers for file from the games Gothic and Gothic II for the [bs:framework](https://github.com/GameFoundry/bsf).
+Importers for files from the games Gothic and Gothic II for the [bs:framework](https://github.com/GameFoundry/bsf).
 
 # Documentation
 
