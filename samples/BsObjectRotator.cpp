@@ -22,7 +22,7 @@ namespace bs
 	}
 
 	ObjectRotator::ObjectRotator(const HSceneObject& parent)
-		:Component(parent), mPitch(0.0f), mYaw(0.0f), mLastButtonState(false)
+        :Component(parent), mPitch(0.0f), mYaw(0.0f), mLastButtonState(true)
 	{
 		// Set a name for the component, so we can find it later if needed
 		setName("ObjectRotator");
