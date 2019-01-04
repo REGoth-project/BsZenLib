@@ -2,6 +2,7 @@
 #include "BsApplication.h"
 #include "BsFPSCamera.h"
 #include "BsObjectRotator.h"
+#include "BsObjectZoomer.h"
 #include <assert.h>
 #include <BsZenLib/ImportStaticMesh.hpp>
 #include <BsZenLib/ImportZEN.hpp>
@@ -35,6 +36,7 @@ static void setupInputConfig()
   // These return values in [-1.0, 1.0] range.
   inputConfig->registerAxis("Horizontal", VIRTUAL_AXIS_DESC((UINT32)InputAxis::MouseX));
   inputConfig->registerAxis("Vertical", VIRTUAL_AXIS_DESC((UINT32)InputAxis::MouseY));
+  inputConfig->registerAxis("Zoom", VIRTUAL_AXIS_DESC((UINT32)InputAxis::MouseZ));
 }
 
 static HSceneObject loadMesh(const String& file, const VDFS::FileIndex& vdfs)
@@ -109,6 +111,8 @@ int main(int argc, char** argv)
   // Add shown mesh
   HSceneObject shownMeshSO = SceneObject::create("default");
   shownMeshSO->addComponent<CRenderable>()->setMesh(gBuiltinResources().getMesh(BuiltinMesh::Box));
+  shownMeshSO->addComponent<ObjectRotator>();
+  shownMeshSO->addComponent<ObjectZoomer>();
 
   // Add GUI
   HSceneObject guiSO = SceneObject::create("GUI");
@@ -138,7 +142,6 @@ int main(int argc, char** argv)
     gDebug().logDebug("User selected element: \"" + newMesh + "\"");
 
     HSceneObject newSO = loadMesh(newMesh, vdf);
-    newSO->addComponent<ObjectRotator>();
 
     shownMeshSO->destroy(true);
 
@@ -147,6 +150,8 @@ int main(int argc, char** argv)
     Sphere bounds = newSO->getComponent<CRenderable>()->getBounds().getSphere();
     sceneCameraSO->setPosition(bounds.getCenter() +
                                Vector3(2.0f, 1.0f, 2.0f).normalize() * bounds.getRadius() * 0.2f);
+    newSO->addComponent<ObjectRotator>();
+    newSO->addComponent<ObjectZoomer>();
   });
 
   listBox->setPosition(10, 10);
