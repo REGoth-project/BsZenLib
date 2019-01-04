@@ -85,4 +85,4 @@ target_include_directories(BsZenLib PUBLIC include)
 #                               Add Samples, etc                              #
 ###############################################################################
 add_subdirectory(samples)
-add_subdirectory(documentation)
+add_subdirectory(docs-source)
