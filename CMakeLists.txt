@@ -32,17 +32,17 @@ if (BSZENLIB_DOWNLOAD_BSF_BINARIES)
   if (WIN32)
     FetchContent_Declare(bsfBinaries
       SOURCE_DIR ${bsf_INSTALL_DIR}
-      URL        https://dilborceisv8p.cloudfront.net/bsf_2018.12.31_win64.zip
+      URL        https://dilborceisv8p.cloudfront.net/bsf_2019.01.04_win64.zip
       )
   elseif (APPLE)
     FetchContent_Declare(bsfBinaries
       SOURCE_DIR ${bsf_INSTALL_DIR}
-      URL        https://dilborceisv8p.cloudfront.net/bsf_2018.12.31_osx.tar.gz
+      URL        https://dilborceisv8p.cloudfront.net/bsf_2019.01.04_osx.tar.gz
       )
   elseif (UNIX)
     FetchContent_Declare(bsfBinaries
       SOURCE_DIR ${bsf_INSTALL_DIR}
-      URL        https://dilborceisv8p.cloudfront.net/bsf_2018.12.31_linux.tar.gz
+      URL        https://dilborceisv8p.cloudfront.net/bsf_2019.01.04_linux.tar.gz
       )
   else()
     message(FATAL_ERROR "No prebuilt binaries available for this platform!")
@@ -72,6 +72,7 @@ add_library(BsZenLib
   src/ImportStaticMesh.cpp
   src/ImportTexture.cpp
   src/ImportZEN.cpp
+  src/ImportPath.cpp
   )
 
 target_link_libraries(BsZenLib PRIVATE bsf zenload vdfs utils)
@@ -84,3 +85,4 @@ target_include_directories(BsZenLib PUBLIC include)
 #                               Add Samples, etc                              #
 ###############################################################################
 add_subdirectory(samples)
+add_subdirectory(documentation)
