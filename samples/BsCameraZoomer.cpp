@@ -1,4 +1,4 @@
-#include "BsObjectZoomer.h"
+#include "BsCameraZoomer.h"
 #include "Math/BsVector3.h"
 #include "Utility/BsTime.h"
 #include "Math/BsMath.h"
@@ -7,32 +7,30 @@
 
 namespace bs
 {
-    const float ObjectZoomer::ZOOM_STEP = 0.01f;
+    const float CameraZoomer::ZOOM_STEP = 0.01f;
 
-    ObjectZoomer::ObjectZoomer(const HSceneObject& parent)
+    CameraZoomer::CameraZoomer(const HSceneObject& parent)
         : Component(parent)
 	{
 		// Set a name for the component, so we can find it later if needed
-        setName("ObjectZoomer");
+        setName("CameraZoomer");
 
 		// Get handles for key bindings. Actual keys attached to these bindings will be registered during app start-up.
         mZoomAxis = VirtualAxis("Zoom");
-
-        const Transform &transform = SO()->getTransform();
-        dist = transform.getPosition().x;
 	}
 
-    void ObjectZoomer::update()
+    void CameraZoomer::update()
 	{
         float delta = gVirtualInput().getAxisValue(mZoomAxis) * ZOOM_STEP;
-        if(delta != 0.f)
+        if(delta != 0.f) //If the input changed
         {
-            dist -= delta;
             const Transform &transform = SO()->getTransform();
-            Vector3 objPos = transform.getPosition();
-            Vector3 camFwd(1.f, 0.f, 1.f);
-            objPos = camFwd * dist;
-            SO()->setPosition(objPos);
+            Vector3 camPos = transform.getPosition();
+            Vector3 camFwd = transform.getForward();
+
+            camPos -= delta * camFwd; //Translate the camera.
+
+            SO()->setPosition(camPos);
         }
     }
 }
