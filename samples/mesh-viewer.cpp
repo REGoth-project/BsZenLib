@@ -200,7 +200,6 @@ int main(int argc, char** argv)
       sceneCameraSO->setPosition(bounds.getCenter() +
                                  Vector3(2.0f, 1.0f, 2.0f).normalize() * bounds.getRadius() * 0.5f);
 	  newSO->addComponent<ObjectRotator>();
-      newSO->addComponent<ObjectRotator>();
     }
 
     if (shownMeshSO)
