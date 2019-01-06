@@ -2,7 +2,7 @@
 #include "BsApplication.h"
 #include "BsFPSCamera.h"
 #include "BsObjectRotator.h"
-#include "BsObjectZoomer.h"
+#include "BsCameraZoomer.h"
 #include <assert.h>
 #include <BsZenLib/ImportSkeletalMesh.hpp>
 #include <BsZenLib/ImportStaticMesh.hpp>
@@ -126,6 +126,7 @@ int main(int argc, char** argv)
   // Position the camera
   sceneCameraSO->setPosition(Vector3(3.0f, 2.0f, 3.0f) * 16.0f);
   sceneCameraSO->lookAt(Vector3(0, 0, 0));
+  sceneCameraSO->addComponent<CameraZoomer>();
 
   // Add shown mesh
   HSceneObject shownMeshSO = SceneObject::create("default");
@@ -169,7 +170,6 @@ int main(int argc, char** argv)
       sceneCameraSO->setPosition(bounds.getCenter() +
                                  Vector3(2.0f, 1.0f, 2.0f).normalize() * bounds.getRadius() * 0.3f);
       newSO->addComponent<ObjectRotator>();
-      newSO->addComponent<ObjectZoomer>();
     }
 
     if (shownMeshSO)
