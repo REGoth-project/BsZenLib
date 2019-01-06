@@ -2,6 +2,7 @@
 #include "BsApplication.h"
 #include "BsFPSCamera.h"
 #include "BsObjectRotator.h"
+#include "BsCameraZoomer.h"
 #include <assert.h>
 #include <BsZenLib/ImportStaticMesh.hpp>
 #include <BsZenLib/ImportZEN.hpp>
@@ -35,6 +36,7 @@ static void setupInputConfig()
   // These return values in [-1.0, 1.0] range.
   inputConfig->registerAxis("Horizontal", VIRTUAL_AXIS_DESC((UINT32)InputAxis::MouseX));
   inputConfig->registerAxis("Vertical", VIRTUAL_AXIS_DESC((UINT32)InputAxis::MouseY));
+  inputConfig->registerAxis("Zoom", VIRTUAL_AXIS_DESC((UINT32)InputAxis::MouseZ));
 }
 
 static HSceneObject loadMesh(const String& file, const VDFS::FileIndex& vdfs)
@@ -59,7 +61,7 @@ int main(int argc, char** argv)
 
   if (argc < 2)
   {
-    std::cout << "Usage: mesh-viewer <path/to/gothic/data>" << std::endl;
+    std::cout << "Usage: npc-viewer <path/to/gothic/data>" << std::endl;
     return -1;
   }
 
@@ -77,7 +79,7 @@ int main(int argc, char** argv)
   }
 
   VideoMode videoMode(1280, 720);
-  Application::startUp(videoMode, "mesh-viewer", false);
+  Application::startUp(videoMode, "npc-viewer", false);
 
   // Add a scene object containing a camera component
   HSceneObject sceneCameraSO = SceneObject::create("SceneCamera");
@@ -105,10 +107,12 @@ int main(int argc, char** argv)
   // Position the camera
   sceneCameraSO->setPosition(Vector3(3.0f, 2.0f, 3.0f));
   sceneCameraSO->lookAt(Vector3(0, 0, 0));
+  sceneCameraSO->addComponent<CameraZoomer>();
 
   // Add shown mesh
   HSceneObject shownMeshSO = SceneObject::create("default");
   shownMeshSO->addComponent<CRenderable>()->setMesh(gBuiltinResources().getMesh(BuiltinMesh::Box));
+  shownMeshSO->addComponent<ObjectRotator>();
 
   // Add GUI
   HSceneObject guiSO = SceneObject::create("GUI");
@@ -138,7 +142,6 @@ int main(int argc, char** argv)
     gDebug().logDebug("User selected element: \"" + newMesh + "\"");
 
     HSceneObject newSO = loadMesh(newMesh, vdf);
-    newSO->addComponent<ObjectRotator>();
 
     shownMeshSO->destroy(true);
 
@@ -147,6 +150,7 @@ int main(int argc, char** argv)
     Sphere bounds = newSO->getComponent<CRenderable>()->getBounds().getSphere();
     sceneCameraSO->setPosition(bounds.getCenter() +
                                Vector3(2.0f, 1.0f, 2.0f).normalize() * bounds.getRadius() * 0.2f);
+    newSO->addComponent<ObjectRotator>();
   });
 
   listBox->setPosition(10, 10);
