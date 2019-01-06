@@ -89,7 +89,6 @@ static HPrefab cacheSkeletalMesh(const bs::String& virtualFilePath, HMesh mesh, 
 	HRenderable renderable = so->addComponent<CRenderable>();
 	renderable->setMesh(mesh);
 	renderable->setMaterials(materials);
-	renderable->setC
 
 	HPrefab prefab = Prefab::create(so, false);
 
