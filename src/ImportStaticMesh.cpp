@@ -107,6 +107,7 @@ static HPrefab cacheStaticMesh(const bs::String& virtualFilePath, HMesh mesh, co
 	HRenderable renderable = so->addComponent<CRenderable>();
 	renderable->setMesh(mesh);
 	renderable->setMaterials(materials);
+	renderable->_getInternal()->setCullDistanceFactor(1.0f);
 
 	HPrefab prefab = Prefab::create(so, false);
 	
@@ -313,7 +314,7 @@ static Vector<StaticMeshVertex> transformVertices(const ZenLoad::PackedMesh& pac
 
 static void transferVertices(SPtr<MeshData> target, const Vector<StaticMeshVertex>& vertices)
 {
-  assert(target->getNumVertices() == packedMesh.vertices.size());
+  assert(target->getNumVertices() == vertices.size());
 
   UINT8* pVertices = target->getElementData(VES_POSITION);
   memcpy(pVertices, vertices.data(),
