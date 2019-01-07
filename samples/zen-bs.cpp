@@ -33,8 +33,7 @@ static void setupInputConfig()
   inputConfig->registerButton("Left", BC_LEFT);
   inputConfig->registerButton("Right", BC_RIGHT);
   inputConfig->registerButton("FastMove", BC_LSHIFT);
-  inputConfig->registerButton("RotateObj", BC_MOUSE_LEFT);
-  inputConfig->registerButton("RotateCam", BC_MOUSE_RIGHT);
+  inputConfig->registerButton("Rotate", BC_MOUSE_LEFT);
 
   // Camera controls for axes (analog input, e.g. mouse or gamepad thumbstick)
   // These return values in [-1.0, 1.0] range.

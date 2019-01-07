@@ -14,10 +14,10 @@ namespace bs
   constexpr Degree PITCH_RANGE = Degree(45.0f);
 
   /** Initial movement speed. */
-  constexpr float START_SPEED = 4.0f;  // m/s
+  constexpr float START_SPEED = 10.0f;  // m/s
 
   /** Maximum movement speed. */
-  constexpr float TOP_SPEED = 7.0f;  // m/s
+  constexpr float TOP_SPEED = 16.0f;  // m/s
 
   /** Acceleration that determines how quickly to go from starting to top speed. */
   constexpr float ACCELERATION = 1.5f;
@@ -35,6 +35,7 @@ namespace bs
     // app start-up.
     mHorizontalAxis = VirtualAxis("Horizontal");
     mVerticalAxis = VirtualAxis("Vertical");
+	mRotate = VirtualButton("Rotate");
 
     // Get handles for key bindings. Actual keys attached to these bindings will be
     // registered during app start-up.
@@ -104,12 +105,17 @@ namespace bs
 
   void FPSCamera::update()
   {
-    // If camera is rotating, apply new pitch/yaw rotation values depending on the amount of rotation
-    // from the vertical/horizontal axes.
-    mYaw += Degree(gVirtualInput().getAxisValue(mHorizontalAxis) * ROTATION_SPEED);
-    mPitch += Degree(gVirtualInput().getAxisValue(mVerticalAxis) * ROTATION_SPEED);
+	  bool shouldRotate = gVirtualInput().isButtonHeld(mRotate);
 
-    applyAngles();
+	  if (shouldRotate)
+	  {
+		  // If camera is rotating, apply new pitch/yaw rotation values depending on the amount of rotation
+		  // from the vertical/horizontal axes.
+		  mYaw += Degree(gVirtualInput().getAxisValue(mHorizontalAxis) * ROTATION_SPEED);
+		  mPitch += Degree(gVirtualInput().getAxisValue(mVerticalAxis) * ROTATION_SPEED);
+
+		  applyAngles();
+	  }
   }
 
   void FPSCamera::applyAngles()

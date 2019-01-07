@@ -41,6 +41,7 @@ namespace bs
 
     float mCurrentSpeed = 0.0f; /**< Current speed of the camera. */
 
+	VirtualButton mRotate;       /**< Key that allows camera to be rotated while held. */
     VirtualAxis mVerticalAxis;   /**< Input device axis used for controlling camera's pitch rotation
                                     (up/down). */
     VirtualAxis mHorizontalAxis; /**< Input device axis used for controlling camera's yaw rotation
