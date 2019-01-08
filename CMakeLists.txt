@@ -77,6 +77,7 @@ add_library(BsZenLib
   src/ImportSkeletalMesh.cpp
   src/ImportStaticMesh.cpp
   src/ImportTexture.cpp
+  src/ImportMaterial.cpp
   src/ImportZEN.cpp
   src/ImportPath.cpp
   )
