@@ -109,25 +109,33 @@ int main(int argc, char** argv)
   sceneCameraSO->lookAt(Vector3(0, 0, 0));
   sceneCameraSO->addComponent<FPSCamera>();
   
+  HSceneObject worldSO = {};
+
   // Import a Gothic ZEN
-  HPrefab worldPrefab;
   if (BsZenLib::HasCachedZEN(zenFile))
   {
-	  worldPrefab = BsZenLib::LoadCachedZEN(zenFile);
+    HPrefab worldPrefab = BsZenLib::LoadCachedZEN(zenFile);
+   
+    if (!worldPrefab)
+    {
+      gDebug().logError("Failed to load cached ZEN: " + zenFile);
+      return -1;
+    }
+
+    worldPrefab.blockUntilLoaded();
+
+    worldSO = worldPrefab->instantiate();
   }
   else
   {
-	  worldPrefab = BsZenLib::ImportAndCacheZEN(zenFile.c_str(), vdfs);
-  }
+	  worldSO = BsZenLib::ImportAndCacheZEN(zenFile.c_str(), vdfs);
    
-  if (!worldPrefab)
-  {
-	  gDebug().logError("Failed to load ZEN: " + zenFile);
-	  return -1;
+    if (!worldSO)
+    {
+      gDebug().logError("Failed to load uncached ZEN: " + zenFile);
+      return -1;
+    }
   }
-
-  worldPrefab.blockUntilLoaded();
-  HSceneObject world = worldPrefab->instantiate();
 
   setupInputConfig();
 
