@@ -108,6 +108,35 @@ bs::HMesh BsZenLib::LoadCachedSkeletalMesh(const bs::String& virtualFilePath)
   return gResources().load<Mesh>(path);
 }
 
+HMesh BsZenLib::ImportAndCacheSkeletalMesh(const bs::String& virtualFilePath, const VDFS::FileIndex& vdfs)
+{
+	HMesh mesh = ImportSkeletalMesh(virtualFilePath, vdfs);
+	Path path = GothicPathToCachedAsset(virtualFilePath + ".mesh");
+
+	if (!mesh)
+		return {};
+
+	const bool overwrite = true;
+	gResources().save(mesh, path, overwrite);
+
+	return gResources().load<Mesh>(path);
+}
+
+bs::HMesh BsZenLib::ImportSkeletalMesh(const String& virtualFilePath,
+                                       const VDFS::FileIndex& vdfs)
+{
+  ZenLoad::zCModelMeshLib meshLib(virtualFilePath.c_str(), vdfs);
+
+  if (!meshLib.isValid()) return {};
+
+  Vector<Matrix4> bindPose = makeBindPose(meshLib.getNodes());
+
+  ZenLoad::PackedSkeletalMesh packedMesh;
+  meshLib.packMesh(packedMesh);
+
+  return ImportSkeletalMesh(bindPose, packedMesh);
+}
+
 Vector<HMaterial> BsZenLib::ImportAndCacheSkeletalMeshMaterials(const bs::String& virtualFilePath,
                                                                 const VDFS::FileIndex& vdfs)
 {
