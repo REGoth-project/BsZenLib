@@ -1,19 +1,19 @@
 #include "ImportSkeletalMesh.hpp"
-#include "ImportTexture.hpp"
+#include "ImportMaterial.hpp"
+#include "ImportPath.hpp"
 #include <Components/BsCRenderable.h>
+#include <FileSystem/BsFileSystem.h>
 #include <RenderAPI/BsVertexDataDesc.h>
 #include <Resources/BsBuiltinResources.h>
+#include <Resources/BsResourceManifest.h>
+#include <Resources/BsResources.h>
+#include <Scene/BsPrefab.h>
 #include <Scene/BsSceneObject.h>
 #include <vdfs/fileIndex.h>
 #include <zenload/modelScriptParser.h>
 #include <zenload/zCModelMeshLib.h>
 #include <zenload/zTypes.h>
 #include <zenload/zenParser.h>
-#include <Resources/BsResourceManifest.h>
-#include <Resources/BsResources.h>
-#include "ImportPath.hpp"
-#include <FileSystem/BsFileSystem.h>
-#include <Scene/BsPrefab.h>
 
 using namespace bs;
 
@@ -40,172 +40,50 @@ static void fillMeshDataFromPackedMesh(HMesh target, const Vector<SkeletalVertex
                                        const ZenLoad::PackedSkeletalMesh& packedMesh);
 static void transferVertices(SPtr<MeshData> target, const Vector<SkeletalVertex>& vertices);
 static void transferIndices(SPtr<MeshData> target, const ZenLoad::PackedSkeletalMesh& packedMesh);
-static Vector<HMaterial> materialsFromSkeletalMesh(const ZenLoad::PackedSkeletalMesh& packedMesh,
-                                                   const VDFS::FileIndex& vdfs);
-static HPrefab cacheSkeletalMesh(const bs::String& virtualFilePath, HMesh mesh, const Vector<HMaterial>& materials);
+static HPrefab cacheSkeletalMesh(const bs::String& virtualFilePath, HMesh mesh,
+                                 const Vector<HMaterial>& materials);
+static bs::HMesh importSkeletalMesh(const String& virtualFilePath, const VDFS::FileIndex& vdfs);
 
 // - Implementation --------------------------------------------------------------------------------
 
 bool BsZenLib::HasCachedSkeletalMeshPrefab(const bs::String& virtualFilePath)
 {
-	return FileSystem::isFile(GothicPathToCachedAsset(virtualFilePath.c_str()));
+  return FileSystem::isFile(GothicPathToCachedSkeletalMesh(virtualFilePath.c_str()));
 }
 
 bs::HPrefab BsZenLib::LoadCachedSkeletalMeshPrefab(const bs::String& virtualFilePath)
 {
-	return gResources().load<Prefab>(GothicPathToCachedAsset(virtualFilePath));
+  return gResources().load<Prefab>(GothicPathToCachedSkeletalMesh(virtualFilePath));
 }
 
-bs::HPrefab BsZenLib::ImportAndCacheSkeletalMeshPrefab(const bs::String& virtualFilePath, const VDFS::FileIndex& vdfs)
+bs::HPrefab BsZenLib::ImportAndCacheSkeletalMeshPrefab(const bs::String& virtualFilePath,
+                                                       const VDFS::FileIndex& vdfs)
 {
-	HMesh mesh = ImportAndCacheSkeletalMesh(virtualFilePath, vdfs);
+  HMesh mesh = ImportAndCacheSkeletalMesh(virtualFilePath, vdfs);
 
-	if (!mesh)
-		return {};
+  if (!mesh) return {};
 
-	Vector<HMaterial> materials = ImportAndCacheSkeletalMeshMaterials(virtualFilePath, vdfs);
-
-	if (!mesh)
-	{
-		gDebug().logWarning("Load Failed (Mesh): " + virtualFilePath);
-		return {};
-	}
-
-	if (materials.empty())
-	{
-		gDebug().logWarning("Load Failed (Materials): " + virtualFilePath);
-		return {};
-	}
-
-	return cacheSkeletalMesh(virtualFilePath, mesh, materials);
-}
-
-static HPrefab cacheSkeletalMesh(const bs::String& virtualFilePath, HMesh mesh, const Vector<HMaterial>& materials)
-{
-	using namespace BsZenLib;
-
-	HSceneObject so = SceneObject::create(virtualFilePath.c_str());
-
-	HRenderable renderable = so->addComponent<CRenderable>();
-	renderable->setMesh(mesh);
-	renderable->setMaterials(materials);
-
-	HPrefab prefab = Prefab::create(so, false);
-
-	so->destroy(true);
-
-	const bool overwrite = false;
-	gResources().save(prefab, GothicPathToCachedAsset(virtualFilePath), overwrite);
-
-	return prefab;
-}
-
-
-bs::HMesh BsZenLib::LoadCachedSkeletalMesh(const bs::String& virtualFilePath)
-{
-	Path path = GothicPathToCachedAsset(virtualFilePath + ".mesh");
-
-	return gResources().load<Mesh>(path);
-}
-
-HMesh BsZenLib::ImportAndCacheSkeletalMesh(const bs::String& virtualFilePath, const VDFS::FileIndex& vdfs)
-{
-	HMesh mesh = ImportSkeletalMesh(virtualFilePath, vdfs);
-	Path path = GothicPathToCachedAsset(virtualFilePath + ".mesh");
-
-	if (!mesh)
-		return {};
-
-	const bool overwrite = true;
-	gResources().save(mesh, path, overwrite);
-
-	return gResources().load<Mesh>(path);
-}
-
-Vector<HMaterial> BsZenLib::ImportAndCacheSkeletalMeshMaterials(const bs::String& virtualFilePath, const VDFS::FileIndex& vdfs)
-{
-	ZenLoad::zCModelMeshLib meshLib(virtualFilePath.c_str(), vdfs);
-
-	if (!meshLib.isValid()) return {};
-
-	ZenLoad::PackedSkeletalMesh packedMesh;
-	meshLib.packMesh(packedMesh);
-
-	HShader shader = gBuiltinResources().getBuiltinShader(BuiltinShader::Standard);
-
-	Vector<HMaterial> materials;
-	for (size_t i = 0; i < packedMesh.subMeshes.size(); i++)
-	{
-		// TODO: Transfer more properties
-		const auto& originalMaterial = packedMesh.subMeshes[i].material;
-
-		HTexture albedo;
-
-		if (BsZenLib::HasCachedTexture(originalMaterial.texture.c_str()))
-		{
-			albedo = BsZenLib::LoadCachedTexture(originalMaterial.texture.c_str());
-		}
-		else
-		{
-			albedo = BsZenLib::ImportAndCacheTexture(originalMaterial.texture.c_str(), vdfs);
-		}
-
-		Path materialPath = GothicPathToCachedAsset(virtualFilePath + ".material-" + toString(i));
-
-		HMaterial m = Material::create(shader);
-		m->setTexture("gAlbedoTex", albedo);
-
-		const bool overwrite = false;
-		gResources().save(m, materialPath, overwrite);
-
-		HMaterial loaded = gResources().load<Material>(materialPath);
-		materials.push_back(loaded);
-	}
-
-	return materials;
-}
-
-Vector<HMaterial> BsZenLib::ImportMaterialsFromSkeletalMesh(const String& virtualFilePath,
-                                                  const VDFS::FileIndex& vdfs)
-{
-  ZenLoad::zCModelMeshLib meshLib(virtualFilePath.c_str(), vdfs);
-
-  if (!meshLib.isValid()) return {};
-
-  Vector<Matrix4> bindPose = makeBindPose(meshLib.getNodes());
-
-  ZenLoad::PackedSkeletalMesh packedMesh;
-  meshLib.packMesh(packedMesh);
-
-  return materialsFromSkeletalMesh(packedMesh, vdfs);
-}
-
-bs::HSceneObject BsZenLib::ImportSkeletalMeshWithMaterials(const String& virtualFilePath,
-                                                           const VDFS::FileIndex& vdfs)
-{
-  ZenLoad::zCModelMeshLib meshLib(virtualFilePath.c_str(), vdfs);
-
-  if (!meshLib.isValid()) return {};
-
-  Vector<Matrix4> bindPose = makeBindPose(meshLib.getNodes());
-
-  ZenLoad::PackedSkeletalMesh packedMesh;
-  meshLib.packMesh(packedMesh);
-
-  HMesh mesh = ImportSkeletalMesh(bindPose, packedMesh);
-  Vector<HMaterial> materials = materialsFromSkeletalMesh(packedMesh, vdfs);
+  Vector<HMaterial> materials = ImportAndCacheSkeletalMeshMaterials(virtualFilePath, vdfs);
 
   if (!mesh)
   {
-    gDebug().logWarning("Load Failed (Mesh): " + String(virtualFilePath.c_str()));
+    gDebug().logWarning("Load Failed (Mesh): " + virtualFilePath);
     return {};
   }
 
   if (materials.empty())
   {
-    gDebug().logWarning("Load Failed (Materials): " + String(virtualFilePath.c_str()));
+    gDebug().logWarning("Load Failed (Materials): " + virtualFilePath);
     return {};
   }
+
+  return cacheSkeletalMesh(virtualFilePath, mesh, materials);
+}
+
+static HPrefab cacheSkeletalMesh(const bs::String& virtualFilePath, HMesh mesh,
+                                 const Vector<HMaterial>& materials)
+{
+  using namespace BsZenLib;
 
   HSceneObject so = SceneObject::create(virtualFilePath.c_str());
 
@@ -213,11 +91,46 @@ bs::HSceneObject BsZenLib::ImportSkeletalMeshWithMaterials(const String& virtual
   renderable->setMesh(mesh);
   renderable->setMaterials(materials);
 
-  return so;
+  HPrefab prefab = Prefab::create(so, false);
+
+  so->destroy(true);
+
+  const bool overwrite = false;
+  gResources().save(prefab, GothicPathToCachedSkeletalMesh(virtualFilePath), overwrite);
+
+  return prefab;
 }
 
-bs::HMesh BsZenLib::ImportSkeletalMesh(const String& virtualFilePath,
-                                       const VDFS::FileIndex& vdfs)
+bs::HMesh BsZenLib::LoadCachedSkeletalMesh(const bs::String& virtualFilePath)
+{
+  Path path = GothicPathToCachedAsset(virtualFilePath + ".mesh");
+
+  return gResources().load<Mesh>(path);
+}
+
+Vector<HMaterial> BsZenLib::ImportAndCacheSkeletalMeshMaterials(const bs::String& virtualFilePath,
+                                                                const VDFS::FileIndex& vdfs)
+{
+  ZenLoad::zCModelMeshLib meshLib(virtualFilePath.c_str(), vdfs);
+
+  if (!meshLib.isValid()) return {};
+
+  ZenLoad::PackedSkeletalMesh packedMesh;
+  meshLib.packMesh(packedMesh);
+
+  Vector<HMaterial> materials;
+  for (size_t i = 0; i < packedMesh.subMeshes.size(); i++)
+  {
+    // TODO: Transfer more properties
+    const auto& originalMaterial = packedMesh.subMeshes[i].material;
+
+    materials.push_back(ImportAndCacheMaterialWithTextures(virtualFilePath, originalMaterial, vdfs));
+  }
+
+  return materials;
+}
+
+static bs::HMesh importSkeletalMesh(const String& virtualFilePath, const VDFS::FileIndex& vdfs)
 {
   ZenLoad::zCModelMeshLib meshLib(virtualFilePath.c_str(), vdfs);
 
@@ -228,7 +141,7 @@ bs::HMesh BsZenLib::ImportSkeletalMesh(const String& virtualFilePath,
   ZenLoad::PackedSkeletalMesh packedMesh;
   meshLib.packMesh(packedMesh);
 
-  return ImportSkeletalMesh(bindPose, packedMesh);
+  return BsZenLib::ImportSkeletalMesh(bindPose, packedMesh);
 }
 
 static Vector<Matrix4> makeBindPose(const std::vector<ZenLoad::ModelNode>& nodes)
@@ -294,8 +207,7 @@ bs::HMesh BsZenLib::ImportSkeletalMesh(const Vector<Matrix4>& bindPose,
 {
   MESH_DESC desc = meshDescForPackedMesh(packedMesh);
 
-  if (desc.numIndices == 0)
-	  return {};
+  if (desc.numIndices == 0) return {};
 
   HMesh mesh = Mesh::create(desc);
 
@@ -318,8 +230,8 @@ static Vector<SkeletalVertex> transformVertices(const Vector<Matrix4>& bindPose,
     newVertex.normal = Vector3(oldVertex.Normal.x, oldVertex.Normal.y, oldVertex.Normal.z);
     newVertex.texCoord = Vector2(oldVertex.TexCoord.x, oldVertex.TexCoord.y);
 
-	newVertex.tangent = Vector3();
-	newVertex.bitangent = Vector3();
+    newVertex.tangent = Vector3();
+    newVertex.bitangent = Vector3();
 
     newVertex.boneWeights[0] = oldVertex.Weights[0];
     newVertex.boneWeights[1] = oldVertex.Weights[1];
@@ -425,33 +337,4 @@ static void transferIndices(SPtr<MeshData> target, const ZenLoad::PackedSkeletal
     memcpy(&pIndices[writtenSoFar], submesh.indices.data(), sizeof(UINT32) * submesh.indices.size());
     writtenSoFar += submesh.indices.size();
   }
-}
-
-static Vector<HMaterial> materialsFromSkeletalMesh(const ZenLoad::PackedSkeletalMesh& packedMesh,
-                                                   const VDFS::FileIndex& vdfs)
-{
-  HShader shader = gBuiltinResources().getBuiltinShader(BuiltinShader::Standard);
-
-  Vector<HMaterial> materials;
-  for (const auto& m : packedMesh.subMeshes)
-  {
-    // TODO: Transfer more properties
-
-    materials.push_back(Material::create(shader));
-
-	HTexture albedo;
-
-	if (BsZenLib::HasCachedTexture(m.material.texture.c_str()))
-	{
-		albedo = BsZenLib::LoadCachedTexture(m.material.texture.c_str());
-	}
-	else
-	{
-		albedo = BsZenLib::ImportAndCacheTexture(m.material.texture.c_str(), vdfs);
-	}
-
-    materials.back()->setTexture("gAlbedoTex", albedo);
-  }
-
-  return materials;
 }
