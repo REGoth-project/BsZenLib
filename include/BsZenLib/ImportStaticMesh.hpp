@@ -2,10 +2,11 @@
 #include <Material/BsMaterial.h>
 #include <Components/BsCRenderable.h>
 #include <Mesh/BsMesh.h>
+#include "ZenResources.hpp"
 
 namespace ZenLoad
 {
-  class PackedMesh;
+  struct PackedMesh;
   class zCMesh;
 }  // namespace ZenLoad
 
@@ -16,24 +17,16 @@ namespace VDFS
 
 namespace BsZenLib
 {
-	/**
-	 * Load a complete static mesh from cache.
-	 * 
-	 * @param virtualFilePath Original path in Gothics VDFS.
-	 * 
-	 * @return Prefab with a preconfigured scene-object which displays the given mesh.
-	 */
-	bs::HPrefab LoadCachedStaticMeshPrefab(const bs::String& virtualFilePath);
-	bool HasCachedStaticMeshPrefab(const bs::String& virtualFilePath);
+	bool HasCachedStaticMesh(const bs::String& virtualFilePath);
+	Res::HMeshWithMaterials LoadCachedStaticMesh(const bs::String& virtualFilePath);
+	Res::HMeshWithMaterials ImportAndCacheStaticMesh(const bs::String& virtualFilePath, const VDFS::FileIndex& vdfs);
+	Res::HMeshWithMaterials ImportAndCacheStaticMesh(const bs::String& virtualFilePath, const ZenLoad::PackedMesh& packedMesh, const VDFS::FileIndex& vdfs);
 
-	bs::HPrefab ImportAndCacheStaticMeshPrefab(const bs::String& virtualFilePath, const VDFS::FileIndex& vdfs);
-	bs::HPrefab ImportAndCacheStaticMeshPrefab(const bs::String& virtualFilePath, const ZenLoad::PackedMesh& packedMesh, const VDFS::FileIndex& vdfs);
-
-	bs::HMesh ImportAndCacheStaticMesh(const bs::String& virtualFilePath, const VDFS::FileIndex& vdfs);
-	bs::HMesh ImportAndCacheStaticMesh(const bs::String& virtualFilePath, const ZenLoad::PackedMesh& packedMesh, const VDFS::FileIndex& vdfs);
+	bs::HMesh ImportAndCacheStaticMeshGeometry(const bs::String& virtualFilePath, const VDFS::FileIndex& vdfs);
+	bs::HMesh ImportAndCacheStaticMeshGeometry(const bs::String& virtualFilePath, const ZenLoad::PackedMesh& packedMesh, const VDFS::FileIndex& vdfs);
 
 	bs::Vector<bs::HMaterial> ImportAndCacheStaticMeshMaterials(const bs::String& virtualFilePath, const VDFS::FileIndex& vdfs);
 	bs::Vector<bs::HMaterial> ImportAndCacheStaticMeshMaterials(const bs::String& virtualFilePath, const ZenLoad::PackedMesh& packedMesh, const VDFS::FileIndex& vdfs);
 
-  bs::HMesh ImportStaticMesh(const ZenLoad::PackedMesh& packedMesh);
+  bs::HMesh ImportStaticMeshGeometry(const ZenLoad::PackedMesh& packedMesh);
 }  // namespace BsZenLib

@@ -80,6 +80,8 @@ add_library(BsZenLib
   src/ImportMaterial.cpp
   src/ImportZEN.cpp
   src/ImportPath.cpp
+  src/ImportAnimation.cpp
+  src/ZenResources.cpp
   )
 
 target_link_libraries(BsZenLib PRIVATE bsf zenload vdfs utils)

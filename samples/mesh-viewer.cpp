@@ -51,40 +51,29 @@ static void setupInputConfig()
 static HSceneObject loadMesh(const String& file, const VDFS::FileIndex& vdfs)
 {
 	using namespace bs;
+  using namespace BsZenLib::Res;
 
   if (file.find(".MRM") != String::npos)
   {
-	  HPrefab mesh;
+    HMeshWithMaterials mesh;
 	  if (FileSystem::isFile(BsZenLib::GothicPathToCachedAsset(file.c_str())))
 	  {
-		  mesh = BsZenLib::LoadCachedStaticMeshPrefab(file.c_str());
+		  mesh = BsZenLib::LoadCachedStaticMesh(file.c_str());
 	  }
 	  else
 	  {
-		  mesh = BsZenLib::ImportAndCacheStaticMeshPrefab(file.c_str(), vdfs);
+		  mesh = BsZenLib::ImportAndCacheStaticMesh(file.c_str(), vdfs);
 	  }
 
 	  if (!mesh)
 		  return {};
 
-    return mesh->instantiate();
-  }
-  else if (file.find(".MDL") != String::npos)
-  {
-	  HPrefab mesh;
-	  if (FileSystem::isFile(BsZenLib::GothicPathToCachedAsset(file.c_str())))
-	  {
-		  mesh = BsZenLib::LoadCachedSkeletalMeshPrefab(file.c_str());
-	  }
-	  else
-	  {
-		  mesh = BsZenLib::ImportAndCacheSkeletalMeshPrefab(file.c_str(), vdfs);
-	  }
+    HSceneObject meshSO = SceneObject::create(file);
+    HRenderable renderable = meshSO->addComponent<CRenderable>();
+    renderable->setMesh(mesh->getMesh());
+    renderable->setMaterials(mesh->getMaterials());
 
-	  if (!mesh)
-		  return {};
-
-	  return mesh->instantiate();
+    return meshSO;
   }
   else
   {
@@ -107,7 +96,6 @@ int main(int argc, char** argv)
   VDFS::FileIndex vdf;
   vdf.loadVDF(dataDir + "/Meshes.vdf");
   vdf.loadVDF(dataDir + "/Textures.vdf");
-  vdf.loadVDF(dataDir + "/Anims.vdf");
   vdf.finalizeLoad();
 
   if (vdf.getKnownFiles().empty())

@@ -45,14 +45,14 @@ bool BsZenLib::HasCachedTexture(const bs::String& virtualFilePath)
 {
 	using namespace bs;
 
-	return FileSystem::isFile(GothicPathToCachedAsset(virtualFilePath.c_str()));
+	return FileSystem::isFile(GothicPathToCachedTexture(virtualFilePath.c_str()));
 }
 
 bs::HTexture BsZenLib::LoadCachedTexture(const bs::String& virtualFilePath)
 {
 	using namespace bs;
 
-	Path path = GothicPathToCachedAsset(virtualFilePath.c_str());
+	Path path = GothicPathToCachedTexture(virtualFilePath.c_str());
 
 	return gResources().load<Texture>(path);
 }
@@ -69,7 +69,7 @@ bs::HTexture BsZenLib::ImportAndCacheTexture(const bs::String& virtualFilePath, 
 		return {};
 
 	const bool overwrite = false;
-	Path path = GothicPathToCachedAsset(virtualFilePath.c_str());
+	Path path = GothicPathToCachedTexture(virtualFilePath.c_str());
 
 	gResources().save(fromOriginal, path, overwrite);
 
