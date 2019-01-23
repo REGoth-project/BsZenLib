@@ -30,6 +30,29 @@ static HSceneObject walkTree(const ZenLoad::zCVobData& root, const VDFS::FileInd
 
 // - Implementation --------------------------------------------------------------------------------
 
+Vector<UUID> GetDependenciesRecursive(UUID uuid)
+{
+  Path filePath;
+  
+  if (!gResources().getFilePathFromUUID(uuid, filePath))
+    return {};
+
+  Vector<UUID> deps = gResources().getDependencies(filePath);
+
+  for (UUID a : deps)
+  {
+    Vector<UUID> childDeps = GetDependenciesRecursive(a);
+
+    for (UUID b : childDeps)
+    {
+      deps.push_back(b);
+    }
+  }
+
+  return deps;
+}
+
+
 bool BsZenLib::HasCachedZEN(const bs::String& zen)
 {
   return FileSystem::isFile(GothicPathToCachedWorld(zen.c_str()));
@@ -93,9 +116,6 @@ HSceneObject BsZenLib::ImportZEN(const std::string& zen, const VDFS::FileIndex& 
 static HSceneObject addWorldMesh(const bs::String& worldName, ZenLoad::ZenParser& zenParser,
                                  const VDFS::FileIndex& vdfs)
 {
-  ZenLoad::PackedMesh packedMesh;
-  zenParser.getWorldMesh()->packMesh(packedMesh, 0.01f);
-
   String meshFileName = worldName + ".worldmesh";
 
   HMeshWithMaterials mesh;
@@ -105,6 +125,9 @@ static HSceneObject addWorldMesh(const bs::String& worldName, ZenLoad::ZenParser
   }
   else
   {
+    ZenLoad::PackedMesh packedMesh;
+    zenParser.getWorldMesh()->packMesh(packedMesh, 0.01f);
+
     mesh = BsZenLib::ImportAndCacheStaticMesh(meshFileName, packedMesh, vdfs);
   }
 
@@ -149,7 +172,7 @@ static HSceneObject walkTree(const ZenLoad::zCVobData& root, const VDFS::FileInd
 static HSceneObject addStaticMeshObject(const String& file, const VDFS::FileIndex& vdfs)
 {
   HMeshWithMaterials mesh;
-  if (FileSystem::isFile(BsZenLib::GothicPathToCachedAsset(file.c_str())))
+  if (FileSystem::isFile(BsZenLib::GothicPathToCachedStaticMesh(file.c_str())))
   {
     mesh = BsZenLib::LoadCachedStaticMesh(file.c_str());
   }

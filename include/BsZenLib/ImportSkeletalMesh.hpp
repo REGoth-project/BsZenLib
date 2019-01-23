@@ -1,3 +1,7 @@
+/** \file
+ * Import and cache animated meshes.
+ */
+
 #pragma once
 #include <Material/BsMaterial.h>
 #include <Mesh/BsMesh.h>

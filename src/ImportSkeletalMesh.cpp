@@ -34,25 +34,6 @@ struct SkeletalVertex
 };
 
 
-static SPtr<VertexDataDesc> makeVertexDataDescForZenLibVertex();
-static MESH_DESC meshDescForPackedMesh(const ZenLoad::PackedSkeletalMesh& packedMesh);
-static Vector<Matrix4> makeBindPose(const std::vector<ZenLoad::ModelNode>& nodes);
-static Matrix4 convertMatrix(const ZMath::Matrix& m);
-static Vector3 transformToBindPose(const Vector<Matrix4>& bindPose,
-                                   const ZenLoad::SkeletalVertex& vertex);
-static Vector<SkeletalVertex> transformVertices(const Vector<Matrix4>& bindPose,
-                                                const ZenLoad::PackedSkeletalMesh& packedMesh);
-static void fillMeshDataFromPackedMesh(HMesh target, const Vector<SkeletalVertex>& vertices,
-                                       const ZenLoad::PackedSkeletalMesh& packedMesh);
-static void transferVertices(SPtr<MeshData> target, const Vector<SkeletalVertex>& vertices);
-static void transferIndices(SPtr<MeshData> target, const ZenLoad::PackedSkeletalMesh& packedMesh);
-static HPrefab cacheSkeletalMesh(const bs::String& virtualFilePath, HMesh mesh,
-                                 const Vector<HMaterial>& materials);
-static bs::HMesh importSkeletalMesh(const String& virtualFilePath, const VDFS::FileIndex& vdfs);
-
-static bs::SPtr<bs::Skeleton> makeSkeleton(const ZenLoad::zCModelMeshLib& lib,
-                                           const Vector<Matrix4>& bindPose);
-
 // - Implementation --------------------------------------------------------------------------------
 
 /**
@@ -126,17 +107,17 @@ private:
       // TODO: Transfer more properties
       const auto& originalMaterial = mPackedMesh.subMeshes[i].material;
 
-      String materialName = mMdlFile + "-material-" + toString(i);
-
       HMaterial imported;
 
-      if (HasCachedMaterial(materialName))
+      String materialCacheFile = BuildMaterialNameForSubmesh(mMdlFile, (UINT32)i);
+
+      if (HasCachedMaterial(materialCacheFile))
       {
-        imported = LoadCachedMaterial(materialName);
+        imported = LoadCachedMaterial(materialCacheFile);
       }
       else
       {
-        imported = ImportAndCacheMaterialWithTextures(materialName, originalMaterial, mVDFS);
+        imported = ImportAndCacheMaterialWithTextures(materialCacheFile, originalMaterial, mVDFS);
       }
 
       mImportedMeshMaterials.push_back(imported);

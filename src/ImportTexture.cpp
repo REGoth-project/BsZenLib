@@ -2,7 +2,7 @@
  * Import zTEX-Texture
  * ===================
  *
- * This Module can convert a Gothic zTEX-Texture to a bs::Texture.
+ * This Module can convert a Gothic zTEX-Texture to a Texture.
  *
  *
  * Texture files
@@ -30,37 +30,34 @@
 #include "ImportPath.hpp"
 #include <FileSystem/BsFileSystem.h>
 
-static std::vector<uint8_t> readCompiledTexture(const bs::String& path,
+using namespace bs;
+using namespace BsZenLib;
+
+static std::vector<uint8_t> readCompiledTexture(const String& path,
                                                 const VDFS::FileIndex& vdfs);
-static bs::String replaceExtension(const bs::String& path, const bs::String& newExtension);
-static bs::HTexture createRGBA8Texture(const bs::String& name, bs::UINT32 width, bs::UINT32 height,
+static String replaceExtension(const String& path, const String& newExtension);
+static HTexture createRGBA8Texture(const String& name, UINT32 width, UINT32 height,
 	const std::vector<uint8_t>& rgbaData);
-static bs::HTexture createDXTnTexture(const bs::String& name,
+static HTexture createDXTnTexture(const String& name,
 	std::vector<uint8_t>& ddsData, const ZenLoad::DDSURFACEDESC2& surfaceDesc);
 
 // - Implementation --------------------------------------------------------------------------------
 
 
-bool BsZenLib::HasCachedTexture(const bs::String& virtualFilePath)
+bool BsZenLib::HasCachedTexture(const String& virtualFilePath)
 {
-	using namespace bs;
-
 	return FileSystem::isFile(GothicPathToCachedTexture(virtualFilePath.c_str()));
 }
 
-bs::HTexture BsZenLib::LoadCachedTexture(const bs::String& virtualFilePath)
+HTexture BsZenLib::LoadCachedTexture(const String& virtualFilePath)
 {
-	using namespace bs;
-
 	Path path = GothicPathToCachedTexture(virtualFilePath.c_str());
 
 	return gResources().load<Texture>(path);
 }
 
-bs::HTexture BsZenLib::ImportAndCacheTexture(const bs::String& virtualFilePath, const VDFS::FileIndex& vdfs)
+HTexture BsZenLib::ImportAndCacheTexture(const String& virtualFilePath, const VDFS::FileIndex& vdfs)
 {
-	using namespace bs;
-
 	gDebug().logDebug("Caching Texture: " + virtualFilePath);
 
 	HTexture fromOriginal = ImportTexture(virtualFilePath, vdfs);
@@ -76,10 +73,8 @@ bs::HTexture BsZenLib::ImportAndCacheTexture(const bs::String& virtualFilePath, 
 	return fromOriginal;
 }
 
-bs::HTexture BsZenLib::ImportTexture(const bs::String& path, const VDFS::FileIndex& vdfs)
+HTexture BsZenLib::ImportTexture(const String& path, const VDFS::FileIndex& vdfs)
 {
-  using namespace bs;
-
   std::vector<uint8_t> ztexData = readCompiledTexture(path, vdfs);
 
   if (ztexData.empty())
@@ -93,20 +88,18 @@ bs::HTexture BsZenLib::ImportTexture(const bs::String& path, const VDFS::FileInd
 
   ZenLoad::DDSURFACEDESC2 surfaceDesc = ZenLoad::getSurfaceDesc(ddsData);
 
-  return createDXTnTexture(path, ddsData, surfaceDesc);
+  // return createDXTnTexture(path, ddsData, surfaceDesc);
 
   // Commented out: Optionally convert to RGBA8, which is easier to work with
-  //std::vector<uint8_t> rgbaData;
-  //ZenLoad::convertDDSToRGBA8(ddsData, rgbaData);
-  //return createRGBA8Texture(surfaceDesc.dwWidth, surfaceDesc.dwHeight, rgbaData);
+  std::vector<uint8_t> rgbaData;
+  ZenLoad::convertDDSToRGBA8(ddsData, rgbaData);
+  return createRGBA8Texture(path, surfaceDesc.dwWidth, surfaceDesc.dwHeight, rgbaData);
 }
 
 
-static bs::HTexture createRGBA8Texture(const bs::String& name, bs::UINT32 width, bs::UINT32 height,
+static HTexture createRGBA8Texture(const String& name, UINT32 width, UINT32 height,
                                        const std::vector<uint8_t>& rgbaData)
 {
-  using namespace bs;
-
   TEXTURE_DESC desc = {};
   desc.type = TEX_TYPE_2D;
   desc.width = width;
@@ -140,11 +133,9 @@ static bs::HTexture createRGBA8Texture(const bs::String& name, bs::UINT32 width,
   return texture;
 }
 
-static bs::HTexture createDXTnTexture(const bs::String& name,
+static HTexture createDXTnTexture(const String& name,
 	std::vector<uint8_t>& ddsData, const ZenLoad::DDSURFACEDESC2& surfaceDesc)
 {
-	using namespace bs;
-
 	TEXTURE_DESC desc = {};
 	desc.type = TEX_TYPE_2D;
 	desc.width = surfaceDesc.dwWidth;
@@ -195,11 +186,11 @@ static bs::HTexture createDXTnTexture(const bs::String& name,
 }
 
 
-static std::vector<uint8_t> readCompiledTexture(const bs::String& path, const VDFS::FileIndex& vdfs)
+static std::vector<uint8_t> readCompiledTexture(const String& path, const VDFS::FileIndex& vdfs)
 {
-	bs::String compiledFile = path;
+	String compiledFile = path;
 	
-	if (compiledFile.find(".TGA") != bs::String::npos)
+	if (compiledFile.find(".TGA") != String::npos)
 	{
 		compiledFile = replaceExtension(path, "-C.TEX");
 	}
@@ -211,7 +202,7 @@ static std::vector<uint8_t> readCompiledTexture(const bs::String& path, const VD
 }
 
 
-static bs::String replaceExtension(const bs::String& path, const bs::String& newExtension)
+static String replaceExtension(const String& path, const String& newExtension)
 {
   // assert(path.length() >= 4);
 
