@@ -15,6 +15,10 @@
 #include <BsZenLib/ImportPath.hpp>
 #include <Resources/BsResourceManifest.h>
 #include <FileSystem/BsFileSystem.h>
+#include <GUI/BsCGUIWidget.h>
+#include <GUI/BsGUIPanel.h>
+#include <GUI/BsGUISlider.h>
+#include <Resources/BsBuiltinResources.h>
 
 /** Registers a common set of keys/buttons that are used for controlling the examples. */
 static void setupInputConfig()
@@ -105,27 +109,63 @@ int main(int argc, char** argv)
   sceneCameraSO->lookAt(Vector3(0, 0, 0));
   sceneCameraSO->addComponent<FPSCamera>();
   
+  HSceneObject worldSO = {};
+
   // Import a Gothic ZEN
-  HPrefab worldPrefab;
   if (BsZenLib::HasCachedZEN(zenFile))
   {
-	  worldPrefab = BsZenLib::LoadCachedZEN(zenFile);
+    HPrefab worldPrefab = BsZenLib::LoadCachedZEN(zenFile);
+   
+    if (!worldPrefab)
+    {
+      gDebug().logError("Failed to load cached ZEN: " + zenFile);
+      return -1;
+    }
+
+    worldPrefab.blockUntilLoaded();
+
+    worldSO = worldPrefab->instantiate();
   }
   else
   {
-	  worldPrefab = BsZenLib::ImportAndCacheZEN(zenFile.c_str(), vdfs);
-  }
+	  worldSO = BsZenLib::ImportAndCacheZEN(zenFile.c_str(), vdfs);
    
-  if (!worldPrefab)
-  {
-	  gDebug().logError("Failed to load ZEN: " + zenFile);
-	  return -1;
+    if (!worldSO)
+    {
+      gDebug().logError("Failed to load uncached ZEN: " + zenFile);
+      return -1;
+    }
   }
-
-  worldPrefab.blockUntilLoaded();
-  worldPrefab->instantiate();
 
   setupInputConfig();
+
+  // Add GUI
+  HSceneObject guiSO = SceneObject::create("GUI");
+
+  float guiScale = 1.0f;
+  guiSO->setScale(Vector3(guiScale, guiScale, guiScale));
+  HGUIWidget gui = guiSO->addComponent<CGUIWidget>(sceneCamera);
+  gui->setSkin(BuiltinResources::instance().getGUISkin());
+
+  GUIPanel* mainPanel = gui->getPanel();
+
+  // Add draw distance slider
+  GUISlider* drawDistanceSlider = mainPanel->addNewElement<GUISliderHorz>();
+  
+  drawDistanceSlider->setRange(1.0f, 100.0f);
+  drawDistanceSlider->setPosition(5, 5);
+  drawDistanceSlider->setWidth(200);
+
+  drawDistanceSlider->onChanged.connect([&](float percent) {
+  float value = drawDistanceSlider->getValue();
+
+  auto rs = sceneCamera->getRenderSettings();
+
+  rs->cullDistance = value;
+  gDebug().logDebug("Set CullDistance to: " + toString(value));
+
+  sceneCamera->setRenderSettings(rs);
+  });
 
   Application::instance().runMainLoop();
 

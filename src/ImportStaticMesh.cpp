@@ -1,5 +1,5 @@
 #include "ImportStaticMesh.hpp"
-#include "ImportTexture.hpp"
+#include "ImportMaterial.hpp"
 #include <Components/BsCRenderable.h>
 #include <RenderAPI/BsVertexDataDesc.h>
 #include <Resources/BsBuiltinResources.h>
@@ -33,8 +33,6 @@ static Vector<StaticMeshVertex> transformVertices(const ZenLoad::PackedMesh& pac
 static void fillMeshDataFromPackedMesh(HMesh target, const Vector<StaticMeshVertex>& vertices, const ZenLoad::PackedMesh& packedMesh);
 static void transferVertices(SPtr<MeshData> target, const Vector<StaticMeshVertex>& vertices);
 static void transferIndices(SPtr<MeshData> target, const ZenLoad::PackedMesh& packedMesh);
-static Vector<HMaterial> materialsFromStaticMesh(const ZenLoad::PackedMesh& packedMesh,
-                                                 const VDFS::FileIndex& vdfs);
 
 // - Implementation --------------------------------------------------------------------------------
 
@@ -107,6 +105,7 @@ static HPrefab cacheStaticMesh(const bs::String& virtualFilePath, HMesh mesh, co
 	HRenderable renderable = so->addComponent<CRenderable>();
 	renderable->setMesh(mesh);
 	renderable->setMaterials(materials);
+	renderable->_getInternal()->setCullDistanceFactor(1.0f);
 
 	HPrefab prefab = Prefab::create(so, false);
 	
@@ -118,14 +117,6 @@ static HPrefab cacheStaticMesh(const bs::String& virtualFilePath, HMesh mesh, co
 	return prefab;
 }
 
-
-
-bs::HMesh BsZenLib::LoadCachedStaticMesh(const bs::String& virtualFilePath)
-{
-	Path path = GothicPathToCachedAsset(virtualFilePath + ".mesh");
-
-	return gResources().load<Mesh>(path);
-}
 
 HMesh BsZenLib::ImportAndCacheStaticMesh(const bs::String& virtualFilePath, const VDFS::FileIndex& vdfs)
 {
@@ -165,7 +156,7 @@ Vector<HMaterial> BsZenLib::ImportAndCacheStaticMeshMaterials(const bs::String& 
 	return ImportAndCacheStaticMeshMaterials(virtualFilePath, packedMesh, vdfs);
 }
 
-bs::Vector<bs::HMaterial> BsZenLib::ImportAndCacheStaticMeshMaterials(const bs::String& virtualFilePath, const ZenLoad::PackedMesh& packedMesh, const VDFS::FileIndex& vdfs)
+Vector<HMaterial> BsZenLib::ImportAndCacheStaticMeshMaterials(const bs::String& virtualFilePath, const ZenLoad::PackedMesh& packedMesh, const VDFS::FileIndex& vdfs)
 {
 	HShader shader = gBuiltinResources().getBuiltinShader(BuiltinShader::Standard);
 
@@ -175,58 +166,11 @@ bs::Vector<bs::HMaterial> BsZenLib::ImportAndCacheStaticMeshMaterials(const bs::
 		// TODO: Transfer more properties
 		const auto& originalMaterial = packedMesh.subMeshes[i].material;
 
-		HTexture albedo;
-
-		if (BsZenLib::HasCachedTexture(originalMaterial.texture.c_str()))
-		{
-			albedo = BsZenLib::LoadCachedTexture(originalMaterial.texture.c_str());
-		}
-		else
-		{
-			albedo = BsZenLib::ImportAndCacheTexture(originalMaterial.texture.c_str(), vdfs);
-		}
-
-		Path materialPath = GothicPathToCachedAsset(virtualFilePath + ".material-" + toString(i));
-
-		HMaterial m = Material::create(shader);
-		m->setTexture("gAlbedoTex", albedo);
-
-		const bool overwrite = false;
-		gResources().save(m, materialPath, overwrite);
-
-		HMaterial loaded = m; // FIXME: Doesn't load again?! gResources().load<Material>(materialPath);
+		HMaterial loaded = ImportAndCacheMaterialWithTextures(virtualFilePath, originalMaterial, vdfs);
 		materials.push_back(loaded);
 	}
 
 	return materials;
-}
-
-HSceneObject BsZenLib::ImportStaticMeshWithMaterials(const std::string& name,
-                                                     const ZenLoad::PackedMesh& packedMesh,
-                                                     const VDFS::FileIndex& vdfs)
-{
-  HMesh mesh = ImportStaticMesh(packedMesh);
-  Vector<HMaterial> materials = materialsFromStaticMesh(packedMesh, vdfs);
-
-  if (!mesh)
-  {
-    gDebug().logWarning("Load Failed (Mesh): " + String(name.c_str()));
-    return {};
-  }
-
-  if (materials.empty())
-  {
-    gDebug().logWarning("Load Failed (Materials): " + String(name.c_str()));
-    return {};
-  }
-
-  HSceneObject so = SceneObject::create(name.c_str());
-
-  HRenderable renderable = so->addComponent<CRenderable>();
-  renderable->setMesh(mesh);
-  renderable->setMaterials(materials);
-
-  return so;
 }
 
 HMesh BsZenLib::ImportStaticMesh(const ZenLoad::PackedMesh& packedMesh)
@@ -313,7 +257,7 @@ static Vector<StaticMeshVertex> transformVertices(const ZenLoad::PackedMesh& pac
 
 static void transferVertices(SPtr<MeshData> target, const Vector<StaticMeshVertex>& vertices)
 {
-  assert(target->getNumVertices() == packedMesh.vertices.size());
+  assert(target->getNumVertices() == vertices.size());
 
   UINT8* pVertices = target->getElementData(VES_POSITION);
   memcpy(pVertices, vertices.data(),
@@ -330,33 +274,4 @@ static void transferIndices(SPtr<MeshData> target, const ZenLoad::PackedMesh& pa
     memcpy(&pIndices[writtenSoFar], submesh.indices.data(), sizeof(UINT32) * submesh.indices.size());
     writtenSoFar += submesh.indices.size();
   }
-}
-
-static Vector<HMaterial> materialsFromStaticMesh(const ZenLoad::PackedMesh& packedMesh,
-                                                 const VDFS::FileIndex& vdfs)
-{
-  HShader shader = gBuiltinResources().getBuiltinShader(BuiltinShader::Standard);
-
-  Vector<HMaterial> materials;
-  for (const auto& m : packedMesh.subMeshes)
-  {
-    // TODO: Transfer more properties
-
-    materials.push_back(Material::create(shader));
-
-	HTexture albedo;
-
-	if (BsZenLib::HasCachedTexture(m.material.texture.c_str()))
-	{
-		albedo = BsZenLib::LoadCachedTexture(m.material.texture.c_str());
-	}
-	else
-	{
-		albedo = BsZenLib::ImportAndCacheTexture(m.material.texture.c_str(), vdfs);
-	}
-
-    materials.back()->setTexture("gAlbedoTex", albedo);
-  }
-
-  return materials;
 }

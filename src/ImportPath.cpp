@@ -3,11 +3,31 @@
 
 using namespace bs;
 
-static const char* CACHE_DIRECTORY = "Cache";
+static const char* CACHE_DIRECTORY = "cache";
 
 bs::Path BsZenLib::GothicPathToCachedAsset(const String& virtualFilePath)
 {
 	return GetCacheDirectory() + Path(virtualFilePath + ".asset");
+}
+
+bs::Path BsZenLib::GothicPathToCachedTexture( const bs::String& virtualFilePath)
+{
+	return GetCacheDirectory() + Path("textures") + Path(virtualFilePath + ".asset");
+}
+
+bs::Path BsZenLib::GothicPathToCachedMaterial( const bs::String& virtualFilePath)
+{
+	return GetCacheDirectory() + Path("materials") + Path(virtualFilePath + ".asset");
+}
+
+bs::Path BsZenLib::GothicPathToCachedStaticMesh( const bs::String& virtualFilePath)
+{
+	return GetCacheDirectory() + Path("static-meshes") + Path(virtualFilePath + ".asset");
+}
+
+bs::Path BsZenLib::GothicPathToCachedSkeletalMesh( const bs::String& virtualFilePath)
+{
+	return GetCacheDirectory() + Path("skeletal-meshes") + Path(virtualFilePath + ".asset");
 }
 
 bs::Path BsZenLib::GothicPathToCachedManifest(const String& virtualFilePath)

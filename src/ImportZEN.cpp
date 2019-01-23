@@ -36,7 +36,7 @@ bs::HPrefab BsZenLib::LoadCachedZEN(const bs::String& zen)
 	return gResources().loadAsync<Prefab>(GothicPathToCachedWorld(zen));
 }
 
-bs::HPrefab BsZenLib::ImportAndCacheZEN(const std::string& zen, const VDFS::FileIndex& vdfs)
+bs::HSceneObject BsZenLib::ImportAndCacheZEN(const std::string& zen, const VDFS::FileIndex& vdfs)
 {
 	HSceneObject worldSO = ImportZEN(zen, vdfs);
 
@@ -44,12 +44,11 @@ bs::HPrefab BsZenLib::ImportAndCacheZEN(const std::string& zen, const VDFS::File
 		return {};
 
 	HPrefab worldPrefab = Prefab::create(worldSO);
-	worldSO->destroy(true);
 
 	const bool overwrite = false;
 	gResources().save(worldPrefab, BsZenLib::GothicPathToCachedWorld(zen.c_str()), overwrite);
 
-	return worldPrefab;
+	return worldSO;
 }
 
 HSceneObject BsZenLib::ImportZEN(const std::string& zen, const VDFS::FileIndex& vdfs)
