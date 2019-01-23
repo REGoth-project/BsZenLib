@@ -4,7 +4,7 @@ Importers for files from the games Gothic and Gothic II for the [bs:framework](h
 
 # Documentation
 
-https://regoth-project.github.io/BsZenLib
+https://regoth-project.github.io/BsZenLib/index.html
 
 # Building
 
