@@ -69,7 +69,7 @@ namespace BsZenLib
    * 
    * To create the cache, call ImportAndCacheTexture().
    * 
-   * @param originalFileNameName of the texture in the original games files (ie. "STONE.TGA") 
+   * @param originalFileName  Name of the texture in the original games files (ie. "STONE.TGA") 
    * @return Whether the cache exists for the given texture.
    */
   bool HasCachedTexture(const bs::String& originalFileName);

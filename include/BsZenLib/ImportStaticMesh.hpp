@@ -28,7 +28,7 @@ namespace BsZenLib
 	 * 
 	 * @return True, if the file was cached. False otherwise.
 	 */
-	bool HasCachedStaticMesh(const bs::String& virtualFilePath);
+	bool HasCachedStaticMesh(const bs::String& originalFileName);
 
 	/**
 	 * Loads the cached version representing the given original file.
@@ -40,7 +40,7 @@ namespace BsZenLib
 	 * 
 	 * @return Handle to the cached mesh (Empty handle if none was found)
 	 */
-	Res::HMeshWithMaterials LoadCachedStaticMesh(const bs::String& virtualFilePath);
+	Res::HMeshWithMaterials LoadCachedStaticMesh(const bs::String& originalFileName);
 
 	/**
 	 * Imports and caches a static mesh (.3DS) from the original game.
