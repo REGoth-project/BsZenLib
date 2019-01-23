@@ -28,6 +28,7 @@
   <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
     <link rel="index" title="Index" href="../genindex.html" />
     <link rel="search" title="Search" href="../search.html" />
+    <link rel="next" title="Importing Static Meshes" href="staticmeshes.html" />
     <link rel="prev" title="Virtual File System" href="vdfs.html" /> 
 
   
@@ -81,9 +82,12 @@
 <ul class="current">
 <li class="toctree-l1"><a class="reference internal" href="vdfs.html">Virtual File System</a></li>
 <li class="toctree-l1 current"><a class="current reference internal" href="#">Importing Textures</a><ul>
-<li class="toctree-l2"><a class="reference internal" href="#functions">Functions</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#importtexture-hpp"><code class="docutils literal notranslate"><span class="pre">ImportTexture.hpp</span></code></a></li>
 </ul>
 </li>
+<li class="toctree-l1"><a class="reference internal" href="staticmeshes.html">Importing Static Meshes</a></li>
+<li class="toctree-l1"><a class="reference internal" href="skeletalmeshes.html">Importing Skeletal Meshes</a></li>
+<li class="toctree-l1"><a class="reference internal" href="materials.html">Importing Materials</a></li>
 </ul>
 
             
@@ -150,9 +154,9 @@
             
   <div class="section" id="importing-textures">
 <h1>Importing Textures<a class="headerlink" href="#importing-textures" title="Permalink to this headline">¶</a></h1>
-<div class="section" id="functions">
-<h2>Functions<a class="headerlink" href="#functions" title="Permalink to this headline">¶</a></h2>
-<p>Import and Cache Textures. </p>
+<div class="section" id="importtexture-hpp">
+<h2><code class="docutils literal notranslate"><span class="pre">ImportTexture.hpp</span></code><a class="headerlink" href="#importtexture-hpp" title="Permalink to this headline">¶</a></h2>
+<p>Import and Cache Textures (.TGA, .TEX) </p>
 <dl class="type">
 <dt id="_CPPv38BsZenLib">
 <span id="_CPPv28BsZenLib"></span><span id="BsZenLib"></span><span class="target" id="namespace_bs_zen_lib"></span><em class="property">namespace </em><code class="descname">BsZenLib</code><a class="headerlink" href="#_CPPv38BsZenLib" title="Permalink to this definition">¶</a><br /></dt>
@@ -171,7 +175,7 @@
 <dd>BsTexture containing the Data from the Gothic zTEX. Empty handle if importing failed. </dd>
 <dt><strong>Parameters</strong></dt>
 <dd><ul class="breatheparameterlist first last simple">
-<li><code class="docutils literal notranslate"><span class="pre">virtualFilePath</span></code>: Path to .TGA or .TEX file in the VDFS. </li>
+<li><code class="docutils literal notranslate"><span class="pre">originalFileName</span></code>: Name of the texture in the original games files (ie. “STONE.TGA”) </li>
 <li><code class="docutils literal notranslate"><span class="pre">vdfs</span></code>: Virtual Filesystem to load the texture from.</li>
 </ul>
 </dd>
@@ -181,7 +185,7 @@
 
 <dl class="function">
 <dt id="_CPPv3N8BsZenLib21ImportAndCacheTextureERKN2bs6StringERKN4VDFS9FileIndexE">
-<span id="_CPPv2N8BsZenLib21ImportAndCacheTextureERKN2bs6StringERKN4VDFS9FileIndexE"></span><span id="BsZenLib::ImportAndCacheTexture__bs::StringCR.VDFS::FileIndexCR"></span><span class="target" id="_import_texture_8hpp_1a60e663f964b62430d06422f93ee1b4b6"></span>bs::HTexture <code class="descname">ImportAndCacheTexture</code><span class="sig-paren">(</span><em class="property">const</em> bs::String &amp;<em>virtualFilePath</em>, <em class="property">const</em> VDFS::FileIndex &amp;<em>vdfs</em><span class="sig-paren">)</span><a class="headerlink" href="#_CPPv3N8BsZenLib21ImportAndCacheTextureERKN2bs6StringERKN4VDFS9FileIndexE" title="Permalink to this definition">¶</a><br /></dt>
+<span id="_CPPv2N8BsZenLib21ImportAndCacheTextureERKN2bs6StringERKN4VDFS9FileIndexE"></span><span id="BsZenLib::ImportAndCacheTexture__bs::StringCR.VDFS::FileIndexCR"></span><span class="target" id="_import_texture_8hpp_1a5bf49c5808eabd298c25043b53dc2941"></span>bs::HTexture <code class="descname">ImportAndCacheTexture</code><span class="sig-paren">(</span><em class="property">const</em> bs::String &amp;<em>originalFileName</em>, <em class="property">const</em> VDFS::FileIndex &amp;<em>vdfs</em><span class="sig-paren">)</span><a class="headerlink" href="#_CPPv3N8BsZenLib21ImportAndCacheTextureERKN2bs6StringERKN4VDFS9FileIndexE" title="Permalink to this definition">¶</a><br /></dt>
 <dd><p>Import a Gothic zTEX-Texture and save the results to disk. </p>
 <p>Imports the given zTEX-Texture and saves them into the cache-folder. The imported texture will also be added to the default resource manifest.</p>
 <p>See also <a class="reference internal" href="#_import_texture_8hpp_1a4deb3f9e80cf9872007b2f6982f65b6c"><span class="std std-ref">ImportTexture()</span></a>.</p>
@@ -190,7 +194,7 @@
 <dd>BsTexture containing the Data from the Gothic zTEX. Empty handle if importing failed. </dd>
 <dt><strong>Parameters</strong></dt>
 <dd><ul class="breatheparameterlist first last simple">
-<li><code class="docutils literal notranslate"><span class="pre">virtualFilePath</span></code>: Path to .TGA or .TEX file in the VDFS. </li>
+<li><code class="docutils literal notranslate"><span class="pre">originalFileName</span></code>: Name of the texture in the original games files (ie. “STONE.TGA”) </li>
 <li><code class="docutils literal notranslate"><span class="pre">vdfs</span></code>: Virtual Filesystem to load the texture from.</li>
 </ul>
 </dd>
@@ -200,13 +204,38 @@
 
 <dl class="function">
 <dt id="_CPPv3N8BsZenLib17LoadCachedTextureERKN2bs6StringE">
-<span id="_CPPv2N8BsZenLib17LoadCachedTextureERKN2bs6StringE"></span><span id="BsZenLib::LoadCachedTexture__bs::StringCR"></span><span class="target" id="_import_texture_8hpp_1abe49106b60725256a1d02b7caa070f95"></span>bs::HTexture <code class="descname">LoadCachedTexture</code><span class="sig-paren">(</span><em class="property">const</em> bs::String &amp;<em>virtualFilePath</em><span class="sig-paren">)</span><a class="headerlink" href="#_CPPv3N8BsZenLib17LoadCachedTextureERKN2bs6StringE" title="Permalink to this definition">¶</a><br /></dt>
-<dd></dd></dl>
+<span id="_CPPv2N8BsZenLib17LoadCachedTextureERKN2bs6StringE"></span><span id="BsZenLib::LoadCachedTexture__bs::StringCR"></span><span class="target" id="_import_texture_8hpp_1a7c1eda8a599cb4ab458b17b8d225bf15"></span>bs::HTexture <code class="descname">LoadCachedTexture</code><span class="sig-paren">(</span><em class="property">const</em> bs::String &amp;<em>originalFileName</em><span class="sig-paren">)</span><a class="headerlink" href="#_CPPv3N8BsZenLib17LoadCachedTextureERKN2bs6StringE" title="Permalink to this definition">¶</a><br /></dt>
+<dd><p>Load a cached Texture from disk using the original texture name. </p>
+<p>Given the name of the texture used in the original game files (ie. “STONE.TGA”), this function will search for a cached version representing that texture.</p>
+<p>If unsure whether the cached file exists, call <a class="reference internal" href="#_import_texture_8hpp_1a05747ee51340ece77ed08f5da9a10e8f"><span class="std std-ref">HasCachedTexture()</span></a>. To create the cache, call <a class="reference internal" href="#_import_texture_8hpp_1a5bf49c5808eabd298c25043b53dc2941"><span class="std std-ref">ImportAndCacheTexture()</span></a> first.</p>
+<p><dl class="docutils">
+<dt><strong>Return</strong></dt>
+<dd>Handle to the cached texture (Empty handle if none was found) </dd>
+<dt><strong>Parameters</strong></dt>
+<dd><ul class="breatheparameterlist first last simple">
+<li><code class="docutils literal notranslate"><span class="pre">originalFileName</span></code>: Name of the texture in the original games files (ie. “STONE.TGA”) </li>
+</ul>
+</dd>
+</dl>
+</p>
+</dd></dl>
 
 <dl class="function">
 <dt id="_CPPv3N8BsZenLib16HasCachedTextureERKN2bs6StringE">
-<span id="_CPPv2N8BsZenLib16HasCachedTextureERKN2bs6StringE"></span><span id="BsZenLib::HasCachedTexture__bs::StringCR"></span><span class="target" id="_import_texture_8hpp_1a13f83b0d314d32e6d2453268adb13799"></span>bool <code class="descname">HasCachedTexture</code><span class="sig-paren">(</span><em class="property">const</em> bs::String &amp;<em>virtualFilePath</em><span class="sig-paren">)</span><a class="headerlink" href="#_CPPv3N8BsZenLib16HasCachedTextureERKN2bs6StringE" title="Permalink to this definition">¶</a><br /></dt>
-<dd></dd></dl>
+<span id="_CPPv2N8BsZenLib16HasCachedTextureERKN2bs6StringE"></span><span id="BsZenLib::HasCachedTexture__bs::StringCR"></span><span class="target" id="_import_texture_8hpp_1a05747ee51340ece77ed08f5da9a10e8f"></span>bool <code class="descname">HasCachedTexture</code><span class="sig-paren">(</span><em class="property">const</em> bs::String &amp;<em>originalFileName</em><span class="sig-paren">)</span><a class="headerlink" href="#_CPPv3N8BsZenLib16HasCachedTextureERKN2bs6StringE" title="Permalink to this definition">¶</a><br /></dt>
+<dd><p>Checks whether the cache for the given original texture name exists. </p>
+<p>To create the cache, call <a class="reference internal" href="#_import_texture_8hpp_1a5bf49c5808eabd298c25043b53dc2941"><span class="std std-ref">ImportAndCacheTexture()</span></a>.</p>
+<p><dl class="docutils">
+<dt><strong>Return</strong></dt>
+<dd>Whether the cache exists for the given texture. </dd>
+<dt><strong>Parameters</strong></dt>
+<dd><ul class="breatheparameterlist first last simple">
+<li><code class="docutils literal notranslate"><span class="pre">originalFileName</span></code>: Name of the texture in the original games files (ie. “STONE.TGA”) </li>
+</ul>
+</dd>
+</dl>
+</p>
+</dd></dl>
 
 </div>
 </dd></dl>
@@ -221,6 +250,8 @@
           <footer>
   
     <div class="rst-footer-buttons" role="navigation" aria-label="footer navigation">
+      
+        <a href="staticmeshes.html" class="btn btn-neutral float-right" title="Importing Static Meshes" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right"></span></a>
       
       
         <a href="vdfs.html" class="btn btn-neutral" title="Virtual File System" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left"></span> Previous</a>

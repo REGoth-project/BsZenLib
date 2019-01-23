@@ -1,0 +1,287 @@
+
+
+<!DOCTYPE html>
+<!--[if IE 8]><html class="no-js lt-ie9" lang="en" > <![endif]-->
+<!--[if gt IE 8]><!--> <html class="no-js" lang="en" > <!--<![endif]-->
+<head>
+  <meta charset="utf-8">
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  
+  <title>Importing Skeletal Meshes &mdash; BsZenLib  documentation</title>
+  
+
+  
+  
+  
+  
+
+  
+
+  
+  
+    
+
+  
+
+  <link rel="stylesheet" href="../_static/css/theme.css" type="text/css" />
+  <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" />
+    <link rel="next" title="Importing Materials" href="materials.html" />
+    <link rel="prev" title="Importing Static Meshes" href="staticmeshes.html" /> 
+
+  
+  <script src="../_static/js/modernizr.min.js"></script>
+
+</head>
+
+<body class="wy-body-for-nav">
+
+   
+  <div class="wy-grid-for-nav">
+
+    
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search">
+          
+
+          
+            <a href="../index.html" class="icon icon-home"> BsZenLib
+          
+
+          
+          </a>
+
+          
+            
+            
+          
+
+          
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+
+          
+        </div>
+
+        <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="main navigation">
+          
+            
+            
+              
+            
+            
+              <p class="caption"><span class="caption-text">Contents:</span></p>
+<ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="vdfs.html">Virtual File System</a></li>
+<li class="toctree-l1"><a class="reference internal" href="textures.html">Importing Textures</a></li>
+<li class="toctree-l1"><a class="reference internal" href="staticmeshes.html">Importing Static Meshes</a></li>
+<li class="toctree-l1 current"><a class="current reference internal" href="#">Importing Skeletal Meshes</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="#importskeletalmesh-hpp"><code class="docutils literal notranslate"><span class="pre">ImportSkeletalMesh.hpp</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="materials.html">Importing Materials</a></li>
+</ul>
+
+            
+          
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
+
+      
+      <nav class="wy-nav-top" aria-label="top navigation">
+        
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../index.html">BsZenLib</a>
+        
+      </nav>
+
+
+      <div class="wy-nav-content">
+        
+        <div class="rst-content">
+        
+          
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<div role="navigation" aria-label="breadcrumbs navigation">
+
+  <ul class="wy-breadcrumbs">
+    
+      <li><a href="../index.html">Docs</a> &raquo;</li>
+        
+      <li>Importing Skeletal Meshes</li>
+    
+    
+      <li class="wy-breadcrumbs-aside">
+        
+            
+            <a href="../_sources/content/skeletalmeshes.rst.txt" rel="nofollow"> View page source</a>
+          
+        
+      </li>
+    
+  </ul>
+
+  
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+            
+  <div class="section" id="importing-skeletal-meshes">
+<h1>Importing Skeletal Meshes<a class="headerlink" href="#importing-skeletal-meshes" title="Permalink to this headline">¶</a></h1>
+<div class="section" id="importskeletalmesh-hpp">
+<h2><code class="docutils literal notranslate"><span class="pre">ImportSkeletalMesh.hpp</span></code><a class="headerlink" href="#importskeletalmesh-hpp" title="Permalink to this headline">¶</a></h2>
+<p>Import and cache animated meshes. </p>
+<dl class="type">
+<dt id="_CPPv38BsZenLib">
+<span id="_CPPv28BsZenLib"></span><span id="BsZenLib"></span><span class="target" id="namespace_bs_zen_lib"></span><em class="property">namespace </em><code class="descname">BsZenLib</code><br /></dt>
+<dd><div class="breathe-sectiondef docutils container">
+<p class="breathe-sectiondef-title rubric">Functions</p>
+<dl class="function">
+<dt id="_CPPv3N8BsZenLib17ImportAndCacheMDSERKN2bs6StringERKN4VDFS9FileIndexE">
+<span id="_CPPv2N8BsZenLib17ImportAndCacheMDSERKN2bs6StringERKN4VDFS9FileIndexE"></span><span id="BsZenLib::ImportAndCacheMDS__bs::StringCR.VDFS::FileIndexCR"></span><span class="target" id="_import_skeletal_mesh_8hpp_1ab5eaefb4b4d07c86eaaa177fd144866f"></span>Res::HModelScriptFile <code class="descname">ImportAndCacheMDS</code><span class="sig-paren">(</span><em class="property">const</em> bs::String &amp;<em>mdsFile</em>, <em class="property">const</em> VDFS::FileIndex &amp;<em>vdfs</em><span class="sig-paren">)</span><a class="headerlink" href="#_CPPv3N8BsZenLib17ImportAndCacheMDSERKN2bs6StringERKN4VDFS9FileIndexE" title="Permalink to this definition">¶</a><br /></dt>
+<dd><p>Imports a model script file. </p>
+<p>A ModelScriptFile can come in two different variations: ASCII and Binary. While Gothic I uses only ASCII files, most if not all of those got coverted into a binary format for Gothic II.</p>
+<p>Both variants contain the same information:</p>
+<p><ul class="simple">
+<li>Which node hierarchy (bones) file to use</li>
+<li>A list of supported meshes</li>
+<li>Definitions for each animation to be played</li>
+</ul>
+</p>
+<p><dl class="docutils">
+<dt><strong>Return</strong></dt>
+<dd>Everything loaded from the given ModelScript-File. </dd>
+<dt><strong>Parameters</strong></dt>
+<dd><ul class="breatheparameterlist first last simple">
+<li><code class="docutils literal notranslate"><span class="pre">file</span></code>: .MDS-file to import. This function will try to find a matching .MDS-file and load that instead if it exists. </li>
+<li><code class="docutils literal notranslate"><span class="pre">vdfs</span></code>: VDFS to load from.</li>
+</ul>
+</dd>
+</dl>
+</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="_CPPv3N8BsZenLib12HasCachedMDSERKN2bs6StringE">
+<span id="_CPPv2N8BsZenLib12HasCachedMDSERKN2bs6StringE"></span><span id="BsZenLib::HasCachedMDS__bs::StringCR"></span><span class="target" id="_import_skeletal_mesh_8hpp_1ad4e6b2d5ef8ceaff3e020d5ad308345e"></span>bool <code class="descname">HasCachedMDS</code><span class="sig-paren">(</span><em class="property">const</em> bs::String &amp;<em>mdsFile</em><span class="sig-paren">)</span><a class="headerlink" href="#_CPPv3N8BsZenLib12HasCachedMDSERKN2bs6StringE" title="Permalink to this definition">¶</a><br /></dt>
+<dd><p>Whether the given .MDS-file has been cached. </p>
+<p><dl class="docutils">
+<dt><strong>Return</strong></dt>
+<dd>Whether the .MDS-file has been cached. </dd>
+<dt><strong>Parameters</strong></dt>
+<dd><ul class="breatheparameterlist first last simple">
+<li><code class="docutils literal notranslate"><span class="pre">mdsfile</span></code>: .MDS-file to look after. Always supply the .MDS-file, even when a matching .MSB-file exists!</li>
+</ul>
+</dd>
+</dl>
+</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="_CPPv3N8BsZenLib13LoadCachedMDSERKN2bs6StringE">
+<span id="_CPPv2N8BsZenLib13LoadCachedMDSERKN2bs6StringE"></span><span id="BsZenLib::LoadCachedMDS__bs::StringCR"></span><span class="target" id="_import_skeletal_mesh_8hpp_1a463a706b0a81e5d822dd904b639aeb61"></span>Res::HModelScriptFile <code class="descname">LoadCachedMDS</code><span class="sig-paren">(</span><em class="property">const</em> bs::String &amp;<em>mdsFile</em><span class="sig-paren">)</span><a class="headerlink" href="#_CPPv3N8BsZenLib13LoadCachedMDSERKN2bs6StringE" title="Permalink to this definition">¶</a><br /></dt>
+<dd><p>Loads a .MDS-file from cache. </p>
+<p><dl class="docutils">
+<dt><strong>Return</strong></dt>
+<dd>The cached .MDS-file. </dd>
+<dt><strong>Parameters</strong></dt>
+<dd><ul class="breatheparameterlist first last simple">
+<li><code class="docutils literal notranslate"><span class="pre">mdsfile</span></code>: .MDS-file to look after. Always supply the .MDS-file, even when a matching .MSB-file exists!</li>
+</ul>
+</dd>
+</dl>
+</p>
+</dd></dl>
+
+</div>
+</dd></dl>
+
+</div>
+</div>
+
+
+           </div>
+           
+          </div>
+          <footer>
+  
+    <div class="rst-footer-buttons" role="navigation" aria-label="footer navigation">
+      
+        <a href="materials.html" class="btn btn-neutral float-right" title="Importing Materials" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right"></span></a>
+      
+      
+        <a href="staticmeshes.html" class="btn btn-neutral" title="Importing Static Meshes" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left"></span> Previous</a>
+      
+    </div>
+  
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>
+        &copy; Copyright 2019, Andre Taulien
+
+    </p>
+  </div>
+  Built with <a href="http://sphinx-doc.org/">Sphinx</a> using a <a href="https://github.com/rtfd/sphinx_rtd_theme">theme</a> provided by <a href="https://readthedocs.org">Read the Docs</a>. 
+
+</footer>
+
+        </div>
+      </div>
+
+    </section>
+
+  </div>
+  
+
+
+  
+
+    
+    
+      <script type="text/javascript" id="documentation_options" data-url_root="../" src="../_static/documentation_options.js"></script>
+        <script type="text/javascript" src="../_static/jquery.js"></script>
+        <script type="text/javascript" src="../_static/underscore.js"></script>
+        <script type="text/javascript" src="../_static/doctools.js"></script>
+        <script type="text/javascript" src="../_static/language_data.js"></script>
+    
+
+  
+
+  <script type="text/javascript" src="../_static/js/theme.js"></script>
+
+  <script type="text/javascript">
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>
