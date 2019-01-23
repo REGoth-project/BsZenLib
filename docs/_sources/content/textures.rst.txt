@@ -1,3 +1,5 @@
+.. _import-textures:
+
 Importing Textures
 ==================
 

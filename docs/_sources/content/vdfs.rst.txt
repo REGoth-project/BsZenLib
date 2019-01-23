@@ -1,3 +1,6 @@
+
+.. _vdfs:
+
 Virtual File System
 ===================
 

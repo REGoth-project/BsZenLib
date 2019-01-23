@@ -10,6 +10,7 @@ Welcome to BsZenLib's documentation!
    :maxdepth: 2
    :caption: Contents:
    
+   content/caching
    content/vdfs
    content/textures
    content/staticmeshes
