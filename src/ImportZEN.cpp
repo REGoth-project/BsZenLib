@@ -6,49 +6,75 @@
  */
 
 #include "ImportZEN.hpp"
+#include "ImportPath.hpp"
 #include "ImportStaticMesh.hpp"
 #include <Components/BsCRenderable.h>
 #include <Debug/BsDebug.h>
+#include <FileSystem/BsFileSystem.h>
 #include <Resources/BsBuiltinResources.h>
 #include <Resources/BsResources.h>
 #include <Scene/BsSceneObject.h>
 #include <zenload/zCMesh.h>
 #include <zenload/zCProgMeshProto.h>
 #include <zenload/zenParser.h>
-#include <FileSystem/BsFileSystem.h>
-#include "ImportPath.hpp"
 
 using namespace bs;
+using namespace BsZenLib;
+using namespace BsZenLib::Res;
 
-static HSceneObject addWorldMesh(const bs::String& worldName, ZenLoad::ZenParser& zenParser, const VDFS::FileIndex& vdfs);
+static HSceneObject addWorldMesh(const bs::String& worldName, ZenLoad::ZenParser& zenParser,
+                                 const VDFS::FileIndex& vdfs);
 static HSceneObject addStaticMeshObject(const String& file, const VDFS::FileIndex& vdfs);
 static HSceneObject walkTree(const ZenLoad::zCVobData& root, const VDFS::FileIndex& vdfs);
 
+
 // - Implementation --------------------------------------------------------------------------------
+
+Vector<UUID> GetDependenciesRecursive(UUID uuid)
+{
+  Path filePath;
+  
+  if (!gResources().getFilePathFromUUID(uuid, filePath))
+    return {};
+
+  Vector<UUID> deps = gResources().getDependencies(filePath);
+
+  for (UUID a : deps)
+  {
+    Vector<UUID> childDeps = GetDependenciesRecursive(a);
+
+    for (UUID b : childDeps)
+    {
+      deps.push_back(b);
+    }
+  }
+
+  return deps;
+}
+
 
 bool BsZenLib::HasCachedZEN(const bs::String& zen)
 {
-	return FileSystem::isFile(GothicPathToCachedWorld(zen.c_str()));
+  return FileSystem::isFile(GothicPathToCachedWorld(zen.c_str()));
 }
 
 bs::HPrefab BsZenLib::LoadCachedZEN(const bs::String& zen)
 {
-	return gResources().loadAsync<Prefab>(GothicPathToCachedWorld(zen));
+  return gResources().loadAsync<Prefab>(GothicPathToCachedWorld(zen));
 }
 
 bs::HSceneObject BsZenLib::ImportAndCacheZEN(const std::string& zen, const VDFS::FileIndex& vdfs)
 {
-	HSceneObject worldSO = ImportZEN(zen, vdfs);
+  HSceneObject worldSO = ImportZEN(zen, vdfs);
 
-	if (!worldSO)
-		return {};
+  if (!worldSO) return {};
 
-	HPrefab worldPrefab = Prefab::create(worldSO);
+  HPrefab worldPrefab = Prefab::create(worldSO);
 
-	const bool overwrite = false;
-	gResources().save(worldPrefab, BsZenLib::GothicPathToCachedWorld(zen.c_str()), overwrite);
+  const bool overwrite = false;
+  gResources().save(worldPrefab, BsZenLib::GothicPathToCachedWorld(zen.c_str()), overwrite);
 
-	return worldSO;
+  return worldSO;
 }
 
 HSceneObject BsZenLib::ImportZEN(const std::string& zen, const VDFS::FileIndex& vdfs)
@@ -87,27 +113,32 @@ HSceneObject BsZenLib::ImportZEN(const std::string& zen, const VDFS::FileIndex& 
   return worldSO;
 }
 
-static HSceneObject addWorldMesh(const bs::String& worldName, ZenLoad::ZenParser& zenParser, const VDFS::FileIndex& vdfs)
+static HSceneObject addWorldMesh(const bs::String& worldName, ZenLoad::ZenParser& zenParser,
+                                 const VDFS::FileIndex& vdfs)
 {
-  ZenLoad::PackedMesh packedMesh;
-  zenParser.getWorldMesh()->packMesh(packedMesh, 0.01f);
-
   String meshFileName = worldName + ".worldmesh";
 
-  HPrefab prefab;
-  if (FileSystem::isFile(BsZenLib::GothicPathToCachedAsset(meshFileName)))
+  HMeshWithMaterials mesh;
+  if (HasCachedStaticMesh(meshFileName))
   {
-	  prefab = BsZenLib::LoadCachedStaticMeshPrefab(meshFileName);
+    mesh = BsZenLib::LoadCachedStaticMesh(meshFileName);
   }
   else
   {
-	  prefab = BsZenLib::ImportAndCacheStaticMeshPrefab(meshFileName, packedMesh, vdfs);
+    ZenLoad::PackedMesh packedMesh;
+    zenParser.getWorldMesh()->packMesh(packedMesh, 0.01f);
+
+    mesh = BsZenLib::ImportAndCacheStaticMesh(meshFileName, packedMesh, vdfs);
   }
 
-  if (!prefab)
-	  return {};
+  if (!mesh) return {};
 
-  return prefab->instantiate();
+  HSceneObject meshSO = SceneObject::create(meshFileName);
+  HRenderable renderable = meshSO->addComponent<CRenderable>();
+  renderable->setMesh(mesh->getMesh());
+  renderable->setMaterials(mesh->getMaterials());
+
+  return meshSO;
 }
 
 static HSceneObject walkTree(const ZenLoad::zCVobData& root, const VDFS::FileIndex& vdfs)
@@ -140,19 +171,22 @@ static HSceneObject walkTree(const ZenLoad::zCVobData& root, const VDFS::FileInd
 
 static HSceneObject addStaticMeshObject(const String& file, const VDFS::FileIndex& vdfs)
 {
-	HPrefab prefab;
-
-  if (FileSystem::isFile(BsZenLib::GothicPathToCachedAsset(file)))
+  HMeshWithMaterials mesh;
+  if (FileSystem::isFile(BsZenLib::GothicPathToCachedStaticMesh(file.c_str())))
   {
-	  prefab = BsZenLib::LoadCachedStaticMeshPrefab(file);
+    mesh = BsZenLib::LoadCachedStaticMesh(file.c_str());
   }
   else
   {
-	  prefab = BsZenLib::ImportAndCacheStaticMeshPrefab(file, vdfs);
+    mesh = BsZenLib::ImportAndCacheStaticMesh(file.c_str(), vdfs);
   }
 
-  if (!prefab)
-	  return {};
+  if (!mesh) return {};
 
-  return prefab->instantiate();
+  HSceneObject meshSO = SceneObject::create(file);
+  HRenderable renderable = meshSO->addComponent<CRenderable>();
+  renderable->setMesh(mesh->getMesh());
+  renderable->setMaterials(mesh->getMaterials());
+
+  return meshSO;
 }

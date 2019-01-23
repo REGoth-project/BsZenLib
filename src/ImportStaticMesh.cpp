@@ -1,179 +1,195 @@
 #include "ImportStaticMesh.hpp"
 #include "ImportMaterial.hpp"
+#include "ImportPath.hpp"
 #include <Components/BsCRenderable.h>
+#include <FileSystem/BsFileSystem.h>
 #include <RenderAPI/BsVertexDataDesc.h>
 #include <Resources/BsBuiltinResources.h>
+#include <Resources/BsResources.h>
 #include <Scene/BsPrefab.h>
 #include <Scene/BsSceneObject.h>
 #include <vdfs/fileIndex.h>
 #include <zenload/zCMesh.h>
 #include <zenload/zCProgMeshProto.h>
-#include "ImportPath.hpp"
-#include <Resources/BsResources.h>
-#include <Scene/BsPrefab.h>
-#include <FileSystem/BsFileSystem.h>
-#include "ImportPath.hpp"
 
 using namespace bs;
 
 struct StaticMeshVertex
 {
-	Vector3 position;
-	Vector3 normal;
-	Vector2 texCoord;
-	uint32_t color;
-	Vector3 tangent;
-	Vector3 bitangent;
+  Vector3 position;
+  Vector3 normal;
+  Vector2 texCoord;
+  uint32_t color;
+  Vector3 tangent;
+  Vector3 bitangent;
 };
 
-static HPrefab cacheStaticMesh(const bs::String& virtualFilePath, HMesh mesh, const Vector<HMaterial>& materials);
+static HPrefab cacheStaticMesh(const bs::String& originalFileName, HMesh mesh,
+                               const Vector<HMaterial>& materials);
 static SPtr<VertexDataDesc> makeVertexDataDescForZenLibVertex();
 static MESH_DESC meshDescForPackedMesh(const ZenLoad::PackedMesh& packedMesh);
 static Vector<StaticMeshVertex> transformVertices(const ZenLoad::PackedMesh& packedMesh);
-static void fillMeshDataFromPackedMesh(HMesh target, const Vector<StaticMeshVertex>& vertices, const ZenLoad::PackedMesh& packedMesh);
+static void fillMeshDataFromPackedMesh(HMesh target, const Vector<StaticMeshVertex>& vertices,
+                                       const ZenLoad::PackedMesh& packedMesh);
 static void transferVertices(SPtr<MeshData> target, const Vector<StaticMeshVertex>& vertices);
 static void transferIndices(SPtr<MeshData> target, const ZenLoad::PackedMesh& packedMesh);
 
 // - Implementation --------------------------------------------------------------------------------
 
-
-bool BsZenLib::HasCachedStaticMeshPrefab(const bs::String& virtualFilePath)
+BsZenLib::Res::HMeshWithMaterials BsZenLib::ImportAndCacheStaticMesh(
+    const bs::String& originalFileName, const VDFS::FileIndex& vdfs)
 {
-	return FileSystem::isFile(GothicPathToCachedAsset(virtualFilePath.c_str()));
+
+	gDebug().logDebug("Caching Static Mesh: " + originalFileName);
+
+  HMesh mesh = ImportAndCacheStaticMeshGeometry(originalFileName, vdfs);
+
+  if (!mesh)
+  {
+    gDebug().logWarning("Load Failed (Mesh): " + originalFileName);
+    return {};
+  }
+
+  Vector<HMaterial> materials = ImportAndCacheStaticMeshMaterials(originalFileName, vdfs);
+
+  if (materials.empty())
+  {
+    gDebug().logWarning("Load Failed (Materials): " + originalFileName);
+    return {};
+  }
+
+  Res::HMeshWithMaterials combined = Res::MeshWithMaterials::create(mesh, materials);
+
+  if (!combined)
+  {
+    gDebug().logWarning("Load Failed (Combined): " + originalFileName);
+    return {};
+  }
+
+  const bool overwrite = false;
+  gResources().save(combined, GothicPathToCachedStaticMesh(originalFileName), overwrite);
+
+  return combined;
 }
 
-bs::HPrefab BsZenLib::LoadCachedStaticMeshPrefab(const bs::String& virtualFilePath)
+BsZenLib::Res::HMeshWithMaterials BsZenLib::ImportAndCacheStaticMesh(
+    const bs::String& originalFileName, const ZenLoad::PackedMesh& packedMesh,
+    const VDFS::FileIndex& vdfs)
 {
-	return gResources().load<Prefab>(GothicPathToCachedAsset(virtualFilePath));
+
+	gDebug().logDebug("Caching Static Mesh: " + originalFileName);
+
+  HMesh mesh = ImportAndCacheStaticMeshGeometry(originalFileName, packedMesh);
+
+  if (!mesh)
+  {
+    gDebug().logWarning("Load Failed (Mesh): " + originalFileName);
+    return {};
+  }
+
+  Vector<HMaterial> materials = ImportAndCacheStaticMeshMaterials(originalFileName, packedMesh, vdfs);
+
+  if (materials.empty())
+  {
+    gDebug().logWarning("Load Failed (Materials): " + originalFileName);
+    return {};
+  }
+
+  Res::HMeshWithMaterials combined = Res::MeshWithMaterials::create(mesh, materials);
+
+  if (!combined)
+  {
+    gDebug().logWarning("Load Failed (Combined): " + originalFileName);
+    return {};
+  }
+
+  const bool overwrite = false;
+  gResources().save(combined, GothicPathToCachedStaticMesh(originalFileName), overwrite);
+
+  return combined;
 }
 
-bs::HPrefab BsZenLib::ImportAndCacheStaticMeshPrefab(const bs::String& virtualFilePath, const VDFS::FileIndex& vdfs)
+BsZenLib::Res::HMeshWithMaterials BsZenLib::LoadCachedStaticMesh(const bs::String& originalFileName)
 {
-	HMesh mesh = ImportAndCacheStaticMesh(virtualFilePath, vdfs);
-
-	if (!mesh)
-		return {};
-
-	Vector<HMaterial> materials = ImportAndCacheStaticMeshMaterials(virtualFilePath, vdfs);
-
-	if (!mesh)
-	{
-		gDebug().logWarning("Load Failed (Mesh): " + virtualFilePath);
-		return {};
-	}
-
-	if (materials.empty())
-	{
-		gDebug().logWarning("Load Failed (Materials): " + virtualFilePath);
-		return {};
-	}
-
-	return cacheStaticMesh(virtualFilePath, mesh, materials);
+  return gResources().load<Res::MeshWithMaterials>(GothicPathToCachedStaticMesh(originalFileName));
 }
 
-
-HPrefab BsZenLib::ImportAndCacheStaticMeshPrefab(const bs::String& name, const ZenLoad::PackedMesh& packedMesh, const VDFS::FileIndex& vdfs)
+bool BsZenLib::HasCachedStaticMesh(const bs::String& originalFileName)
 {
-	HMesh mesh = ImportAndCacheStaticMesh(name, packedMesh, vdfs);
-
-	if (!mesh)
-		return {};
-
-	Vector<HMaterial> materials = ImportAndCacheStaticMeshMaterials(name, packedMesh, vdfs);
-
-	if (!mesh)
-	{
-		gDebug().logWarning("Load Failed (Mesh): " + name);
-		return {};
-	}
-
-	if (materials.empty())
-	{
-		gDebug().logWarning("Load Failed (Materials): " + name);
-		return {};
-	}
-
-	return cacheStaticMesh(name, mesh, materials);
+  return FileSystem::isFile(GothicPathToCachedStaticMesh(originalFileName));
 }
 
-static HPrefab cacheStaticMesh(const bs::String& virtualFilePath, HMesh mesh, const Vector<HMaterial>& materials)
+HMesh BsZenLib::ImportAndCacheStaticMeshGeometry(const bs::String& originalFileName,
+                                                 const VDFS::FileIndex& vdfs)
 {
-	using namespace BsZenLib;
+  ZenLoad::zCProgMeshProto progMesh(originalFileName.c_str(), vdfs);
 
-	HSceneObject so = SceneObject::create(virtualFilePath.c_str());
+  if (progMesh.getNumSubmeshes() == 0) return {};
 
-	HRenderable renderable = so->addComponent<CRenderable>();
-	renderable->setMesh(mesh);
-	renderable->setMaterials(materials);
-	renderable->_getInternal()->setCullDistanceFactor(1.0f);
+  ZenLoad::PackedMesh packedMesh;
+  progMesh.packMesh(packedMesh, 0.01f);
 
-	HPrefab prefab = Prefab::create(so, false);
-	
-	so->destroy(true);
-
-	const bool overwrite = false;
-	gResources().save(prefab, GothicPathToCachedAsset(virtualFilePath), overwrite);
-
-	return prefab;
+  return ImportAndCacheStaticMeshGeometry(originalFileName, packedMesh);
 }
 
-
-HMesh BsZenLib::ImportAndCacheStaticMesh(const bs::String& virtualFilePath, const VDFS::FileIndex& vdfs)
+bs::HMesh BsZenLib::ImportAndCacheStaticMeshGeometry(const bs::String& originalFileName,
+                                                     const ZenLoad::PackedMesh& packedMesh)
 {
-	ZenLoad::zCProgMeshProto progMesh(virtualFilePath.c_str(), vdfs);
+  HMesh mesh = ImportStaticMeshGeometry(packedMesh);
+  Path path = GothicPathToCachedStaticMesh(originalFileName + ".mesh");
 
-	if (progMesh.getNumSubmeshes() == 0) return {};
+  if (!mesh) return {};
 
-	ZenLoad::PackedMesh packedMesh;
-	progMesh.packMesh(packedMesh, 0.01f);
+  const bool overwrite = true;
+  gResources().save(mesh, path, overwrite);
 
-	return ImportAndCacheStaticMesh(virtualFilePath, packedMesh, vdfs);
+  return mesh;
 }
 
-bs::HMesh BsZenLib::ImportAndCacheStaticMesh(const bs::String& virtualFilePath, const ZenLoad::PackedMesh& packedMesh, const VDFS::FileIndex& vdfs)
+Vector<HMaterial> BsZenLib::ImportAndCacheStaticMeshMaterials(const bs::String& originalFileName,
+                                                              const VDFS::FileIndex& vdfs)
 {
-	HMesh mesh = ImportStaticMesh(packedMesh);
-	Path path = GothicPathToCachedAsset(virtualFilePath + ".mesh");
+  ZenLoad::zCProgMeshProto progMesh(originalFileName.c_str(), vdfs);
 
-	if (!mesh)
-		return {};
+  if (progMesh.getNumSubmeshes() == 0) return {};
 
-	const bool overwrite = true;
-	gResources().save(mesh, path, overwrite);
+  ZenLoad::PackedMesh packedMesh;
+  progMesh.packMesh(packedMesh, 0.01f);
 
-	return mesh;
+  return ImportAndCacheStaticMeshMaterials(originalFileName, packedMesh, vdfs);
 }
 
-Vector<HMaterial> BsZenLib::ImportAndCacheStaticMeshMaterials(const bs::String& virtualFilePath, const VDFS::FileIndex& vdfs)
+Vector<HMaterial> BsZenLib::ImportAndCacheStaticMeshMaterials(const bs::String& originalFileName,
+                                                              const ZenLoad::PackedMesh& packedMesh,
+                                                              const VDFS::FileIndex& vdfs)
 {
-	ZenLoad::zCProgMeshProto progMesh(virtualFilePath.c_str(), vdfs);
+  HShader shader = gBuiltinResources().getBuiltinShader(BuiltinShader::Standard);
 
-	if (progMesh.getNumSubmeshes() == 0) return {};
+  Vector<HMaterial> materials;
+  for (size_t i = 0; i < packedMesh.subMeshes.size(); i++)
+  {
+    // TODO: Transfer more properties
+    const auto& originalMaterial = packedMesh.subMeshes[i].material;
 
-	ZenLoad::PackedMesh packedMesh;
-	progMesh.packMesh(packedMesh, 0.01f);
+    HMaterial loaded;
+    String materialCacheFile = BuildMaterialNameForSubmesh(originalFileName, (UINT32)i);
 
-	return ImportAndCacheStaticMeshMaterials(virtualFilePath, packedMesh, vdfs);
+    if (HasCachedMaterial(materialCacheFile))
+    {
+      loaded = LoadCachedMaterial(materialCacheFile);
+    }
+    else
+    {
+      loaded = ImportAndCacheMaterialWithTextures(materialCacheFile, originalMaterial, vdfs);
+    }
+
+    materials.push_back(loaded);
+  }
+
+  return materials;
 }
 
-Vector<HMaterial> BsZenLib::ImportAndCacheStaticMeshMaterials(const bs::String& virtualFilePath, const ZenLoad::PackedMesh& packedMesh, const VDFS::FileIndex& vdfs)
-{
-	HShader shader = gBuiltinResources().getBuiltinShader(BuiltinShader::Standard);
-
-	Vector<HMaterial> materials;
-	for (size_t i = 0; i < packedMesh.subMeshes.size(); i++)
-	{
-		// TODO: Transfer more properties
-		const auto& originalMaterial = packedMesh.subMeshes[i].material;
-
-		HMaterial loaded = ImportAndCacheMaterialWithTextures(virtualFilePath, originalMaterial, vdfs);
-		materials.push_back(loaded);
-	}
-
-	return materials;
-}
-
-HMesh BsZenLib::ImportStaticMesh(const ZenLoad::PackedMesh& packedMesh)
+HMesh BsZenLib::ImportStaticMeshGeometry(const ZenLoad::PackedMesh& packedMesh)
 {
   MESH_DESC desc = meshDescForPackedMesh(packedMesh);
 
@@ -193,14 +209,14 @@ static MESH_DESC meshDescForPackedMesh(const ZenLoad::PackedMesh& packedMesh)
   {
     desc.subMeshes.emplace_back();
     desc.subMeshes.back().drawOp = DrawOperationType::DOT_TRIANGLE_LIST;
-    desc.subMeshes.back().indexCount = submesh.indices.size();
+    desc.subMeshes.back().indexCount = (UINT32)submesh.indices.size();
     desc.subMeshes.back().indexOffset = desc.numIndices;
 
-    desc.numIndices += submesh.indices.size();
+    desc.numIndices += (UINT32)submesh.indices.size();
   }
 
   desc.indexType = IndexType::IT_32BIT;
-  desc.numVertices = packedMesh.vertices.size();
+  desc.numVertices = (UINT32)packedMesh.vertices.size();
 
   desc.vertexDesc = makeVertexDataDescForZenLibVertex();
   desc.usage = MU_CPUCACHED;  // To create our physics mesh later
@@ -223,7 +239,8 @@ static SPtr<VertexDataDesc> makeVertexDataDescForZenLibVertex()
   return vertexDataDesc;
 }
 
-static void fillMeshDataFromPackedMesh(HMesh target, const Vector<StaticMeshVertex>& vertices, const ZenLoad::PackedMesh& packedMesh)
+static void fillMeshDataFromPackedMesh(HMesh target, const Vector<StaticMeshVertex>& vertices,
+                                       const ZenLoad::PackedMesh& packedMesh)
 {
   // Allocate a buffer big enough to hold what we specified in the MESH_DESC
   SPtr<MeshData> meshData = target->allocBuffer();
@@ -236,23 +253,23 @@ static void fillMeshDataFromPackedMesh(HMesh target, const Vector<StaticMeshVert
 
 static Vector<StaticMeshVertex> transformVertices(const ZenLoad::PackedMesh& packedMesh)
 {
-	Vector<StaticMeshVertex> v;
+  Vector<StaticMeshVertex> v;
 
-	for (const ZenLoad::WorldVertex& oldVertex : packedMesh.vertices)
-	{
-		StaticMeshVertex newVertex = {};
+  for (const ZenLoad::WorldVertex& oldVertex : packedMesh.vertices)
+  {
+    StaticMeshVertex newVertex = {};
 
-		newVertex.position = Vector3(oldVertex.Position.x, oldVertex.Position.y, oldVertex.Position.z);
-		newVertex.normal = Vector3(oldVertex.Normal.x, oldVertex.Normal.y, oldVertex.Normal.z);
-		newVertex.texCoord = Vector2(oldVertex.TexCoord.x, oldVertex.TexCoord.y);
+    newVertex.position = Vector3(oldVertex.Position.x, oldVertex.Position.y, oldVertex.Position.z);
+    newVertex.normal = Vector3(oldVertex.Normal.x, oldVertex.Normal.y, oldVertex.Normal.z);
+    newVertex.texCoord = Vector2(oldVertex.TexCoord.x, oldVertex.TexCoord.y);
 
-		newVertex.tangent = Vector3();
-		newVertex.bitangent = Vector3();
+    newVertex.tangent = Vector3();
+    newVertex.bitangent = Vector3();
 
-		v.push_back(newVertex);
-	}
+    v.push_back(newVertex);
+  }
 
-	return v;
+  return v;
 }
 
 static void transferVertices(SPtr<MeshData> target, const Vector<StaticMeshVertex>& vertices)
@@ -260,8 +277,7 @@ static void transferVertices(SPtr<MeshData> target, const Vector<StaticMeshVerte
   assert(target->getNumVertices() == vertices.size());
 
   UINT8* pVertices = target->getElementData(VES_POSITION);
-  memcpy(pVertices, vertices.data(),
-         sizeof(StaticMeshVertex) * vertices.size());
+  memcpy(pVertices, vertices.data(), sizeof(StaticMeshVertex) * vertices.size());
 }
 
 static void transferIndices(SPtr<MeshData> target, const ZenLoad::PackedMesh& packedMesh)

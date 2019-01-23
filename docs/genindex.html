@@ -79,8 +79,12 @@
             
               <p class="caption"><span class="caption-text">Contents:</span></p>
 <ul>
+<li class="toctree-l1"><a class="reference internal" href="content/caching.html">Caching</a></li>
 <li class="toctree-l1"><a class="reference internal" href="content/vdfs.html">Virtual File System</a></li>
 <li class="toctree-l1"><a class="reference internal" href="content/textures.html">Importing Textures</a></li>
+<li class="toctree-l1"><a class="reference internal" href="content/staticmeshes.html">Importing Static Meshes</a></li>
+<li class="toctree-l1"><a class="reference internal" href="content/skeletalmeshes.html">Importing Skeletal Meshes</a></li>
+<li class="toctree-l1"><a class="reference internal" href="content/materials.html">Importing Materials</a></li>
 </ul>
 
             
@@ -153,15 +157,41 @@
 <h2 id="B">B</h2>
 <table style="width: 100%" class="indextable genindextable"><tr>
   <td style="width: 33%; vertical-align: top;"><ul>
-      <li><a href="content/textures.html#_CPPv38BsZenLib">BsZenLib (C++ type)</a>
+      <li><a href="content/materials.html#_CPPv38BsZenLib">BsZenLib (C++ type)</a>, <a href="content/skeletalmeshes.html#_CPPv38BsZenLib">[1]</a>, <a href="content/staticmeshes.html#_CPPv38BsZenLib">[2]</a>, <a href="content/textures.html#_CPPv38BsZenLib">[3]</a>
+</li>
+      <li><a href="content/materials.html#_CPPv3N8BsZenLib27BuildMaterialNameForSubmeshERKN2bs6StringEN2bs6UINT32E">BsZenLib::BuildMaterialNameForSubmesh (C++ function)</a>
+</li>
+      <li><a href="content/materials.html#_CPPv3N8BsZenLib17HasCachedMaterialERKN2bs6StringE">BsZenLib::HasCachedMaterial (C++ function)</a>
+</li>
+      <li><a href="content/skeletalmeshes.html#_CPPv3N8BsZenLib12HasCachedMDSERKN2bs6StringE">BsZenLib::HasCachedMDS (C++ function)</a>
+</li>
+      <li><a href="content/staticmeshes.html#_CPPv3N8BsZenLib19HasCachedStaticMeshERKN2bs6StringE">BsZenLib::HasCachedStaticMesh (C++ function)</a>
 </li>
       <li><a href="content/textures.html#_CPPv3N8BsZenLib16HasCachedTextureERKN2bs6StringE">BsZenLib::HasCachedTexture (C++ function)</a>
 </li>
+      <li><a href="content/materials.html#_CPPv3N8BsZenLib34ImportAndCacheMaterialWithTexturesERKN2bs6StringERKN7ZenLoad14zCMaterialDataERKN4VDFS9FileIndexE">BsZenLib::ImportAndCacheMaterialWithTextures (C++ function)</a>
+</li>
+      <li><a href="content/skeletalmeshes.html#_CPPv3N8BsZenLib17ImportAndCacheMDSERKN2bs6StringERKN4VDFS9FileIndexE">BsZenLib::ImportAndCacheMDS (C++ function)</a>
+</li>
+      <li><a href="content/staticmeshes.html#_CPPv3N8BsZenLib24ImportAndCacheStaticMeshERKN2bs6StringERKN4VDFS9FileIndexE">BsZenLib::ImportAndCacheStaticMesh (C++ function)</a>, <a href="content/staticmeshes.html#_CPPv3N8BsZenLib24ImportAndCacheStaticMeshERKN2bs6StringERKN7ZenLoad10PackedMeshERKN4VDFS9FileIndexE">[1]</a>
+</li>
   </ul></td>
   <td style="width: 33%; vertical-align: top;"><ul>
+      <li><a href="content/staticmeshes.html#_CPPv3N8BsZenLib32ImportAndCacheStaticMeshGeometryERKN2bs6StringERKN4VDFS9FileIndexE">BsZenLib::ImportAndCacheStaticMeshGeometry (C++ function)</a>, <a href="content/staticmeshes.html#_CPPv3N8BsZenLib32ImportAndCacheStaticMeshGeometryERKN2bs6StringERKN7ZenLoad10PackedMeshE">[1]</a>
+</li>
+      <li><a href="content/staticmeshes.html#_CPPv3N8BsZenLib33ImportAndCacheStaticMeshMaterialsERKN2bs6StringERKN4VDFS9FileIndexE">BsZenLib::ImportAndCacheStaticMeshMaterials (C++ function)</a>, <a href="content/staticmeshes.html#_CPPv3N8BsZenLib33ImportAndCacheStaticMeshMaterialsERKN2bs6StringERKN7ZenLoad10PackedMeshERKN4VDFS9FileIndexE">[1]</a>
+</li>
       <li><a href="content/textures.html#_CPPv3N8BsZenLib21ImportAndCacheTextureERKN2bs6StringERKN4VDFS9FileIndexE">BsZenLib::ImportAndCacheTexture (C++ function)</a>
 </li>
+      <li><a href="content/staticmeshes.html#_CPPv3N8BsZenLib24ImportStaticMeshGeometryERKN7ZenLoad10PackedMeshE">BsZenLib::ImportStaticMeshGeometry (C++ function)</a>
+</li>
       <li><a href="content/textures.html#_CPPv3N8BsZenLib13ImportTextureERKN2bs6StringERKN4VDFS9FileIndexE">BsZenLib::ImportTexture (C++ function)</a>
+</li>
+      <li><a href="content/materials.html#_CPPv3N8BsZenLib18LoadCachedMaterialERKN2bs6StringE">BsZenLib::LoadCachedMaterial (C++ function)</a>
+</li>
+      <li><a href="content/skeletalmeshes.html#_CPPv3N8BsZenLib13LoadCachedMDSERKN2bs6StringE">BsZenLib::LoadCachedMDS (C++ function)</a>
+</li>
+      <li><a href="content/staticmeshes.html#_CPPv3N8BsZenLib20LoadCachedStaticMeshERKN2bs6StringE">BsZenLib::LoadCachedStaticMesh (C++ function)</a>
 </li>
       <li><a href="content/textures.html#_CPPv3N8BsZenLib17LoadCachedTextureERKN2bs6StringE">BsZenLib::LoadCachedTexture (C++ function)</a>
 </li>

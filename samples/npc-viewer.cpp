@@ -1,11 +1,15 @@
 #include <string>
 #include "BsApplication.h"
+#include <FileSystem/BsFileSystem.h>
+#include "BsCameraZoomer.h"
 #include "BsFPSCamera.h"
 #include "BsObjectRotator.h"
-#include "BsCameraZoomer.h"
 #include <assert.h>
+#include <BsZenLib/ImportAnimation.hpp>
 #include <BsZenLib/ImportStaticMesh.hpp>
+#include <BsZenLib/ImportSkeletalMesh.hpp>
 #include <BsZenLib/ImportZEN.hpp>
+#include <Components/BsCAnimation.h>
 #include <Components/BsCCamera.h>
 #include <Components/BsCLight.h>
 #include <Components/BsCRenderable.h>
@@ -14,13 +18,17 @@
 #include <GUI/BsGUIListBox.h>
 #include <GUI/BsGUIPanel.h>
 #include <Input/BsVirtualInput.h>
+#include <Renderer/BsLight.h>
 #include <Resources/BsBuiltinResources.h>
+#include <Resources/BsResourceManifest.h>
+#include <Resources/BsResources.h>
 #include <Scene/BsSceneObject.h>
 #include <vdfs/fileIndex.h>
 #include <zenload/zCProgMeshProto.h>
-#include <Renderer/BsLight.h>
+#include <BsZenLib/ImportPath.hpp>
 
 using namespace bs;
+using namespace BsZenLib::Res;
 
 /** Registers a common set of keys/buttons that are used for controlling the examples. */
 static void setupInputConfig()
@@ -39,20 +47,8 @@ static void setupInputConfig()
   inputConfig->registerAxis("Zoom", VIRTUAL_AXIS_DESC((UINT32)InputAxis::MouseZ));
 }
 
-static HSceneObject loadMesh(const String& file, const VDFS::FileIndex& vdfs)
+static HSceneObject loadMesh(const String& file, const String& visual, const VDFS::FileIndex& vdfs)
 {
-  ZenLoad::zCProgMeshProto progMesh(file.c_str(), vdfs);
-
-  if (progMesh.getNumSubmeshes() == 0) return {};
-
-  ZenLoad::PackedMesh packedMesh;
-  progMesh.packMesh(packedMesh, 0.01f);
-
-  HSceneObject so = BsZenLib::ImportStaticMeshWithMaterials(file.c_str(), packedMesh, vdfs);
-
-  if (!so) return {};
-
-  return so;
 }
 
 int main(int argc, char** argv)
@@ -67,12 +63,13 @@ int main(int argc, char** argv)
 
   const std::string dataDir = argv[1];
 
-  VDFS::FileIndex vdf;
-  vdf.loadVDF(dataDir + "/Meshes.vdf");
-  vdf.loadVDF(dataDir + "/Textures.vdf");
-  vdf.finalizeLoad();
+  VDFS::FileIndex vdfs;
+  vdfs.loadVDF(dataDir + "/Meshes.vdf");
+  vdfs.loadVDF(dataDir + "/Textures.vdf");
+  vdfs.loadVDF(dataDir + "/Anims.vdf");
+  vdfs.finalizeLoad();
 
-  if (vdf.getKnownFiles().empty())
+  if (vdfs.getKnownFiles().empty())
   {
     std::cout << "No files loaded into the VDFS - is the datapath correct?" << std::endl;
     return -1;
@@ -80,6 +77,12 @@ int main(int argc, char** argv)
 
   VideoMode videoMode(1280, 720);
   Application::startUp(videoMode, "npc-viewer", false);
+
+  if (FileSystem::exists(BsZenLib::GothicPathToCachedManifest("resources")))
+  {
+	  auto prevManifest = ResourceManifest::load(BsZenLib::GothicPathToCachedManifest("resources"), BsZenLib::GetCacheDirectory());
+	  gResources().registerResourceManifest(prevManifest);
+  }
 
   // Add a scene object containing a camera component
   HSceneObject sceneCameraSO = SceneObject::create("SceneCamera");
@@ -109,10 +112,59 @@ int main(int argc, char** argv)
   sceneCameraSO->lookAt(Vector3(0, 0, 0));
   sceneCameraSO->addComponent<CameraZoomer>();
 
-  // Add shown mesh
-  HSceneObject shownMeshSO = SceneObject::create("default");
-  shownMeshSO->addComponent<CRenderable>()->setMesh(gBuiltinResources().getMesh(BuiltinMesh::Box));
+  // Load a model and its animations
+  HModelScriptFile model;
+
+  const String file = "HUMANS.MDS";
+  const String visual = "HUM_BODY_NAKED0.ASC";
+  
+  if (BsZenLib::HasCachedMDS(file))
+  {
+    model = BsZenLib::LoadCachedMDS(file);
+  } 
+  else
+  {
+    model = BsZenLib::ImportAndCacheMDS(file, vdfs);
+  }
+
+  if (!model || model->getMeshes().empty())
+  {
+    gDebug().logError("Failed to load model or animations: " + file + "/" + visual);
+    return -1;
+  }
+
+  HSceneObject shownMeshSO = SceneObject::create(visual);
   shownMeshSO->addComponent<ObjectRotator>();
+
+  HSceneObject meshSO = SceneObject::create(visual + "-draw");
+  meshSO->setParent(shownMeshSO);
+
+  HRenderable renderable = meshSO->addComponent<CRenderable>();
+
+  HMeshWithMaterials sheepVisual = model->getMeshes()[0];
+  renderable->setMesh(sheepVisual->getMesh());
+  renderable->setMaterials(sheepVisual->getMaterials());
+
+  HAnimation animation = meshSO->addComponent<CAnimation>();
+  animation->setWrapMode(AnimWrapMode::Loop);
+
+  //if (!model->getAnimationClips().empty())
+  //{
+
+    //for (size_t i = 0; i < model->getAnimationClips().size(); i++)
+    //{
+      //gDebug().logDebug(toString(i) + ": " + model->getAnimationClips()[i]->getName());
+    //}
+
+    //HAnimationClip clip = model->getAnimationClips()[2];
+
+    //gDebug().logDebug("Playing animation: " + clip->getName());
+
+    //animation->setWrapMode(AnimWrapMode::Loop);
+    //animation->play(clip);
+  //}
+
+  shownMeshSO->setScale(Vector3(0.01f, 0.01f, 0.01f));
 
   // Add GUI
   HSceneObject guiSO = SceneObject::create("GUI");
@@ -124,41 +176,51 @@ int main(int argc, char** argv)
 
   GUIPanel* mainPanel = gui->getPanel();
 
-  Vector<HString> listBoxElements;
+  Vector<HString> listBoxElementsAnims;
+  Vector<HString> listBoxElementsMeshes;
 
-  for (const std::string& f : vdf.getKnownFiles())
+  for (const auto& ani : model->getAnimationClips())
   {
-    if (f.find(".MRM") != std::string::npos)
-    {
-      listBoxElements.push_back(HString(f.c_str()));
-    }
+    listBoxElementsAnims.push_back(HString(ani->getName()));
   }
 
-  GUIListBox* listBox = mainPanel->addNewElement<GUIListBox>(listBoxElements);
+  for (const auto& mesh : model->getMeshes())
+  {
+    listBoxElementsMeshes.push_back(HString(mesh->getName()));
+  }
 
-  listBox->onSelectionToggled.connect([&](UINT32 idx, bool enabled) {
-    String newMesh = listBoxElements[idx].getValue();
+  GUIListBox* listBoxAnims = mainPanel->addNewElement<GUIListBox>(listBoxElementsAnims);
 
-    gDebug().logDebug("User selected element: \"" + newMesh + "\"");
-
-    HSceneObject newSO = loadMesh(newMesh, vdf);
-
-    shownMeshSO->destroy(true);
-
-    shownMeshSO = newSO;
-
-    Sphere bounds = newSO->getComponent<CRenderable>()->getBounds().getSphere();
-    sceneCameraSO->setPosition(bounds.getCenter() +
-                               Vector3(2.0f, 1.0f, 2.0f).normalize() * bounds.getRadius() * 0.2f);
-    newSO->addComponent<ObjectRotator>();
+  listBoxAnims->onSelectionToggled.connect([&](UINT32 idx, bool enabled) {
+    animation->play(model->getAnimationClips()[idx]);
   });
 
-  listBox->setPosition(10, 10);
-  listBox->setWidth(200);
+  listBoxAnims->setPosition(10, 10);
+  listBoxAnims->setWidth(200);
+
+  GUIListBox* listBoxMeshes = mainPanel->addNewElement<GUIListBox>(listBoxElementsMeshes);
+
+  listBoxMeshes->onSelectionToggled.connect([&](UINT32 idx, bool enabled) {
+    HMeshWithMaterials mesh = model->getMeshes()[idx];
+
+    renderable->setMesh(mesh->getMesh());
+    renderable->setMaterials(mesh->getMaterials());
+  });
+
+  listBoxMeshes->setPosition(220, 10);
+  listBoxMeshes->setWidth(200);
+
 
   setupInputConfig();
 
+  SPtr<ResourceManifest> manifest = gResources().getResourceManifest("Default");
+  ResourceManifest::save(manifest, BsZenLib::GothicPathToCachedManifest("resources"), BsZenLib::GetCacheDirectory());
+
   Application::instance().runMainLoop();
+
+  manifest = gResources().getResourceManifest("Default");
+  ResourceManifest::save(manifest, BsZenLib::GothicPathToCachedManifest("resources"), BsZenLib::GetCacheDirectory());
+
   Application::shutDown();
   return 0;
 }

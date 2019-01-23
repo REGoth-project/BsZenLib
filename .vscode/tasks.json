@@ -1,0 +1,43 @@
+{
+    // See https://go.microsoft.com/fwlink/?LinkId=733558
+    // for the documentation about the tasks.json format
+    "version": "2.0.0",
+    "tasks": [
+        {
+            "label": "zen-bs",
+            "type": "shell",
+            "command": "${workspaceRoot}/build/bin/zen-bs 'D:/Games/Gothic II/Data' newworld.zen",
+            "problemMatcher": [],
+            "options": {
+                "cwd": "${workspaceRoot}/build/bin"
+            }
+        },
+
+        {
+            "label": "mesh-viewer",
+            "type": "shell",
+            "command": "${workspaceRoot}/build/bin/mesh-viewer 'D:/Games/Gothic II/Data'",
+            "problemMatcher": [],
+            "options": {
+                "cwd": "${workspaceRoot}/build/bin"
+            }
+        },
+
+        {
+            "label": "npc-viewer",
+            "type": "shell",
+            "command": "${workspaceRoot}/build/bin/npc-viewer 'D:/Games/Gothic II/Data'",
+            "problemMatcher": [],
+            "options": {
+                "cwd": "${workspaceRoot}/build/bin"
+            }
+        },
+
+        {
+            "label": "clean cache",
+            "type": "shell",
+            "command": "rm -r build/bin/cache",
+            "problemMatcher": []
+        }
+    ]
+}

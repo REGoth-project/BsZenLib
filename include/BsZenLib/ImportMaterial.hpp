@@ -21,14 +21,13 @@ namespace BsZenLib
    * Will import (and cache) a Material from the original game along with all textures it is
    * depending on.
    *
-   * @param meshName   Name of the Mesh this material was retrieved from. Needs to be provided since
-   *                   materials don't have a name in the original engine.
+   * @param cacheName  Name the cached material should get.
    * @param material   Material-data pulled from the original game files.
    * @param vdfs       FileIndex to load the textures from.
    *
    * @return bs::f material configured to match the original games material passed in.
    */
-  bs::HMaterial ImportAndCacheMaterialWithTextures(const bs::String& meshName,
+  bs::HMaterial ImportAndCacheMaterialWithTextures(const bs::String& cacheName,
                                                    const ZenLoad::zCMaterialData& material,
                                                    const VDFS::FileIndex& vdfs);
 
@@ -54,4 +53,16 @@ namespace BsZenLib
    * @return Whether the cache for the given material exists.
    */
   bool HasCachedMaterial(const bs::String& cacheName);
+
+  /**
+   * Combines the submesh-index with the meshes name to make a unique material name.
+   * 
+   * Since in bs::f, every Material needs the be in its own file, but Gothic has
+   * Materials by Mesh, we store each material as "meshname-material-i" or something
+   * similar.
+   * 
+   * This function builds the actual name of the cached materials name from a meshname
+   * and the submesh index.
+   */
+  bs::String BuildMaterialNameForSubmesh(const bs::String& cacheName, bs::UINT32 submesh);
 }  // namespace BsZenLib

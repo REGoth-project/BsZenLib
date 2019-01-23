@@ -1,0 +1,288 @@
+
+
+<!DOCTYPE html>
+<!--[if IE 8]><html class="no-js lt-ie9" lang="en" > <![endif]-->
+<!--[if gt IE 8]><!--> <html class="no-js" lang="en" > <!--<![endif]-->
+<head>
+  <meta charset="utf-8">
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  
+  <title>Importing Materials &mdash; BsZenLib  documentation</title>
+  
+
+  
+  
+  
+  
+
+  
+
+  
+  
+    
+
+  
+
+  <link rel="stylesheet" href="../_static/css/theme.css" type="text/css" />
+  <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" />
+    <link rel="prev" title="Importing Skeletal Meshes" href="skeletalmeshes.html" /> 
+
+  
+  <script src="../_static/js/modernizr.min.js"></script>
+
+</head>
+
+<body class="wy-body-for-nav">
+
+   
+  <div class="wy-grid-for-nav">
+
+    
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search">
+          
+
+          
+            <a href="../index.html" class="icon icon-home"> BsZenLib
+          
+
+          
+          </a>
+
+          
+            
+            
+          
+
+          
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+
+          
+        </div>
+
+        <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="main navigation">
+          
+            
+            
+              
+            
+            
+              <p class="caption"><span class="caption-text">Contents:</span></p>
+<ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="caching.html">Caching</a></li>
+<li class="toctree-l1"><a class="reference internal" href="vdfs.html">Virtual File System</a></li>
+<li class="toctree-l1"><a class="reference internal" href="textures.html">Importing Textures</a></li>
+<li class="toctree-l1"><a class="reference internal" href="staticmeshes.html">Importing Static Meshes</a></li>
+<li class="toctree-l1"><a class="reference internal" href="skeletalmeshes.html">Importing Skeletal Meshes</a></li>
+<li class="toctree-l1 current"><a class="current reference internal" href="#">Importing Materials</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="#importmaterial-hpp"><code class="docutils literal notranslate"><span class="pre">ImportMaterial.hpp</span></code></a></li>
+</ul>
+</li>
+</ul>
+
+            
+          
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
+
+      
+      <nav class="wy-nav-top" aria-label="top navigation">
+        
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../index.html">BsZenLib</a>
+        
+      </nav>
+
+
+      <div class="wy-nav-content">
+        
+        <div class="rst-content">
+        
+          
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<div role="navigation" aria-label="breadcrumbs navigation">
+
+  <ul class="wy-breadcrumbs">
+    
+      <li><a href="../index.html">Docs</a> &raquo;</li>
+        
+      <li>Importing Materials</li>
+    
+    
+      <li class="wy-breadcrumbs-aside">
+        
+            
+            <a href="../_sources/content/materials.rst.txt" rel="nofollow"> View page source</a>
+          
+        
+      </li>
+    
+  </ul>
+
+  
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+            
+  <div class="section" id="importing-materials">
+<h1>Importing Materials<a class="headerlink" href="#importing-materials" title="Permalink to this headline">¶</a></h1>
+<div class="section" id="importmaterial-hpp">
+<h2><code class="docutils literal notranslate"><span class="pre">ImportMaterial.hpp</span></code><a class="headerlink" href="#importmaterial-hpp" title="Permalink to this headline">¶</a></h2>
+<p>Import and cache materials. </p>
+<dl class="type">
+<dt id="_CPPv38BsZenLib">
+<span id="_CPPv28BsZenLib"></span><span id="BsZenLib"></span><span class="target" id="namespace_bs_zen_lib"></span><em class="property">namespace </em><code class="descname">BsZenLib</code><br /></dt>
+<dd><div class="breathe-sectiondef docutils container">
+<p class="breathe-sectiondef-title rubric">Functions</p>
+<dl class="function">
+<dt id="_CPPv3N8BsZenLib34ImportAndCacheMaterialWithTexturesERKN2bs6StringERKN7ZenLoad14zCMaterialDataERKN4VDFS9FileIndexE">
+<span id="_CPPv2N8BsZenLib34ImportAndCacheMaterialWithTexturesERKN2bs6StringERKN7ZenLoad14zCMaterialDataERKN4VDFS9FileIndexE"></span><span id="BsZenLib::ImportAndCacheMaterialWithTextures__bs::StringCR.ZenLoad::zCMaterialDataCR.VDFS::FileIndexCR"></span><span class="target" id="_import_material_8hpp_1ae7948bfc8b65313daa2ad06c2b17a4f1"></span>bs::HMaterial <code class="descname">ImportAndCacheMaterialWithTextures</code><span class="sig-paren">(</span><em class="property">const</em> bs::String &amp;<em>cacheName</em>, <em class="property">const</em> ZenLoad::zCMaterialData &amp;<em>material</em>, <em class="property">const</em> VDFS::FileIndex &amp;<em>vdfs</em><span class="sig-paren">)</span><a class="headerlink" href="#_CPPv3N8BsZenLib34ImportAndCacheMaterialWithTexturesERKN2bs6StringERKN7ZenLoad14zCMaterialDataERKN4VDFS9FileIndexE" title="Permalink to this definition">¶</a><br /></dt>
+<dd><p>Will import (and cache) a Material from the original game along with all textures it is depending on. </p>
+<p><dl class="docutils">
+<dt><strong>Return</strong></dt>
+<dd>bs::f material configured to match the original games material passed in. </dd>
+<dt><strong>Parameters</strong></dt>
+<dd><ul class="breatheparameterlist first last simple">
+<li><code class="docutils literal notranslate"><span class="pre">cacheName</span></code>: Name the cached material should get. </li>
+<li><code class="docutils literal notranslate"><span class="pre">material</span></code>: Material-data pulled from the original game files. </li>
+<li><code class="docutils literal notranslate"><span class="pre">vdfs</span></code>: FileIndex to load the textures from.</li>
+</ul>
+</dd>
+</dl>
+</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="_CPPv3N8BsZenLib18LoadCachedMaterialERKN2bs6StringE">
+<span id="_CPPv2N8BsZenLib18LoadCachedMaterialERKN2bs6StringE"></span><span id="BsZenLib::LoadCachedMaterial__bs::StringCR"></span><span class="target" id="_import_material_8hpp_1a9cd9531aebaa23d1e00ce45f04fa05de"></span>bs::HMaterial <code class="descname">LoadCachedMaterial</code><span class="sig-paren">(</span><em class="property">const</em> bs::String &amp;<em>cacheName</em><span class="sig-paren">)</span><a class="headerlink" href="#_CPPv3N8BsZenLib18LoadCachedMaterialERKN2bs6StringE" title="Permalink to this definition">¶</a><br /></dt>
+<dd><p>Load a cached Material. </p>
+<p>To generate the cached material file, see <a class="reference internal" href="#_import_material_8hpp_1ae7948bfc8b65313daa2ad06c2b17a4f1"><span class="std std-ref">ImportAndCacheMaterialWithTextures()</span></a>.</p>
+<p><dl class="docutils">
+<dt><strong>Return</strong></dt>
+<dd>Cached bs::f material. </dd>
+<dt><strong>Parameters</strong></dt>
+<dd><ul class="breatheparameterlist first last simple">
+<li><code class="docutils literal notranslate"><span class="pre">cacheName.</span></code>: See <a class="reference internal" href="#_import_material_8hpp_1ae7948bfc8b65313daa2ad06c2b17a4f1"><span class="std std-ref">ImportAndCacheMaterialWithTextures()</span></a>.</li>
+</ul>
+</dd>
+</dl>
+</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="_CPPv3N8BsZenLib17HasCachedMaterialERKN2bs6StringE">
+<span id="_CPPv2N8BsZenLib17HasCachedMaterialERKN2bs6StringE"></span><span id="BsZenLib::HasCachedMaterial__bs::StringCR"></span><span class="target" id="_import_material_8hpp_1aa663197e3c46178f380a336c5250bfd2"></span>bool <code class="descname">HasCachedMaterial</code><span class="sig-paren">(</span><em class="property">const</em> bs::String &amp;<em>cacheName</em><span class="sig-paren">)</span><a class="headerlink" href="#_CPPv3N8BsZenLib17HasCachedMaterialERKN2bs6StringE" title="Permalink to this definition">¶</a><br /></dt>
+<dd><p>Whether the given material has been cached before. </p>
+<p>See <a class="reference internal" href="#_import_material_8hpp_1a9cd9531aebaa23d1e00ce45f04fa05de"><span class="std std-ref">LoadCachedMaterial()</span></a> to actually load it. See <a class="reference internal" href="#_import_material_8hpp_1ae7948bfc8b65313daa2ad06c2b17a4f1"><span class="std std-ref">ImportAndCacheMaterialWithTextures()</span></a> to generate the cache.</p>
+<p><dl class="docutils">
+<dt><strong>Return</strong></dt>
+<dd>Whether the cache for the given material exists. </dd>
+<dt><strong>Parameters</strong></dt>
+<dd><ul class="breatheparameterlist first last simple">
+<li><code class="docutils literal notranslate"><span class="pre">cacheName.</span></code>: See <a class="reference internal" href="#_import_material_8hpp_1ae7948bfc8b65313daa2ad06c2b17a4f1"><span class="std std-ref">ImportAndCacheMaterialWithTextures()</span></a>.</li>
+</ul>
+</dd>
+</dl>
+</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="_CPPv3N8BsZenLib27BuildMaterialNameForSubmeshERKN2bs6StringEN2bs6UINT32E">
+<span id="_CPPv2N8BsZenLib27BuildMaterialNameForSubmeshERKN2bs6StringEN2bs6UINT32E"></span><span id="BsZenLib::BuildMaterialNameForSubmesh__bs::StringCR.bs::UINT32"></span><span class="target" id="_import_material_8hpp_1ae27c0e1873b74d7608a2970a2317e426"></span>bs::String <code class="descname">BuildMaterialNameForSubmesh</code><span class="sig-paren">(</span><em class="property">const</em> bs::String &amp;<em>cacheName</em>, bs::UINT32 <em>submesh</em><span class="sig-paren">)</span><a class="headerlink" href="#_CPPv3N8BsZenLib27BuildMaterialNameForSubmeshERKN2bs6StringEN2bs6UINT32E" title="Permalink to this definition">¶</a><br /></dt>
+<dd><p>Combines the submesh-index with the meshes name to make a unique material name. </p>
+<p>Since in bs::f, every Material needs the be in its own file, but Gothic has Materials by Mesh, we store each material as “meshname-material-i” or something similar.</p>
+<p>This function builds the actual name of the cached materials name from a meshname and the submesh index. </p>
+</dd></dl>
+
+</div>
+</dd></dl>
+
+</div>
+</div>
+
+
+           </div>
+           
+          </div>
+          <footer>
+  
+    <div class="rst-footer-buttons" role="navigation" aria-label="footer navigation">
+      
+      
+        <a href="skeletalmeshes.html" class="btn btn-neutral" title="Importing Skeletal Meshes" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left"></span> Previous</a>
+      
+    </div>
+  
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>
+        &copy; Copyright 2019, Andre Taulien
+
+    </p>
+  </div>
+  Built with <a href="http://sphinx-doc.org/">Sphinx</a> using a <a href="https://github.com/rtfd/sphinx_rtd_theme">theme</a> provided by <a href="https://readthedocs.org">Read the Docs</a>. 
+
+</footer>
+
+        </div>
+      </div>
+
+    </section>
+
+  </div>
+  
+
+
+  
+
+    
+    
+      <script type="text/javascript" id="documentation_options" data-url_root="../" src="../_static/documentation_options.js"></script>
+        <script type="text/javascript" src="../_static/jquery.js"></script>
+        <script type="text/javascript" src="../_static/underscore.js"></script>
+        <script type="text/javascript" src="../_static/doctools.js"></script>
+        <script type="text/javascript" src="../_static/language_data.js"></script>
+    
+
+  
+
+  <script type="text/javascript" src="../_static/js/theme.js"></script>
+
+  <script type="text/javascript">
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

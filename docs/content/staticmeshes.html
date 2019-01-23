@@ -1,0 +1,391 @@
+
+
+<!DOCTYPE html>
+<!--[if IE 8]><html class="no-js lt-ie9" lang="en" > <![endif]-->
+<!--[if gt IE 8]><!--> <html class="no-js" lang="en" > <!--<![endif]-->
+<head>
+  <meta charset="utf-8">
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  
+  <title>Importing Static Meshes &mdash; BsZenLib  documentation</title>
+  
+
+  
+  
+  
+  
+
+  
+
+  
+  
+    
+
+  
+
+  <link rel="stylesheet" href="../_static/css/theme.css" type="text/css" />
+  <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" />
+    <link rel="next" title="Importing Skeletal Meshes" href="skeletalmeshes.html" />
+    <link rel="prev" title="Importing Textures" href="textures.html" /> 
+
+  
+  <script src="../_static/js/modernizr.min.js"></script>
+
+</head>
+
+<body class="wy-body-for-nav">
+
+   
+  <div class="wy-grid-for-nav">
+
+    
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search">
+          
+
+          
+            <a href="../index.html" class="icon icon-home"> BsZenLib
+          
+
+          
+          </a>
+
+          
+            
+            
+          
+
+          
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+
+          
+        </div>
+
+        <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="main navigation">
+          
+            
+            
+              
+            
+            
+              <p class="caption"><span class="caption-text">Contents:</span></p>
+<ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="caching.html">Caching</a></li>
+<li class="toctree-l1"><a class="reference internal" href="vdfs.html">Virtual File System</a></li>
+<li class="toctree-l1"><a class="reference internal" href="textures.html">Importing Textures</a></li>
+<li class="toctree-l1 current"><a class="current reference internal" href="#">Importing Static Meshes</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="#importstaticmesh-hpp"><code class="docutils literal notranslate"><span class="pre">ImportStaticMesh.hpp</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="skeletalmeshes.html">Importing Skeletal Meshes</a></li>
+<li class="toctree-l1"><a class="reference internal" href="materials.html">Importing Materials</a></li>
+</ul>
+
+            
+          
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
+
+      
+      <nav class="wy-nav-top" aria-label="top navigation">
+        
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../index.html">BsZenLib</a>
+        
+      </nav>
+
+
+      <div class="wy-nav-content">
+        
+        <div class="rst-content">
+        
+          
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<div role="navigation" aria-label="breadcrumbs navigation">
+
+  <ul class="wy-breadcrumbs">
+    
+      <li><a href="../index.html">Docs</a> &raquo;</li>
+        
+      <li>Importing Static Meshes</li>
+    
+    
+      <li class="wy-breadcrumbs-aside">
+        
+            
+            <a href="../_sources/content/staticmeshes.rst.txt" rel="nofollow"> View page source</a>
+          
+        
+      </li>
+    
+  </ul>
+
+  
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+            
+  <div class="section" id="importing-static-meshes">
+<h1>Importing Static Meshes<a class="headerlink" href="#importing-static-meshes" title="Permalink to this headline">¶</a></h1>
+<div class="section" id="importstaticmesh-hpp">
+<h2><code class="docutils literal notranslate"><span class="pre">ImportStaticMesh.hpp</span></code><a class="headerlink" href="#importstaticmesh-hpp" title="Permalink to this headline">¶</a></h2>
+<p>Import and cache static meshes (.3DS, .MRM) </p>
+<dl class="type">
+<dt id="_CPPv38BsZenLib">
+<span id="_CPPv28BsZenLib"></span><span id="BsZenLib"></span><span class="target" id="namespace_bs_zen_lib"></span><em class="property">namespace </em><code class="descname">BsZenLib</code><br /></dt>
+<dd><div class="breathe-sectiondef docutils container">
+<p class="breathe-sectiondef-title rubric">Functions</p>
+<dl class="function">
+<dt id="_CPPv3N8BsZenLib19HasCachedStaticMeshERKN2bs6StringE">
+<span id="_CPPv2N8BsZenLib19HasCachedStaticMeshERKN2bs6StringE"></span><span id="BsZenLib::HasCachedStaticMesh__bs::StringCR"></span><span class="target" id="_import_static_mesh_8hpp_1abc8e9043d81b280b3d4b36e3268c3e77"></span>bool <code class="descname">HasCachedStaticMesh</code><span class="sig-paren">(</span><em class="property">const</em> bs::String &amp;<em>originalFileName</em><span class="sig-paren">)</span><a class="headerlink" href="#_CPPv3N8BsZenLib19HasCachedStaticMeshERKN2bs6StringE" title="Permalink to this definition">¶</a><br /></dt>
+<dd><p>Checks whether the given static mesh has been cached. </p>
+<p><dl class="docutils">
+<dt><strong>Return</strong></dt>
+<dd>True, if the file was cached. False otherwise. </dd>
+<dt><strong>Parameters</strong></dt>
+<dd><ul class="breatheparameterlist first last simple">
+<li><code class="docutils literal notranslate"><span class="pre">orignalFileName</span></code>: Name of the file in the original game (eg. “STONE.3DS”)</li>
+</ul>
+</dd>
+</dl>
+</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="_CPPv3N8BsZenLib20LoadCachedStaticMeshERKN2bs6StringE">
+<span id="_CPPv2N8BsZenLib20LoadCachedStaticMeshERKN2bs6StringE"></span><span id="BsZenLib::LoadCachedStaticMesh__bs::StringCR"></span><span class="target" id="_import_static_mesh_8hpp_1ad6f648bf43d74d38074a11229888295d"></span>Res::HMeshWithMaterials <code class="descname">LoadCachedStaticMesh</code><span class="sig-paren">(</span><em class="property">const</em> bs::String &amp;<em>originalFileName</em><span class="sig-paren">)</span><a class="headerlink" href="#_CPPv3N8BsZenLib20LoadCachedStaticMeshERKN2bs6StringE" title="Permalink to this definition">¶</a><br /></dt>
+<dd><p>Loads the cached version representing the given original file. </p>
+<p>If unsure whether the cached file exists, call <a class="reference internal" href="#_import_static_mesh_8hpp_1abc8e9043d81b280b3d4b36e3268c3e77"><span class="std std-ref">HasCachedStaticMesh()</span></a>. To create the cache, call <a class="reference internal" href="#_import_static_mesh_8hpp_1a4f0a0cccb2f5ac0724975bc0dd0a46b1"><span class="std std-ref">ImportAndCacheStaticMesh()</span></a>.</p>
+<p><dl class="docutils">
+<dt><strong>Return</strong></dt>
+<dd>Handle to the cached mesh (Empty handle if none was found) </dd>
+<dt><strong>Parameters</strong></dt>
+<dd><ul class="breatheparameterlist first last simple">
+<li><code class="docutils literal notranslate"><span class="pre">originalFileName</span></code>: Name of the mesh in the original game files (eg. “STONE.3DS”)</li>
+</ul>
+</dd>
+</dl>
+</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="_CPPv3N8BsZenLib24ImportAndCacheStaticMeshERKN2bs6StringERKN4VDFS9FileIndexE">
+<span id="_CPPv2N8BsZenLib24ImportAndCacheStaticMeshERKN2bs6StringERKN4VDFS9FileIndexE"></span><span id="BsZenLib::ImportAndCacheStaticMesh__bs::StringCR.VDFS::FileIndexCR"></span><span class="target" id="_import_static_mesh_8hpp_1a32726900a7f39bb90d6d823fb8717959"></span>Res::HMeshWithMaterials <code class="descname">ImportAndCacheStaticMesh</code><span class="sig-paren">(</span><em class="property">const</em> bs::String &amp;<em>originalFileName</em>, <em class="property">const</em> VDFS::FileIndex &amp;<em>vdfs</em><span class="sig-paren">)</span><a class="headerlink" href="#_CPPv3N8BsZenLib24ImportAndCacheStaticMeshERKN2bs6StringERKN4VDFS9FileIndexE" title="Permalink to this definition">¶</a><br /></dt>
+<dd><p>Imports and caches a static mesh (.3DS) from the original game. </p>
+<p><dl class="docutils">
+<dt><strong>Note</strong></dt>
+<dd>This will also cache Materials and Textures.</dd>
+<dt><strong>Return</strong></dt>
+<dd>Handle to the imported mesh (Empty if unsuccessfull) </dd>
+<dt><strong>Parameters</strong></dt>
+<dd><ul class="breatheparameterlist first last simple">
+<li><code class="docutils literal notranslate"><span class="pre">originalFileName</span></code>: Name of the static mesh in the original game (eg. “STONE.3DS”) </li>
+<li><code class="docutils literal notranslate"><span class="pre">vdfs</span></code>: VDFS containing the file to be imported.</li>
+</ul>
+</dd>
+</dl>
+</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="_CPPv3N8BsZenLib24ImportAndCacheStaticMeshERKN2bs6StringERKN7ZenLoad10PackedMeshERKN4VDFS9FileIndexE">
+<span id="_CPPv2N8BsZenLib24ImportAndCacheStaticMeshERKN2bs6StringERKN7ZenLoad10PackedMeshERKN4VDFS9FileIndexE"></span><span id="BsZenLib::ImportAndCacheStaticMesh__bs::StringCR.ZenLoad::PackedMeshCR.VDFS::FileIndexCR"></span><span class="target" id="_import_static_mesh_8hpp_1a4f0a0cccb2f5ac0724975bc0dd0a46b1"></span>Res::HMeshWithMaterials <code class="descname">ImportAndCacheStaticMesh</code><span class="sig-paren">(</span><em class="property">const</em> bs::String &amp;<em>originalFileName</em>, <em class="property">const</em> ZenLoad::PackedMesh &amp;<em>packedMesh</em>, <em class="property">const</em> VDFS::FileIndex &amp;<em>vdfs</em><span class="sig-paren">)</span><a class="headerlink" href="#_CPPv3N8BsZenLib24ImportAndCacheStaticMeshERKN2bs6StringERKN7ZenLoad10PackedMeshERKN4VDFS9FileIndexE" title="Permalink to this definition">¶</a><br /></dt>
+<dd><p>Imports and caches a static mesh (.3DS) from the original game. </p>
+<p><dl class="docutils">
+<dt><strong>Note</strong></dt>
+<dd>This will also cache Materials and Textures.</dd>
+<dt><strong>Return</strong></dt>
+<dd>Handle to the imported mesh (Empty if unsuccessfull) </dd>
+<dt><strong>Parameters</strong></dt>
+<dd><ul class="breatheparameterlist first last simple">
+<li><code class="docutils literal notranslate"><span class="pre">originalFileName</span></code>: Name of the static mesh in the original game (eg. “STONE.3DS”) </li>
+<li><code class="docutils literal notranslate"><span class="pre">vdfs</span></code>: VDFS containing the file to be imported.</li>
+</ul>
+</dd>
+</dl>
+</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="_CPPv3N8BsZenLib32ImportAndCacheStaticMeshGeometryERKN2bs6StringERKN4VDFS9FileIndexE">
+<span id="_CPPv2N8BsZenLib32ImportAndCacheStaticMeshGeometryERKN2bs6StringERKN4VDFS9FileIndexE"></span><span id="BsZenLib::ImportAndCacheStaticMeshGeometry__bs::StringCR.VDFS::FileIndexCR"></span><span class="target" id="_import_static_mesh_8hpp_1ad1d7686892f3efb519360ea0d0bb07ec"></span>bs::HMesh <code class="descname">ImportAndCacheStaticMeshGeometry</code><span class="sig-paren">(</span><em class="property">const</em> bs::String &amp;<em>originalFileName</em>, <em class="property">const</em> VDFS::FileIndex &amp;<em>vdfs</em><span class="sig-paren">)</span><a class="headerlink" href="#_CPPv3N8BsZenLib32ImportAndCacheStaticMeshGeometryERKN2bs6StringERKN4VDFS9FileIndexE" title="Permalink to this definition">¶</a><br /></dt>
+<dd><p>Imports and caches only the geometry of a static mesh (.3DS) from the original game. </p>
+<p><dl class="docutils">
+<dt><strong>Return</strong></dt>
+<dd>Handle to the imported mesh (Empty if unsuccessfull) </dd>
+<dt><strong>Parameters</strong></dt>
+<dd><ul class="breatheparameterlist first last simple">
+<li><code class="docutils literal notranslate"><span class="pre">originalFileName</span></code>: Name of the static mesh in the original game (eg. “STONE.3DS”) </li>
+<li><code class="docutils literal notranslate"><span class="pre">vdfs</span></code>: VDFS containing the file to be imported.</li>
+</ul>
+</dd>
+</dl>
+</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="_CPPv3N8BsZenLib32ImportAndCacheStaticMeshGeometryERKN2bs6StringERKN7ZenLoad10PackedMeshE">
+<span id="_CPPv2N8BsZenLib32ImportAndCacheStaticMeshGeometryERKN2bs6StringERKN7ZenLoad10PackedMeshE"></span><span id="BsZenLib::ImportAndCacheStaticMeshGeometry__bs::StringCR.ZenLoad::PackedMeshCR"></span><span class="target" id="_import_static_mesh_8hpp_1acc724dda8fe9d7f9aa5aa58ac6a46b1d"></span>bs::HMesh <code class="descname">ImportAndCacheStaticMeshGeometry</code><span class="sig-paren">(</span><em class="property">const</em> bs::String &amp;<em>originalFileName</em>, <em class="property">const</em> ZenLoad::PackedMesh &amp;<em>packedMesh</em><span class="sig-paren">)</span><a class="headerlink" href="#_CPPv3N8BsZenLib32ImportAndCacheStaticMeshGeometryERKN2bs6StringERKN7ZenLoad10PackedMeshE" title="Permalink to this definition">¶</a><br /></dt>
+<dd><p>Imports and caches only the geometry from custom mesh data. </p>
+<p><dl class="docutils">
+<dt><strong>Return</strong></dt>
+<dd>Handle to the imported mesh (Empty if unsuccessfull) </dd>
+<dt><strong>Parameters</strong></dt>
+<dd><ul class="breatheparameterlist first last simple">
+<li><code class="docutils literal notranslate"><span class="pre">originalFileName</span></code>: Name of the static mesh in the original game (eg. “STONE.3DS”) </li>
+<li><code class="docutils literal notranslate"><span class="pre">packedMesh</span></code>: Custom mesh data.</li>
+</ul>
+</dd>
+</dl>
+</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="_CPPv3N8BsZenLib33ImportAndCacheStaticMeshMaterialsERKN2bs6StringERKN4VDFS9FileIndexE">
+<span id="_CPPv2N8BsZenLib33ImportAndCacheStaticMeshMaterialsERKN2bs6StringERKN4VDFS9FileIndexE"></span><span id="BsZenLib::ImportAndCacheStaticMeshMaterials__bs::StringCR.VDFS::FileIndexCR"></span><span class="target" id="_import_static_mesh_8hpp_1aa0fa86d7da4739b87a5e591017aee35c"></span>bs::Vector&lt;bs::HMaterial&gt; <code class="descname">ImportAndCacheStaticMeshMaterials</code><span class="sig-paren">(</span><em class="property">const</em> bs::String &amp;<em>originalFileName</em>, <em class="property">const</em> VDFS::FileIndex &amp;<em>vdfs</em><span class="sig-paren">)</span><a class="headerlink" href="#_CPPv3N8BsZenLib33ImportAndCacheStaticMeshMaterialsERKN2bs6StringERKN4VDFS9FileIndexE" title="Permalink to this definition">¶</a><br /></dt>
+<dd><p>Imports and caches only the materials of a static mesh (.3DS) from the original game. </p>
+<p><dl class="docutils">
+<dt><strong>Note</strong></dt>
+<dd>This will also cache Textures.</dd>
+<dt><strong>Return</strong></dt>
+<dd>Handles to the imported materials (Empty if unsuccessfull) </dd>
+<dt><strong>Parameters</strong></dt>
+<dd><ul class="breatheparameterlist first last simple">
+<li><code class="docutils literal notranslate"><span class="pre">originalFileName</span></code>: Name of the static mesh in the original game (eg. “STONE.3DS”) </li>
+<li><code class="docutils literal notranslate"><span class="pre">vdfs</span></code>: VDFS containing textures needed by the materials.</li>
+</ul>
+</dd>
+</dl>
+</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="_CPPv3N8BsZenLib33ImportAndCacheStaticMeshMaterialsERKN2bs6StringERKN7ZenLoad10PackedMeshERKN4VDFS9FileIndexE">
+<span id="_CPPv2N8BsZenLib33ImportAndCacheStaticMeshMaterialsERKN2bs6StringERKN7ZenLoad10PackedMeshERKN4VDFS9FileIndexE"></span><span id="BsZenLib::ImportAndCacheStaticMeshMaterials__bs::StringCR.ZenLoad::PackedMeshCR.VDFS::FileIndexCR"></span><span class="target" id="_import_static_mesh_8hpp_1a6c921c3da271ebc2cffafb0da55d6733"></span>bs::Vector&lt;bs::HMaterial&gt; <code class="descname">ImportAndCacheStaticMeshMaterials</code><span class="sig-paren">(</span><em class="property">const</em> bs::String &amp;<em>originalFileName</em>, <em class="property">const</em> ZenLoad::PackedMesh &amp;<em>packedMesh</em>, <em class="property">const</em> VDFS::FileIndex &amp;<em>vdfs</em><span class="sig-paren">)</span><a class="headerlink" href="#_CPPv3N8BsZenLib33ImportAndCacheStaticMeshMaterialsERKN2bs6StringERKN7ZenLoad10PackedMeshERKN4VDFS9FileIndexE" title="Permalink to this definition">¶</a><br /></dt>
+<dd><p>Imports and caches only the materials from custom mesh data. </p>
+<p><dl class="docutils">
+<dt><strong>Note</strong></dt>
+<dd>This will also cache Textures.</dd>
+<dt><strong>Return</strong></dt>
+<dd>Handles to the imported materials (Empty if unsuccessfull) </dd>
+<dt><strong>Parameters</strong></dt>
+<dd><ul class="breatheparameterlist first last simple">
+<li><code class="docutils literal notranslate"><span class="pre">originalFileName</span></code>: Name of the static mesh in the original game (eg. “STONE.3DS”) </li>
+<li><code class="docutils literal notranslate"><span class="pre">packedMesh</span></code>: Custom mesh data. </li>
+<li><code class="docutils literal notranslate"><span class="pre">vdfs</span></code>: VDFS containing textures needed by the materials.</li>
+</ul>
+</dd>
+</dl>
+</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="_CPPv3N8BsZenLib24ImportStaticMeshGeometryERKN7ZenLoad10PackedMeshE">
+<span id="_CPPv2N8BsZenLib24ImportStaticMeshGeometryERKN7ZenLoad10PackedMeshE"></span><span id="BsZenLib::ImportStaticMeshGeometry__ZenLoad::PackedMeshCR"></span><span class="target" id="_import_static_mesh_8hpp_1a87bc680ef34ab35e605d78dd7e196438"></span>bs::HMesh <code class="descname">ImportStaticMeshGeometry</code><span class="sig-paren">(</span><em class="property">const</em> ZenLoad::PackedMesh &amp;<em>packedMesh</em><span class="sig-paren">)</span><a class="headerlink" href="#_CPPv3N8BsZenLib24ImportStaticMeshGeometryERKN7ZenLoad10PackedMeshE" title="Permalink to this definition">¶</a><br /></dt>
+<dd><p>Imports only the geometry from custom mesh data without caching it. </p>
+<p><dl class="docutils">
+<dt><strong>Return</strong></dt>
+<dd>Handle to the imported mesh (Empty if unsuccessfull) </dd>
+<dt><strong>Parameters</strong></dt>
+<dd><ul class="breatheparameterlist first last simple">
+<li><code class="docutils literal notranslate"><span class="pre">packedMesh</span></code>: Custom mesh data.</li>
+</ul>
+</dd>
+</dl>
+</p>
+</dd></dl>
+
+</div>
+</dd></dl>
+
+</div>
+</div>
+
+
+           </div>
+           
+          </div>
+          <footer>
+  
+    <div class="rst-footer-buttons" role="navigation" aria-label="footer navigation">
+      
+        <a href="skeletalmeshes.html" class="btn btn-neutral float-right" title="Importing Skeletal Meshes" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right"></span></a>
+      
+      
+        <a href="textures.html" class="btn btn-neutral" title="Importing Textures" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left"></span> Previous</a>
+      
+    </div>
+  
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>
+        &copy; Copyright 2019, Andre Taulien
+
+    </p>
+  </div>
+  Built with <a href="http://sphinx-doc.org/">Sphinx</a> using a <a href="https://github.com/rtfd/sphinx_rtd_theme">theme</a> provided by <a href="https://readthedocs.org">Read the Docs</a>. 
+
+</footer>
+
+        </div>
+      </div>
+
+    </section>
+
+  </div>
+  
+
+
+  
+
+    
+    
+      <script type="text/javascript" id="documentation_options" data-url_root="../" src="../_static/documentation_options.js"></script>
+        <script type="text/javascript" src="../_static/jquery.js"></script>
+        <script type="text/javascript" src="../_static/underscore.js"></script>
+        <script type="text/javascript" src="../_static/doctools.js"></script>
+        <script type="text/javascript" src="../_static/language_data.js"></script>
+    
+
+  
+
+  <script type="text/javascript" src="../_static/js/theme.js"></script>
+
+  <script type="text/javascript">
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

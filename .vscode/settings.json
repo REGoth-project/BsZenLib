@@ -1,0 +1,9 @@
+{
+    "C_Cpp.configurationWarnings": "Disabled",
+    "restructuredtext.confPath": "",
+    "files.associations": {
+        "xstring": "cpp",
+        "memory": "cpp",
+        "xmemory0": "cpp"
+    }
+}

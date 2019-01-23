@@ -1,7 +1,9 @@
+.. _import-textures:
+
 Importing Textures
 ==================
 
-Functions
----------
+``ImportTexture.hpp``
+---------------------
 
 .. doxygenfile:: ImportTexture.hpp
