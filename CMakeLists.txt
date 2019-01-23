@@ -36,17 +36,17 @@ if (BSZENLIB_DOWNLOAD_BSF_BINARIES)
   if (WIN32)
     FetchContent_Declare(bsfBinaries
       SOURCE_DIR ${bsf_INSTALL_DIR}
-      URL        https://dilborceisv8p.cloudfront.net/bsf_2019.01.04_win64.zip
+      URL        https://dilborceisv8p.cloudfront.net/bsf_2019.01.23_win64.zip
       )
   elseif (APPLE)
     FetchContent_Declare(bsfBinaries
       SOURCE_DIR ${bsf_INSTALL_DIR}
-      URL        https://dilborceisv8p.cloudfront.net/bsf_2019.01.04_osx.tar.gz
+      URL        https://dilborceisv8p.cloudfront.net/bsf_2019.01.23_osx.tar.gz
       )
   elseif (UNIX)
     FetchContent_Declare(bsfBinaries
       SOURCE_DIR ${bsf_INSTALL_DIR}
-      URL        https://dilborceisv8p.cloudfront.net/bsf_2019.01.04_linux.tar.gz
+      URL        https://dilborceisv8p.cloudfront.net/bsf_2019.01.23_linux.tar.gz
       )
   else()
     message(FATAL_ERROR "No prebuilt binaries available for this platform!")
