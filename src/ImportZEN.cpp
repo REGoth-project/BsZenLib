@@ -27,15 +27,13 @@ static HSceneObject addWorldMesh(const bs::String& worldName, ZenLoad::ZenParser
 static HSceneObject addStaticMeshObject(const String& file, const VDFS::FileIndex& vdfs);
 static HSceneObject walkTree(const ZenLoad::zCVobData& root, const VDFS::FileIndex& vdfs);
 
-
 // - Implementation --------------------------------------------------------------------------------
 
 Vector<UUID> GetDependenciesRecursive(UUID uuid)
 {
   Path filePath;
-  
-  if (!gResources().getFilePathFromUUID(uuid, filePath))
-    return {};
+
+  if (!gResources().getFilePathFromUUID(uuid, filePath)) return {};
 
   Vector<UUID> deps = gResources().getDependencies(filePath);
 
@@ -51,7 +49,6 @@ Vector<UUID> GetDependenciesRecursive(UUID uuid)
 
   return deps;
 }
-
 
 bool BsZenLib::HasCachedZEN(const bs::String& zen)
 {
@@ -141,6 +138,14 @@ static HSceneObject addWorldMesh(const bs::String& worldName, ZenLoad::ZenParser
   return meshSO;
 }
 
+Matrix4 convertMatrix(const ZMath::Matrix& m)
+{
+  Matrix4 bs = {m.mv[0], m.mv[1], m.mv[2],  m.mv[3],  m.mv[4],  m.mv[5],  m.mv[6],  m.mv[7],
+                m.mv[8], m.mv[9], m.mv[10], m.mv[11], m.mv[12], m.mv[13], m.mv[14], m.mv[15]};
+
+  return bs.transpose();
+}
+
 static HSceneObject walkTree(const ZenLoad::zCVobData& root, const VDFS::FileIndex& vdfs)
 {
   HSceneObject rootSO;
@@ -157,6 +162,11 @@ static HSceneObject walkTree(const ZenLoad::zCVobData& root, const VDFS::FileInd
     rootSO = SceneObject::create(root.vobName.c_str());
   }
 
+  Matrix4 worldMatrix = convertMatrix(root.worldMatrix);
+  Quaternion rotation;
+  rotation.fromRotationMatrix(worldMatrix.get3x3());
+
+  rootSO->setRotation(rotation);
   rootSO->setPosition(Vector3(root.position.x, root.position.y, root.position.z) * 0.01f);
 
   for (const ZenLoad::zCVobData& child : root.childVobs)
