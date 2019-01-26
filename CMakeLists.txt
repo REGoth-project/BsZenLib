@@ -85,6 +85,7 @@ add_library(BsZenLib
   src/ImportPath.cpp
   src/ImportAnimation.cpp
   src/ZenResources.cpp
+  src/CacheUtility.cpp
   )
 
 target_link_libraries(BsZenLib PRIVATE bsf zenload vdfs utils)
