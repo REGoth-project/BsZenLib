@@ -21,56 +21,54 @@
  */
 
 #include "ImportTexture.hpp"
-#include <Image/BsPixelData.h>
-#include <Image/BsTexture.h>
-#include <vdfs/fileIndex.h>
-#include <zenload/ztex2dds.h>
-#include <Image/BsColor.h>
-#include <Resources/BsResources.h>
 #include "ImportPath.hpp"
 #include <FileSystem/BsFileSystem.h>
+#include <Image/BsColor.h>
+#include <Image/BsPixelData.h>
+#include <Image/BsTexture.h>
+#include <Resources/BsResources.h>
+#include <vdfs/fileIndex.h>
+#include <zenload/ztex2dds.h>
 
 using namespace bs;
 using namespace BsZenLib;
 
-static std::vector<uint8_t> readCompiledTexture(const String& path,
-                                                const VDFS::FileIndex& vdfs);
+static std::vector<uint8_t> readCompiledTexture(const String& path, const VDFS::FileIndex& vdfs);
 static String replaceExtension(const String& path, const String& newExtension);
 static HTexture createRGBA8Texture(const String& name, UINT32 width, UINT32 height,
-	const std::vector<uint8_t>& rgbaData);
-static HTexture createDXTnTexture(const String& name,
-	std::vector<uint8_t>& ddsData, const ZenLoad::DDSURFACEDESC2& surfaceDesc);
+                                   const std::vector<uint8_t>& rgbaData);
+static HTexture createDXTnTexture(const String& name, std::vector<uint8_t>& ddsData,
+                                  const ZenLoad::DDSURFACEDESC2& surfaceDesc);
 
 // - Implementation --------------------------------------------------------------------------------
 
-
 bool BsZenLib::HasCachedTexture(const String& virtualFilePath)
 {
-	return FileSystem::isFile(GothicPathToCachedTexture(virtualFilePath.c_str()));
+  return FileSystem::isFile(GothicPathToCachedTexture(virtualFilePath.c_str()));
 }
 
 HTexture BsZenLib::LoadCachedTexture(const String& virtualFilePath)
 {
-	Path path = GothicPathToCachedTexture(virtualFilePath.c_str());
+  Path path = GothicPathToCachedTexture(virtualFilePath.c_str());
 
-	return gResources().load<Texture>(path);
+  return gResources().load<Texture>(path);
 }
 
-HTexture BsZenLib::ImportAndCacheTexture(const String& virtualFilePath, const VDFS::FileIndex& vdfs)
+bs::HTexture BsZenLib::ImportAndCacheTexture(const bs::String& virtualFilePath,
+                                             const VDFS::FileIndex& vdfs)
 {
-	gDebug().logDebug("Caching Texture: " + virtualFilePath);
+  gDebug().logDebug("Caching Texture: " + virtualFilePath);
 
-	HTexture fromOriginal = ImportTexture(virtualFilePath, vdfs);
+  HTexture fromOriginal = ImportTexture(virtualFilePath, vdfs);
 
-	if (!fromOriginal)
-		return {};
+  if (!fromOriginal) return {};
 
-	const bool overwrite = false;
-	Path path = GothicPathToCachedTexture(virtualFilePath.c_str());
+  const bool overwrite = false;
+  Path path = GothicPathToCachedTexture(virtualFilePath.c_str());
 
-	gResources().save(fromOriginal, path, overwrite);
+  gResources().save(fromOriginal, path, overwrite);
 
-	return fromOriginal;
+  return fromOriginal;
 }
 
 HTexture BsZenLib::ImportTexture(const String& path, const VDFS::FileIndex& vdfs)
@@ -90,15 +88,14 @@ HTexture BsZenLib::ImportTexture(const String& path, const VDFS::FileIndex& vdfs
 
   // return createDXTnTexture(path, ddsData, surfaceDesc);
 
-  // Commented out: Optionally convert to RGBA8, which is easier to work with
+  // Optionally convert to RGBA8, which is easier to work with
   std::vector<uint8_t> rgbaData;
   ZenLoad::convertDDSToRGBA8(ddsData, rgbaData);
   return createRGBA8Texture(path, surfaceDesc.dwWidth, surfaceDesc.dwHeight, rgbaData);
 }
 
-
 static HTexture createRGBA8Texture(const String& name, UINT32 width, UINT32 height,
-                                       const std::vector<uint8_t>& rgbaData)
+                                   const std::vector<uint8_t>& rgbaData)
 {
   TEXTURE_DESC desc = {};
   desc.type = TEX_TYPE_2D;
@@ -106,7 +103,6 @@ static HTexture createRGBA8Texture(const String& name, UINT32 width, UINT32 heig
   desc.height = height;
   desc.format = PF_RGBA8;
 
-  HTexture texture = Texture::create(desc);
   SPtr<PixelData> pixelData = PixelData::create(desc.width,   //
                                                 desc.height,  //
                                                 desc.depth,   //
@@ -125,7 +121,21 @@ static HTexture createRGBA8Texture(const String& name, UINT32 width, UINT32 heig
                         rgbaData[3 + 4 * i] / 255.0f);  // A
   }
 
-  pixelData->setColors(colors.data(), colors.size());
+  pixelData->setColors(colors.data(), (UINT32)colors.size());
+
+  MipMapGenOptions mipMapGenOptions = {};
+  mipMapGenOptions.filter = MipMapFilter::Kaiser;
+
+  Vector<SPtr<PixelData>> mipMapPixelData = PixelUtil::genMipmaps(*pixelData, mipMapGenOptions);
+
+  desc.numMips =
+      (UINT32)mipMapPixelData.size() - 1;  // -1 since the base level is not included in that count
+  HTexture texture = Texture::create(desc);
+
+  for (size_t i = 0; i < mipMapPixelData.size(); i++)
+  {
+    texture->writeData(mipMapPixelData[i], 0, (UINT32)i);
+  }
 
   texture->writeData(pixelData);
   texture->setName(name);
@@ -133,67 +143,67 @@ static HTexture createRGBA8Texture(const String& name, UINT32 width, UINT32 heig
   return texture;
 }
 
-static HTexture createDXTnTexture(const String& name,
-	std::vector<uint8_t>& ddsData, const ZenLoad::DDSURFACEDESC2& surfaceDesc)
+static HTexture createDXTnTexture(const String& name, std::vector<uint8_t>& ddsData,
+                                  const ZenLoad::DDSURFACEDESC2& surfaceDesc)
 {
-	TEXTURE_DESC desc = {};
-	desc.type = TEX_TYPE_2D;
-	desc.width = surfaceDesc.dwWidth;
-	desc.height = surfaceDesc.dwHeight;
-	desc.numMips = surfaceDesc.dwMipMapCount;
+  TEXTURE_DESC desc = {};
+  desc.type = TEX_TYPE_2D;
+  desc.width = surfaceDesc.dwWidth;
+  desc.height = surfaceDesc.dwHeight;
+  desc.numMips = surfaceDesc.dwMipMapCount;
 
-	switch (surfaceDesc.ddpfPixelFormat.dwFourCC)
-	{
-	case MAKEFOURCC('D', 'X', 'T', '1'):
-		desc.format = PF_BC1;
-		break;
+  switch (surfaceDesc.ddpfPixelFormat.dwFourCC)
+  {
+    case MAKEFOURCC('D', 'X', 'T', '1'):
+      desc.format = PF_BC1;
+      break;
 
-	case MAKEFOURCC('D', 'X', 'T', '3'):
-		desc.format = PF_BC2;
-		break;
+    case MAKEFOURCC('D', 'X', 'T', '3'):
+      desc.format = PF_BC2;
+      break;
 
-	case MAKEFOURCC('D', 'X', 'T', '5'):
-		desc.format = PF_BC3;
-		break;
-	default:
-		BS_EXCEPT(InternalErrorException, "Cannot import DXTn-texture " + name + ", unsupported FOURCC!")
-	}
+    case MAKEFOURCC('D', 'X', 'T', '5'):
+      desc.format = PF_BC3;
+      break;
+    default:
+      BS_EXCEPT(InternalErrorException,
+                "Cannot import DXTn-texture " + name + ", unsupported FOURCC!")
+  }
 
-	HTexture texture = Texture::create(desc);
+  HTexture texture = Texture::create(desc);
 
-	for (size_t i = 0; i < surfaceDesc.dwMipMapCount; i++)
-	{
-		UINT32 mipWidth, mipHeight, mipDepth;
-		PixelUtil::getSizeForMipLevel(desc.width, desc.height, 1, i, mipWidth, mipHeight, mipDepth);
+  for (UINT32 i = 0; i < surfaceDesc.dwMipMapCount; i++)
+  {
+    UINT32 mipWidth, mipHeight, mipDepth;
+    PixelUtil::getSizeForMipLevel(desc.width, desc.height, 1, i, mipWidth, mipHeight, mipDepth);
 
-		SPtr<PixelData> pixelData = PixelData::create(mipWidth,   //
-			mipHeight,  //
-			mipDepth,   //
-			desc.format);
+    SPtr<PixelData> pixelData = PixelData::create(mipWidth,   //
+                                                  mipHeight,  //
+                                                  mipDepth,   //
+                                                  desc.format);
 
-		size_t mipOffset = ZenLoad::getMipFileOffsetFromDDS(ddsData, i);
+    size_t mipOffset = ZenLoad::getMipFileOffsetFromDDS(ddsData, i);
 
-		UINT8* imageStart = (UINT8*)&ddsData[mipOffset];
+    UINT8* imageStart = (UINT8*)&ddsData[mipOffset];
 
-		pixelData->setExternalBuffer(imageStart);
+    pixelData->setExternalBuffer(imageStart);
 
-		texture->writeData(pixelData, 0, i);
-	}
+    texture->writeData(pixelData, 0, i);
+  }
 
-	texture->setName(name);
+  texture->setName(name);
 
-	return texture;
+  return texture;
 }
-
 
 static std::vector<uint8_t> readCompiledTexture(const String& path, const VDFS::FileIndex& vdfs)
 {
-	String compiledFile = path;
-	
-	if (compiledFile.find(".TGA") != String::npos)
-	{
-		compiledFile = replaceExtension(path, "-C.TEX");
-	}
+  String compiledFile = path;
+
+  if (compiledFile.find(".TGA") != String::npos)
+  {
+    compiledFile = replaceExtension(path, "-C.TEX");
+  }
 
   std::vector<uint8_t> fileData;
   vdfs.getFileData(compiledFile.c_str(), fileData);
@@ -201,13 +211,11 @@ static std::vector<uint8_t> readCompiledTexture(const String& path, const VDFS::
   return fileData;
 }
 
-
 static String replaceExtension(const String& path, const String& newExtension)
 {
   // assert(path.length() >= 4);
 
-  if (path.length() < 4)
-    return path;
+  if (path.length() < 4) return path;
 
   return path.substr(0, path.length() - 4) + newExtension;
 }
