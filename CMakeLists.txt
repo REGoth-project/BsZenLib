@@ -28,7 +28,7 @@ if (BSZENLIB_DOWNLOAD_BSF_BINARIES)
 
   include(FetchContent)
 
-  set(bsf_INSTALL_DIR ${CMAKE_BINARY_DIR}/bsf-binaries)
+  set(bsf_INSTALL_DIR ${CMAKE_BINARY_DIR}/bsf-binaries CACHE PATH "" FORCE)
 
   if (WIN32)
     FetchContent_Declare(bsfBinaries
