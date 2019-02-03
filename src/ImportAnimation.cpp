@@ -118,7 +118,7 @@ static AnimationCurves convertSamples(const std::vector<ZenLoad::ModelNode>& nod
     numFrames = numFramesTotal;
   }
 
-  assert(firstFrame < numFramesTotal);
+  assert(startFrame < numFramesTotal);
   assert(lastFrame < numFramesTotal);
   assert(numFrames < numFramesTotal);
 
