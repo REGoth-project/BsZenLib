@@ -591,7 +591,7 @@ private:
 
       // position *= 0.01f;  // Scale centimeters -> meters
 
-      bones.back().localTfrm = Transform::Transform(position, rotation, scale);
+      bones.back().localTfrm = Transform(position, rotation, scale);
     }
 
     return Skeleton::create(&bones[0], (UINT32)bones.size());
