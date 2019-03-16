@@ -14,6 +14,7 @@ Welcome to BsZenLib's documentation!
    content/vdfs
    content/textures
    content/staticmeshes
+   content/morphmeshes
    content/skeletalmeshes
    content/materials
 

@@ -1,7 +1,7 @@
 Importing Static Meshes
 =======================
 
-``ImportStaticMesh.hpp``
-------------------------
+
+The following declarations can be found in ``ImportStaticMesh.hpp``:
 
 .. doxygenfile:: ImportStaticMesh.hpp
