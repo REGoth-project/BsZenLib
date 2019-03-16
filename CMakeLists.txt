@@ -76,6 +76,7 @@ add_subdirectory(lib/ZenLib)
 add_library(BsZenLib
   src/ImportSkeletalMesh.cpp
   src/ImportStaticMesh.cpp
+  src/ImportMorphMesh.cpp
   src/ImportTexture.cpp
   src/ImportMaterial.cpp
   src/ImportZEN.cpp

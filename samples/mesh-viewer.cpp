@@ -27,6 +27,7 @@
 #include <Resources/BsResourceManifest.h>
 #include <FileSystem/BsFileSystem.h>
 #include <BsZenLib/ImportTexture.hpp>
+#include <BsZenLib/ImportMorphMesh.hpp>
 
 using namespace bs;
 
@@ -75,7 +76,27 @@ static HSceneObject loadMesh(const String& file, const VDFS::FileIndex& vdfs)
 
     return meshSO;
   }
-  else
+  else if (file.find(".MMB") != String::npos)
+  {
+    HMeshWithMaterials mesh;
+    if (FileSystem::isFile(BsZenLib::GothicPathToCachedAsset(file.c_str())))
+    {
+      mesh = BsZenLib::LoadCachedMorphMesh(file.c_str());
+    }
+    else
+    {
+      mesh = BsZenLib::ImportAndCacheMorphMesh(file.c_str(), vdfs);
+    }
+
+    if (!mesh) return {};
+
+    HSceneObject meshSO = SceneObject::create(file);
+    HRenderable renderable = meshSO->addComponent<CRenderable>();
+    renderable->setMesh(mesh->getMesh());
+    renderable->setMaterials(mesh->getMaterials());
+
+    return meshSO;
+  }
   {
     return {};
   }
@@ -95,6 +116,7 @@ int main(int argc, char** argv)
 
   VDFS::FileIndex vdf;
   vdf.loadVDF(dataDir + "/Meshes.vdf");
+  vdf.loadVDF(dataDir + "/Anims.vdf");
   vdf.loadVDF(dataDir + "/Textures.vdf");
   vdf.finalizeLoad();
 
@@ -122,10 +144,10 @@ int main(int argc, char** argv)
   // Disable some fancy rendering
   auto rs = sceneCamera->getRenderSettings();
 
-  // rs->screenSpaceReflections.enabled = false;
-  // rs->ambientOcclusion.enabled = false;
-  // rs->enableIndirectLighting = true;
-  // rs->enableFXAA = false;
+  rs->screenSpaceReflections.enabled = false;
+  rs->ambientOcclusion.enabled = false;
+  rs->enableIndirectLighting = true;
+  rs->enableFXAA = false;
   rs->enableHDR = false;
   rs->enableTonemapping = false;
 
@@ -169,6 +191,11 @@ int main(int argc, char** argv)
     }
 
     if (f.find(".MRM") != std::string::npos)
+    {
+      listBoxElements.push_back(HString(f.c_str()));
+    }
+
+    if (f.find(".MMB") != std::string::npos)
     {
       listBoxElements.push_back(HString(f.c_str()));
     }
