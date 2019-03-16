@@ -1,0 +1,293 @@
+
+
+<!DOCTYPE html>
+<!--[if IE 8]><html class="no-js lt-ie9" lang="en" > <![endif]-->
+<!--[if gt IE 8]><!--> <html class="no-js" lang="en" > <!--<![endif]-->
+<head>
+  <meta charset="utf-8">
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  
+  <title>Importing Morph Meshes &mdash; BsZenLib  documentation</title>
+  
+
+  
+  
+  
+  
+
+  
+
+  
+  
+    
+
+  
+
+  <link rel="stylesheet" href="../_static/css/theme.css" type="text/css" />
+  <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" />
+    <link rel="next" title="Importing Skeletal Meshes" href="skeletalmeshes.html" />
+    <link rel="prev" title="Importing Static Meshes" href="staticmeshes.html" /> 
+
+  
+  <script src="../_static/js/modernizr.min.js"></script>
+
+</head>
+
+<body class="wy-body-for-nav">
+
+   
+  <div class="wy-grid-for-nav">
+
+    
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search">
+          
+
+          
+            <a href="../index.html" class="icon icon-home"> BsZenLib
+          
+
+          
+          </a>
+
+          
+            
+            
+          
+
+          
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+
+          
+        </div>
+
+        <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="main navigation">
+          
+            
+            
+              
+            
+            
+              <p class="caption"><span class="caption-text">Contents:</span></p>
+<ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="caching.html">Caching</a></li>
+<li class="toctree-l1"><a class="reference internal" href="vdfs.html">Virtual File System</a></li>
+<li class="toctree-l1"><a class="reference internal" href="textures.html">Importing Textures</a></li>
+<li class="toctree-l1"><a class="reference internal" href="staticmeshes.html">Importing Static Meshes</a></li>
+<li class="toctree-l1 current"><a class="current reference internal" href="#">Importing Morph Meshes</a></li>
+<li class="toctree-l1"><a class="reference internal" href="skeletalmeshes.html">Importing Skeletal Meshes</a></li>
+<li class="toctree-l1"><a class="reference internal" href="materials.html">Importing Materials</a></li>
+</ul>
+
+            
+          
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
+
+      
+      <nav class="wy-nav-top" aria-label="top navigation">
+        
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../index.html">BsZenLib</a>
+        
+      </nav>
+
+
+      <div class="wy-nav-content">
+        
+        <div class="rst-content">
+        
+          
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<div role="navigation" aria-label="breadcrumbs navigation">
+
+  <ul class="wy-breadcrumbs">
+    
+      <li><a href="../index.html">Docs</a> &raquo;</li>
+        
+      <li>Importing Morph Meshes</li>
+    
+    
+      <li class="wy-breadcrumbs-aside">
+        
+            
+            <a href="../_sources/content/morphmeshes.rst.txt" rel="nofollow"> View page source</a>
+          
+        
+      </li>
+    
+  </ul>
+
+  
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+            
+  <div class="section" id="importing-morph-meshes">
+<h1>Importing Morph Meshes<a class="headerlink" href="#importing-morph-meshes" title="Permalink to this headline">¶</a></h1>
+<p><p>Morph-Meshes are triangular 3d models which can have animations on each vertex.
+They are used for mouth-movement animations on talking characters or flags moving
+in the wind.</p>
+<p>In Gothic, all human characters are using morph meshes as heads.</p>
+<div class="admonition note">
+<p class="first admonition-title">Note</p>
+<p class="last">Morph-meshes are not completely supported by ZenLib, so only a static representation
+will be imported.</p>
+</div>
+<p>The following example will load and cache a morph-mesh:</p>
+<div class="highlight-cpp notranslate"><div class="highlight"><pre><span></span><span class="n">Res</span><span class="o">::</span><span class="n">HMeshWithMaterials</span> <span class="n">head</span> <span class="o">=</span> <span class="n">BsZenLib</span><span class="o">::</span><span class="n">ImportAndCacheMorphMesh</span><span class="p">(</span><span class="s">&quot;HEAD.MMB&quot;</span><span class="p">,</span> <span class="n">vdfs</span><span class="p">);</span>
+</pre></div>
+</div>
+<p>Where <code class="docutils literal notranslate"><span class="pre">vdfs</span></code> is a VDFS FileIndex containing <code class="docutils literal notranslate"><span class="pre">HEAD.MMB</span></code>.</p>
+ </p>
+<dl class="type">
+<dt id="_CPPv38BsZenLib">
+<span id="_CPPv28BsZenLib"></span><span id="BsZenLib"></span><span class="target" id="namespace_bs_zen_lib"></span><em class="property">namespace </em><code class="descname">BsZenLib</code><br /></dt>
+<dd><div class="breathe-sectiondef docutils container">
+<p class="breathe-sectiondef-title rubric">Functions</p>
+<dl class="function">
+<dt id="_CPPv3N8BsZenLib23ImportAndCacheMorphMeshERKN2bs6StringERKN4VDFS9FileIndexE">
+<span id="_CPPv2N8BsZenLib23ImportAndCacheMorphMeshERKN2bs6StringERKN4VDFS9FileIndexE"></span><span id="BsZenLib::ImportAndCacheMorphMesh__bs::StringCR.VDFS::FileIndexCR"></span><span class="target" id="_import_morph_mesh_8hpp_1a4b41c4b4745cf66b47f9f11a1fef788e"></span>Res::HMeshWithMaterials <code class="descname">ImportAndCacheMorphMesh</code><span class="sig-paren">(</span><em class="property">const</em> bs::String &amp;<em>originalFileName</em>, <em class="property">const</em> VDFS::FileIndex &amp;<em>vdfs</em><span class="sig-paren">)</span><a class="headerlink" href="#_CPPv3N8BsZenLib23ImportAndCacheMorphMeshERKN2bs6StringERKN4VDFS9FileIndexE" title="Permalink to this definition">¶</a><br /></dt>
+<dd><p>Import a Gothic Morph-Mesh and save the results to disk. </p>
+<p>Imports the given Morph-Mesh and saves them into the cache-folder. The imported Morph-Mesh will also be added to the default resource manifest.</p>
+<p><dl class="docutils">
+<dt><strong>Return</strong></dt>
+<dd>Handle to the cached mesh (Empty handle if none was found) </dd>
+<dt><strong>Parameters</strong></dt>
+<dd><ul class="breatheparameterlist first last simple">
+<li><code class="docutils literal notranslate"><span class="pre">originalFileName</span></code>: Name of the MorphMesh in the original games files (ie. <code class="docutils literal notranslate"><span class="pre">HEAD.MMB</span></code>) </li>
+<li><code class="docutils literal notranslate"><span class="pre">vdfs</span></code>: Virtual Filesystem to load the MorphMesh from.</li>
+</ul>
+</dd>
+</dl>
+</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="_CPPv3N8BsZenLib19LoadCachedMorphMeshERKN2bs6StringE">
+<span id="_CPPv2N8BsZenLib19LoadCachedMorphMeshERKN2bs6StringE"></span><span id="BsZenLib::LoadCachedMorphMesh__bs::StringCR"></span><span class="target" id="_import_morph_mesh_8hpp_1a90204ebd1275dc51e587eff6ec9fb482"></span>Res::HMeshWithMaterials <code class="descname">LoadCachedMorphMesh</code><span class="sig-paren">(</span><em class="property">const</em> bs::String &amp;<em>originalFileName</em><span class="sig-paren">)</span><a class="headerlink" href="#_CPPv3N8BsZenLib19LoadCachedMorphMeshERKN2bs6StringE" title="Permalink to this definition">¶</a><br /></dt>
+<dd><p>Load a cached MorphMesh from disk using the original files name. </p>
+<p>Given the name of the MorphMesh used in the original game files (ie. “HEAD.MMB”), this function will search for a cached version representing that MorphMesh.</p>
+<p>If unsure whether the cached file exists, call <a class="reference internal" href="#_import_morph_mesh_8hpp_1a060e5caf219fc7f4bfac87fd1405e26d"><span class="std std-ref">HasCachedMorphMesh()</span></a>. To create the cache, call <a class="reference internal" href="#_import_morph_mesh_8hpp_1a4b41c4b4745cf66b47f9f11a1fef788e"><span class="std std-ref">ImportAndCacheMorphMesh()</span></a> first.</p>
+<p><dl class="docutils">
+<dt><strong>Return</strong></dt>
+<dd>Handle to the cached MorphMesh (Empty handle if none was found) </dd>
+<dt><strong>Parameters</strong></dt>
+<dd><ul class="breatheparameterlist first last simple">
+<li><code class="docutils literal notranslate"><span class="pre">originalFileName</span></code>: Name of the MorphMesh in the original games files (ie. <code class="docutils literal notranslate"><span class="pre">HEAD.MMB</span></code>)</li>
+</ul>
+</dd>
+</dl>
+</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="_CPPv3N8BsZenLib18HasCachedMorphMeshERKN2bs6StringE">
+<span id="_CPPv2N8BsZenLib18HasCachedMorphMeshERKN2bs6StringE"></span><span id="BsZenLib::HasCachedMorphMesh__bs::StringCR"></span><span class="target" id="_import_morph_mesh_8hpp_1a060e5caf219fc7f4bfac87fd1405e26d"></span>bool <code class="descname">HasCachedMorphMesh</code><span class="sig-paren">(</span><em class="property">const</em> bs::String &amp;<em>originalFileName</em><span class="sig-paren">)</span><a class="headerlink" href="#_CPPv3N8BsZenLib18HasCachedMorphMeshERKN2bs6StringE" title="Permalink to this definition">¶</a><br /></dt>
+<dd><p>Checks whether the cache for the given original MorphMesh name exists. </p>
+<p>To create the cache, call <a class="reference internal" href="#_import_morph_mesh_8hpp_1a4b41c4b4745cf66b47f9f11a1fef788e"><span class="std std-ref">ImportAndCacheMorphMesh()</span></a>.</p>
+<p><dl class="docutils">
+<dt><strong>Return</strong></dt>
+<dd>Whether the cache exists for the given MorphMesh. </dd>
+<dt><strong>Parameters</strong></dt>
+<dd><ul class="breatheparameterlist first last simple">
+<li><code class="docutils literal notranslate"><span class="pre">originalFileName</span></code>: Name of the MorphMesh in the original games files (ie. <code class="docutils literal notranslate"><span class="pre">HEAD.MMB</span></code>)</li>
+</ul>
+</dd>
+</dl>
+</p>
+</dd></dl>
+
+</div>
+</dd></dl>
+
+</div>
+
+
+           </div>
+           
+          </div>
+          <footer>
+  
+    <div class="rst-footer-buttons" role="navigation" aria-label="footer navigation">
+      
+        <a href="skeletalmeshes.html" class="btn btn-neutral float-right" title="Importing Skeletal Meshes" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right"></span></a>
+      
+      
+        <a href="staticmeshes.html" class="btn btn-neutral" title="Importing Static Meshes" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left"></span> Previous</a>
+      
+    </div>
+  
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>
+        &copy; Copyright 2019, Andre Taulien
+
+    </p>
+  </div>
+  Built with <a href="http://sphinx-doc.org/">Sphinx</a> using a <a href="https://github.com/rtfd/sphinx_rtd_theme">theme</a> provided by <a href="https://readthedocs.org">Read the Docs</a>. 
+
+</footer>
+
+        </div>
+      </div>
+
+    </section>
+
+  </div>
+  
+
+
+  
+
+    
+    
+      <script type="text/javascript" id="documentation_options" data-url_root="../" src="../_static/documentation_options.js"></script>
+        <script type="text/javascript" src="../_static/jquery.js"></script>
+        <script type="text/javascript" src="../_static/underscore.js"></script>
+        <script type="text/javascript" src="../_static/doctools.js"></script>
+        <script type="text/javascript" src="../_static/language_data.js"></script>
+    
+
+  
+
+  <script type="text/javascript" src="../_static/js/theme.js"></script>
+
+  <script type="text/javascript">
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>
