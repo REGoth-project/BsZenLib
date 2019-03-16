@@ -1,7 +1,9 @@
 cmake_minimum_required (VERSION 3.9.0)
 project (BsZenLib)
 
+option(BSZENLIB_BUILD_DOCS "Whether to add targets to build the documentation" OFF)
 option(BSZENLIB_DOWNLOAD_BSF_BINARIES "Download and use precompiled binaries for bsf." OFF)
+option(BSZENLIB_SKIP_FIND_BSF "When set, BsZenLib will not try to find and build bsf." OFF)
 set(BSZENLIB_BSF_SUBMODULE_PATH "" CACHE PATH "Path to bsf sources to add as cmake subdirectory")
 
 # Add necessary compiler flags
@@ -60,12 +62,14 @@ endif()
 # Let CMake know where to find the Findbsf.cmake file (at current folder)
 set(CMAKE_MODULE_PATH "${PROJECT_SOURCE_DIR}")
 
-if(BSZENLIB_BSF_SUBMODULE_PATH)
-  # Optionally include bsf as cmake submodule for easier development on bsf
-  add_subdirectory(${BSZENLIB_BSF_SUBMODULE_PATH} bsf)
-else()
-  # Find bsf libraries and headers
-  find_package(bsf REQUIRED)
+if(NOT BSZENLIB_SKIP_FIND_BSF)
+  if(BSZENLIB_BSF_SUBMODULE_PATH)
+    # Optionally include bsf as cmake submodule for easier development on bsf
+    add_subdirectory(${BSZENLIB_BSF_SUBMODULE_PATH} bsf)
+  else()
+    # Find bsf libraries and headers
+    find_package(bsf REQUIRED)
+  endif()
 endif()
 
 add_subdirectory(lib/ZenLib)

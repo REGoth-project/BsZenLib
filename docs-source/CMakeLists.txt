@@ -2,7 +2,7 @@
 find_package(Doxygen) 
 find_package(Sphinx)
 
-if (DOXYGEN_FOUND AND SPHINX_FOUND)
+if (BSZENLIB_BUILD_DOCS AND DOXYGEN_FOUND AND SPHINX_FOUND)
 
     # Configure Doxygen paths
     set(DOXYGEN_IN ${CMAKE_CURRENT_SOURCE_DIR}/Doxyfile.in)
