@@ -1,6 +1,7 @@
 cmake_minimum_required (VERSION 3.9.0)
 project (BsZenLib)
 
+option(BSZENLIB_BUILD_SAMPLES "Whether to build BsZenLib samples" OFF)
 option(BSZENLIB_BUILD_DOCS "Whether to add targets to build the documentation" OFF)
 option(BSZENLIB_DOWNLOAD_BSF_BINARIES "Download and use precompiled binaries for bsf." OFF)
 option(BSZENLIB_SKIP_FIND_BSF "When set, BsZenLib will not try to find and build bsf." OFF)
@@ -99,5 +100,11 @@ target_include_directories(BsZenLib PUBLIC include)
 ###############################################################################
 #                               Add Samples, etc                              #
 ###############################################################################
-add_subdirectory(samples)
-add_subdirectory(docs-source)
+
+if (BSZENLIB_BUILD_SAMPLES)
+  add_subdirectory(samples)
+endif()
+
+if (BSZENLIB_BUILD_DOCS)
+  add_subdirectory(docs-source)
+endif()
