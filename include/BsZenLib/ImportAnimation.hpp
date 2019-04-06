@@ -37,6 +37,15 @@ namespace BsZenLib
     bs::Vector<ZenLoad::zCModelScriptEventTag> eventsTag;
   };
 
+  /**
+   * Import a single animation clip.
+   *
+   * Converts the animation samples in the given .MAN-File for bs::f and creates an animation clip out of it.
+   *
+   * bs::f does support animation events, but the only data you can give to it are a string and a time.
+   * For that reason, a simple text based command format is used. Commands are structured like `command:action`.
+   * For example, `PLAYANIM:S_RUNL` will play an animation called `S_RUNL`.
+   */
   bs::HAnimationClip ImportMAN(const ZenLoad::zCModelMeshLib& meshLib,
                              const AnimationToImport& def, const VDFS::FileIndex& vdfs);
 

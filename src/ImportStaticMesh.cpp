@@ -122,8 +122,12 @@ bool BsZenLib::HasCachedStaticMesh(const bs::String& originalFileName)
 HMesh BsZenLib::ImportAndCacheStaticMeshGeometry(const bs::String& originalFileName,
                                                  const VDFS::FileIndex& vdfs)
 {
-  ZenLoad::zCProgMeshProto progMesh(originalFileName.c_str(), vdfs);
+  bs::String withoutExt = originalFileName.substr(0, originalFileName.find_last_of('.'));
+  bs::String compiledExt = withoutExt + ".MRM";
 
+  ZenLoad::zCProgMeshProto progMesh(compiledExt.c_str(), vdfs);
+
+  gDebug().logDebug("[CompiledExt] " + compiledExt);
   if (progMesh.getNumSubmeshes() == 0) return {};
 
   ZenLoad::PackedMesh packedMesh;
@@ -149,7 +153,12 @@ bs::HMesh BsZenLib::ImportAndCacheStaticMeshGeometry(const bs::String& originalF
 Vector<HMaterial> BsZenLib::ImportAndCacheStaticMeshMaterials(const bs::String& originalFileName,
                                                               const VDFS::FileIndex& vdfs)
 {
-  ZenLoad::zCProgMeshProto progMesh(originalFileName.c_str(), vdfs);
+  bs::String withoutExt = originalFileName.substr(0, originalFileName.find_last_of('.'));
+  bs::String compiledExt = withoutExt + ".MRM";
+
+  gDebug().logDebug("[CompiledExt] " + compiledExt);
+
+  ZenLoad::zCProgMeshProto progMesh(compiledExt.c_str(), vdfs);
 
   if (progMesh.getNumSubmeshes() == 0) return {};
 

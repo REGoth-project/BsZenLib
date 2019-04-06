@@ -35,42 +35,66 @@ static Matrix3 createMatrixFromQuaternion(const Quaternion& quat);
 static Matrix4 convertMatrix(const ZMath::Matrix& m);
 static int32_t scaleFrameToHeaderFrameRate(const ZenLoad::zCModelScriptAni& ani, size_t frame,
                                            size_t numFramesTotal);
-static bs::AnimationCurves importAnimationSamples(const String& virtualFilePath,
-                                                  const ZenLoad::zCModelMeshLib& meshLib,
-                                                  const ZenLoad::zCModelScriptAni& def,
-                                                  const VDFS::FileIndex& vdfs);
-static AnimationCurves convertSamples(const std::vector<ZenLoad::ModelNode>& nodes,
-                                      const ZenLoad::zCModelScriptAni& def,
-                                      const ZenLoad::ModelAnimationParser& parser);
 
-bs::HAnimationClip BsZenLib::ImportMAN( const ZenLoad::zCModelMeshLib& meshLib,
-                             const AnimationToImport& def, const VDFS::FileIndex& vdfs)
+struct AnimationCurvesWithRootMotion
 {
-    // Import keyframes and convert them to curves (From .MAN-file)
-    AnimationCurves curves =
-        importAnimationSamples(def.fullAnimationName + ".MAN", meshLib, def.animation, vdfs);
+  bs::AnimationCurves curves;
+  bs::RootMotion rootMotion;
+};
 
-    HAnimationClip clip = AnimationClip::create();
-    clip->setCurves(curves);
-    // TODO: clip->setEvents(...);
+static AnimationCurvesWithRootMotion importAnimationSamples(const String& virtualFilePath,
+                                                            const ZenLoad::zCModelMeshLib& meshLib,
+                                                            const ZenLoad::zCModelScriptAni& def,
+                                                            const VDFS::FileIndex& vdfs);
+static AnimationCurvesWithRootMotion convertSamples(const std::vector<ZenLoad::ModelNode>& nodes,
+                                                    const ZenLoad::zCModelScriptAni& def,
+                                                    const ZenLoad::ModelAnimationParser& parser);
 
-    clip->setName(def.fullAnimationName);
+bs::HAnimationClip BsZenLib::ImportMAN(const ZenLoad::zCModelMeshLib& meshLib,
+                                       const AnimationToImport& def, const VDFS::FileIndex& vdfs)
+{
+  // Import keyframes and convert them to curves (From .MAN-file)
+  AnimationCurvesWithRootMotion samples =
+      importAnimationSamples(def.fullAnimationName + ".MAN", meshLib, def.animation, vdfs);
 
-    const bool overwrite = false;
-    gResources().save(clip, GothicPathToCachedAnimationClip(def.fullAnimationName), overwrite);
+  SPtr<RootMotion> pRootMotion = bs::bs_shared_ptr_new<RootMotion>(samples.rootMotion);
+  SPtr<AnimationCurves> pCurves = bs::bs_shared_ptr_new<AnimationCurves>(samples.curves);
 
-    return clip;
+  HAnimationClip clip = AnimationClip::create(pCurves, false, 1, pRootMotion);
+
+  Vector<AnimationEvent> events;
+
+  // Notify about the next animation if needed
+  if (!def.animation.m_Next.empty())
+  {
+    bs::String command = "PLAYCLIP:" + bs::String(def.animation.m_Next.c_str());
+    float endOfAnimation = clip->getLength();
+
+    gDebug().logDebug(def.fullAnimationName + " - Event: " + command);
+    events.push_back(AnimationEvent(command, endOfAnimation));
+  }
+
+  clip->setEvents(events);
+
+  // TODO: clip->setEvents(...) for sounds/particles/other
+
+  clip->setName(def.fullAnimationName);
+
+  const bool overwrite = false;
+  gResources().save(clip, GothicPathToCachedAnimationClip(def.fullAnimationName), overwrite);
+
+  return clip;
 }
 
-static bs::AnimationCurves importAnimationSamples(const String& manFile,
-                                                  const ZenLoad::zCModelMeshLib& meshLib,
-                                                  const ZenLoad::zCModelScriptAni& def,
-                                                  const VDFS::FileIndex& vdfs)
+static AnimationCurvesWithRootMotion importAnimationSamples(const String& manFile,
+                                                            const ZenLoad::zCModelMeshLib& meshLib,
+                                                            const ZenLoad::zCModelScriptAni& def,
+                                                            const VDFS::FileIndex& vdfs)
 {
   ZenLoad::ZenParser zen(manFile.c_str(), vdfs);
   ZenLoad::ModelAnimationParser parser(zen);
 
-  // parser.setScale(1.0f / 100.0f);  // Centimeters -> Meters
+  parser.setScale(1.0f / 100.0f);  // Centimeters -> Meters
 
   ZenLoad::zCModelAniHeader header;
   std::vector<ZenLoad::zCModelAniSample> samples;
@@ -92,16 +116,15 @@ static bs::AnimationCurves importAnimationSamples(const String& manFile,
 
   if (meshLib.getNodes().size() != parser.getNodeIndex().size()) return {};
 
-  AnimationCurves curves = convertSamples(meshLib.getNodes(), def, parser);
-
-  return curves;
+  return convertSamples(meshLib.getNodes(), def, parser);
 }
 
-static AnimationCurves convertSamples(const std::vector<ZenLoad::ModelNode>& nodes,
-                                      const ZenLoad::zCModelScriptAni& def,
-                                      const ZenLoad::ModelAnimationParser& parser)
+static AnimationCurvesWithRootMotion convertSamples(const std::vector<ZenLoad::ModelNode>& nodes,
+                                                    const ZenLoad::zCModelScriptAni& def,
+                                                    const ZenLoad::ModelAnimationParser& parser)
 {
-  AnimationCurves curves;
+  AnimationCurvesWithRootMotion result = {};
+
   size_t numFramesTotal = parser.getSamples().size() / nodes.size();
   size_t startFrame = def.m_FirstFrame;
   size_t lastFrame = def.m_LastFrame;
@@ -133,8 +156,6 @@ static AnimationCurves convertSamples(const std::vector<ZenLoad::ModelNode>& nod
     assert(realNodeIdx < nodes.size());
 
     if (realNodeIdx >= nodes.size()) return {};
-
-    animatedNodes[realNodeIdx] = true;
 
     const ZenLoad::ModelNode& node = nodes[realNodeIdx];
 
@@ -190,8 +211,20 @@ static AnimationCurves convertSamples(const std::vector<ZenLoad::ModelNode>& nod
     TAnimationCurve<Vector3> positionCurve(positionKeyframes);
     TAnimationCurve<Quaternion> rotationCurve(rotationKeyframes);
 
-    curves.addPositionCurve(node.name.c_str(), positionCurve);
-    curves.addRotationCurve(node.name.c_str(), rotationCurve);
+    if (realNodeIdx == 0)
+    {
+      result.rootMotion = RootMotion(positionCurve, rotationCurve);
+
+      // It's important that this is not set as 'animated node' so the node
+      // will be filled with dummy data later on
+    }
+    else
+    {
+      result.curves.addPositionCurve(node.name.c_str(), positionCurve);
+      result.curves.addRotationCurve(node.name.c_str(), rotationCurve);
+
+      animatedNodes[realNodeIdx] = true;
+    }
   }
 
   // Add all non-animated nodes
@@ -227,11 +260,11 @@ static AnimationCurves convertSamples(const std::vector<ZenLoad::ModelNode>& nod
     TAnimationCurve<Vector3> positionCurve(positionKeyframes);
     TAnimationCurve<Quaternion> rotationCurve(rotationKeyframes);
 
-    curves.addPositionCurve(node.name.c_str(), positionCurve);
-    curves.addRotationCurve(node.name.c_str(), rotationCurve);
+    result.curves.addPositionCurve(node.name.c_str(), positionCurve);
+    result.curves.addRotationCurve(node.name.c_str(), rotationCurve);
   }
 
-  return curves;
+  return result;
 }
 
 /**

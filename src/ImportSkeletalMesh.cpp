@@ -68,12 +68,12 @@ private:
    */
   bool loadMeshSkin()
   {
-    mMeshSkin = ZenLoad::zCModelMeshLib(mMdlFile.c_str(), mVDFS);
+    mMeshSkin = ZenLoad::zCModelMeshLib(mMdlFile.c_str(), mVDFS, 0.01f);
 
     return mMeshSkin.isValid();
   }
 
-  void packMesh() { mMeshSkin.packMesh(mPackedMesh /*, 0.01f */); }
+  void packMesh() { mMeshSkin.packMesh(mPackedMesh, 0.01f); }
 
   void importAndCacheGeometry()
   {
@@ -322,7 +322,15 @@ public:
         const bool overwrite = false;
         gResources().save(imported, GothicPathToCachedSkeletalMesh(meshFile), overwrite);
 
-        mMeshes.push_back(imported);
+        if (imported)
+        {
+          mMeshes.push_back(imported);
+        }
+        else
+        {
+          gDebug().logWarning("[SkeletalMesh] Failed to import mesh: " + meshFile);
+        }
+
       }
     }
 
@@ -391,7 +399,7 @@ private:
    */
   bool loadHierarchy()
   {
-    mMeshHierarchy = ZenLoad::zCModelMeshLib(getHierarchyFile().c_str(), mVDFS);
+    mMeshHierarchy = ZenLoad::zCModelMeshLib(getHierarchyFile().c_str(), mVDFS, 0.01f);
 
     return mMeshHierarchy.isValid();
   }
@@ -542,7 +550,6 @@ private:
 
         nodeTransforms[i].decomposition(position, rotation, scale);
 
-        // scale *= 0.01;  // Scale centimeters -> meters
         nodeTransforms[i].setTRS(Vector3(0.0f, 0.0f, 0.0f), rotation, scale);
       }
 

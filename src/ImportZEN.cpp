@@ -17,6 +17,9 @@
 #include <zenload/zCMesh.h>
 #include <zenload/zCProgMeshProto.h>
 #include <zenload/zenParser.h>
+#include <Components/BsCMeshCollider.h>
+#include <Physics/BsPhysicsMesh.h>
+#include <Physics/BsMeshCollider.h>
 
 using namespace bs;
 using namespace BsZenLib;
@@ -66,10 +69,10 @@ bs::HSceneObject BsZenLib::ImportAndCacheZEN(const std::string& zen, const VDFS:
 
   if (!worldSO) return {};
 
-  HPrefab worldPrefab = Prefab::create(worldSO);
+  // HPrefab worldPrefab = Prefab::create(worldSO);
 
-  const bool overwrite = false;
-  gResources().save(worldPrefab, BsZenLib::GothicPathToCachedWorld(zen.c_str()), overwrite);
+  // const bool overwrite = false;
+  // gResources().save(worldPrefab, BsZenLib::GothicPathToCachedWorld(zen.c_str()), overwrite);
 
   return worldSO;
 }
@@ -128,12 +131,32 @@ static HSceneObject addWorldMesh(const bs::String& worldName, ZenLoad::ZenParser
     mesh = BsZenLib::ImportAndCacheStaticMesh(meshFileName, packedMesh, vdfs);
   }
 
-  if (!mesh) return {};
+  if (!mesh || !mesh->getMesh()) return {};
 
   HSceneObject meshSO = SceneObject::create(meshFileName);
   HRenderable renderable = meshSO->addComponent<CRenderable>();
   renderable->setMesh(mesh->getMesh());
   renderable->setMaterials(mesh->getMaterials());
+
+  HMesh actualMesh = mesh->getMesh();
+
+  if (!actualMesh)
+  {
+    gDebug().logError("Mesh not there?");
+    return {};
+  }
+
+  if (!actualMesh->getCachedData())
+  {
+    gDebug().logError("Cannot extract world mesh for physics, no mesh data available!");
+  }
+  else
+  {
+    HPhysicsMesh physicsMesh = PhysicsMesh::create(mesh->getMesh()->getCachedData(), PhysicsMeshType::Triangle);
+
+    GameObjectHandle<CMeshCollider> collider = meshSO->addComponent<CMeshCollider>();
+    collider->setMesh(physicsMesh);
+  }
 
   return meshSO;
 }
@@ -159,7 +182,9 @@ static HSceneObject walkTree(const ZenLoad::zCVobData& root, const VDFS::FileInd
 
   if (!rootSO)
   {
-    rootSO = SceneObject::create(root.vobName.c_str());
+    rootSO = SceneObject::create(root.objectClass.c_str());
+
+    gDebug().logDebug("[ImportZEN] Add Vob: " + bs::String(root.objectClass.c_str()));
   }
 
   Matrix4 worldMatrix = convertMatrix(root.worldMatrix);
