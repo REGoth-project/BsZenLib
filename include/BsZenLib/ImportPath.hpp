@@ -15,5 +15,6 @@ namespace BsZenLib
   bs::Path GothicPathToCachedModelScript(const bs::String& virtualFilePath);
   bs::Path GothicPathToCachedManifest(const bs::String& virtualFilePath);
   bs::Path GothicPathToCachedWorld(const bs::String& worldName);
+  bs::Path GothicPathToCachedFont(const bs::String& virtualFilePath);
   bs::Path GetCacheDirectory();
 }  // namespace BsZenLib
