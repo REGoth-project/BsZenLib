@@ -127,7 +127,6 @@ HMesh BsZenLib::ImportAndCacheStaticMeshGeometry(const bs::String& originalFileN
 
   ZenLoad::zCProgMeshProto progMesh(compiledExt.c_str(), vdfs);
 
-  gDebug().logDebug("[CompiledExt] " + compiledExt);
   if (progMesh.getNumSubmeshes() == 0) return {};
 
   ZenLoad::PackedMesh packedMesh;
@@ -155,8 +154,6 @@ Vector<HMaterial> BsZenLib::ImportAndCacheStaticMeshMaterials(const bs::String& 
 {
   bs::String withoutExt = originalFileName.substr(0, originalFileName.find_last_of('.'));
   bs::String compiledExt = withoutExt + ".MRM";
-
-  gDebug().logDebug("[CompiledExt] " + compiledExt);
 
   ZenLoad::zCProgMeshProto progMesh(compiledExt.c_str(), vdfs);
 
