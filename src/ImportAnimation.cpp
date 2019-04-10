@@ -143,7 +143,7 @@ static AnimationCurvesWithRootMotion convertSamples(const std::vector<ZenLoad::M
 
   assert(startFrame < numFramesTotal);
   assert(lastFrame < numFramesTotal);
-  assert(numFrames < numFramesTotal);
+  assert(numFrames <= numFramesTotal);
 
   Vector<bool> animatedNodes(nodes.size(), false);
   for (size_t nodeIdx = 0; nodeIdx < numNodes; nodeIdx++)
