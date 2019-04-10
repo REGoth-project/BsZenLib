@@ -240,8 +240,6 @@ static SPtr<VertexDataDesc> makeVertexDataDescForZenLibVertex()
   vertexDataDesc->addVertElem(VET_FLOAT3, VES_TANGENT);
   vertexDataDesc->addVertElem(VET_FLOAT3, VES_BITANGENT);
 
-  assert(vertexDataDesc->getVertexStride() == sizeof(ZenLoad::WorldVertex));
-
   return vertexDataDesc;
 }
 
