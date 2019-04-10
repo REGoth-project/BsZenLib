@@ -92,7 +92,7 @@ add_library(BsZenLib
   src/CacheUtility.cpp
   )
 
-target_link_libraries(BsZenLib PRIVATE bsf zenload vdfs utils)
+target_link_libraries(BsZenLib PRIVATE bsf daedalus zenload vdfs utils)
 target_include_directories(BsZenLib PRIVATE include/BsZenLib)
 
 target_link_libraries(BsZenLib PUBLIC vdfs)
