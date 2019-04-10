@@ -338,7 +338,14 @@ public:
     {
       HAnimationClip clip = ImportMAN(mMeshHierarchy, ani, mVDFS);
 
-      mAnimationClips.push_back(clip);
+      if (clip)
+      {
+        mAnimationClips.push_back(clip);
+      }
+      else
+      {
+        gDebug().logWarning("[ImportSkeletalMesh] Failed to import animation: " + ani.fullAnimationName);
+      }
     }
   }
 
