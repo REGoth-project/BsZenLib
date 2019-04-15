@@ -26,7 +26,7 @@ static HShader loadWorldShader()
   HShader shader = gImporter().import<Shader>("data/shader/" + shaderName);
 
   // Save to cache
-  const bool overwrite = false;
+  const bool overwrite = true;
   gResources().save(shader, BsZenLib::GothicPathToCachedMaterial(shader->getName()), overwrite);
 
   return shader;
@@ -51,7 +51,7 @@ HMaterial BsZenLib::ImportAndCacheMaterialWithTextures(const String& cacheName,
   bsfMaterial->setTexture("gAlbedoTex", albedo);
 
   // Save to cache
-  const bool overwrite = false;
+  const bool overwrite = true;
   gResources().save(bsfMaterial, GothicPathToCachedMaterial(cacheName), overwrite);
 
   return bsfMaterial;

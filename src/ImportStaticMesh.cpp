@@ -66,7 +66,7 @@ BsZenLib::Res::HMeshWithMaterials BsZenLib::ImportAndCacheStaticMesh(
     return {};
   }
 
-  const bool overwrite = false;
+  const bool overwrite = true;
   gResources().save(combined, GothicPathToCachedStaticMesh(originalFileName), overwrite);
 
   return combined;
@@ -103,7 +103,7 @@ BsZenLib::Res::HMeshWithMaterials BsZenLib::ImportAndCacheStaticMesh(
     return {};
   }
 
-  const bool overwrite = false;
+  const bool overwrite = true;
   gResources().save(combined, GothicPathToCachedStaticMesh(originalFileName), overwrite);
 
   return combined;

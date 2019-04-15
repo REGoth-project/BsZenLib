@@ -63,7 +63,7 @@ bs::HTexture BsZenLib::ImportAndCacheTexture(const bs::String& virtualFilePath,
 
   if (!fromOriginal) return {};
 
-  const bool overwrite = false;
+  const bool overwrite = true;
   Path path = GothicPathToCachedTexture(virtualFilePath.c_str());
 
   gResources().save(fromOriginal, path, overwrite);

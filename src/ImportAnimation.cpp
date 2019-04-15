@@ -80,7 +80,7 @@ bs::HAnimationClip BsZenLib::ImportMAN(const ZenLoad::zCModelMeshLib& meshLib,
 
   clip->setName(def.fullAnimationName);
 
-  const bool overwrite = false;
+  const bool overwrite = true;
   gResources().save(clip, GothicPathToCachedAnimationClip(def.fullAnimationName), overwrite);
 
   return clip;
@@ -127,7 +127,7 @@ static AnimationCurvesWithRootMotion convertSamples(const std::vector<ZenLoad::M
 
   size_t numFramesTotal = parser.getSamples().size() / nodes.size();
   size_t startFrame = def.m_FirstFrame;
-  size_t lastFrame = def.m_LastFrame;
+  size_t lastFrame = def.m_LastFrame >= 0 ? def.m_LastFrame : numFramesTotal;
   size_t numFrames = lastFrame - startFrame + 1;
   size_t numNodes = parser.getNodeIndex().size();
   float speed = def.m_Speed;

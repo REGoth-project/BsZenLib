@@ -1,5 +1,6 @@
 #include "ImportSkeletalMesh.hpp"
 #include <optional>
+#include "ImportAnimation.hpp"
 #include "ImportMaterial.hpp"
 #include "ImportPath.hpp"
 #include <Animation/BsSkeleton.h>
@@ -16,7 +17,6 @@
 #include <zenload/zCModelMeshLib.h>
 #include <zenload/zTypes.h>
 #include <zenload/zenParser.h>
-#include "ImportAnimation.hpp"
 
 using namespace bs;
 using namespace BsZenLib;
@@ -32,7 +32,6 @@ struct SkeletalVertex
   UINT8 boneIndices[4];
   float boneWeights[4];
 };
-
 
 // - Implementation --------------------------------------------------------------------------------
 
@@ -55,6 +54,7 @@ public:
     }
 
     packMesh();
+    workaroundEmptyMesh();
     importAndCacheGeometry();
     importAndCacheSkeletalMeshMaterials();
   }
@@ -73,7 +73,26 @@ private:
     return mMeshSkin.isValid();
   }
 
-  void packMesh() { mMeshSkin.packMesh(mPackedMesh, 0.01f); }
+  void packMesh()
+  {
+    mMeshSkin.packMesh(mPackedMesh, 0.01f);
+  }
+
+  /**
+   * bs:f does not like completely empty meshes. So if the mesh IS empty,
+   * which happens for the Meatbug, for example, insert some dummy data.
+   */
+  void workaroundEmptyMesh()
+  {
+    if (!mPackedMesh.vertices.empty())
+      return;
+
+    ZenLoad::SkeletalVertex v = {};
+    mPackedMesh.vertices.push_back(v);
+
+    mPackedMesh.subMeshes.emplace_back();
+    mPackedMesh.subMeshes.back().indices = {0, 0, 0};
+  }
 
   void importAndCacheGeometry()
   {
@@ -96,7 +115,7 @@ private:
 
     mImportedMesh = mesh;
 
-    const bool overwrite = false;
+    const bool overwrite = true;
     gResources().save(mesh, GothicPathToCachedSkeletalMesh(mMdlFile + "-geometry"), overwrite);
   }
 
@@ -319,7 +338,7 @@ public:
         HMeshWithMaterials imported =
             MeshWithMaterials::create(loader.getImportedMesh(), loader.getImportedMaterials());
 
-        const bool overwrite = false;
+        const bool overwrite = true;
         gResources().save(imported, GothicPathToCachedSkeletalMesh(meshFile), overwrite);
 
         if (imported)
@@ -330,7 +349,6 @@ public:
         {
           gDebug().logWarning("[SkeletalMesh] Failed to import mesh: " + meshFile);
         }
-
       }
     }
 
@@ -344,17 +362,15 @@ public:
       }
       else
       {
-        gDebug().logWarning("[ImportSkeletalMesh] Failed to import animation: " + ani.fullAnimationName);
+        gDebug().logWarning("[ImportSkeletalMesh] Failed to import animation: " +
+                            ani.fullAnimationName);
       }
     }
   }
 
   Vector<HMeshWithMaterials> getMeshes() const { return mMeshes; }
 
-  Vector<HAnimationClip> getAnimations() const
-  {
-    return mAnimationClips;
-  }
+  Vector<HAnimationClip> getAnimations() const { return mAnimationClips; }
 
 private:
   /**
@@ -435,8 +451,7 @@ private:
 
     ZenParser zen(mModelScriptFile.c_str(), mVDFS);
 
-    if (zen.getFileSize() == 0)
-      return false;
+    if (zen.getFileSize() == 0) return false;
 
     mModelScriptParser = bs_unique_ptr_new<ZenLoad::ModelScriptBinParser>(zen);
 
@@ -630,7 +645,9 @@ HModelScriptFile BsZenLib::ImportAndCacheMDS(const bs::String& mdsFile, const VD
 
   HModelScriptFile mds = ModelScriptFile::create(importer.getMeshes(), importer.getAnimations());
 
-  const bool overwrite = false;
+  mds->setName(mdsFile);
+
+  const bool overwrite = true;
   gResources().save(mds, GothicPathToCachedModelScript(mdsFile), overwrite);
 
   return mds;

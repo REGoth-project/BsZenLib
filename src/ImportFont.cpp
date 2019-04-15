@@ -139,7 +139,7 @@ bs::HFont BsZenLib::ImportAndCacheFont(const bs::String& originalFileName,
 
   bs::HFont font = importer.constructFont();
 
-  const bool overwrite = false;
+  const bool overwrite = true;
   bs::gResources().save(font, GothicPathToCachedFont(originalFileName), overwrite);
 
   return font;
