@@ -10,7 +10,23 @@ HModelScriptFile ModelScriptFile::create(bs::Vector<HMeshWithMaterials> meshes, 
   h->mMeshes = meshes;
   h->mAnimationClips = clips;
 
+  // Needs to be also called after deserialization!
+  h->_buildMeshesByNameMap();
+
   return h;
+}
+
+void ModelScriptFile::_buildMeshesByNameMap() {
+  // These are set again
+  for (auto& m : mMeshes)
+  {
+    bs::String nameUpperCase = m->getName();
+    bs::StringUtil::toUpperCase(nameUpperCase);
+
+    bs::String noExtension = nameUpperCase.substr(0, nameUpperCase.find_first_of('.'));
+
+    mMeshesByName[noExtension] = m;
+  }
 }
 
 void ModelScriptFile::getResourceDependencies(

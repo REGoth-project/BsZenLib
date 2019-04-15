@@ -1,22 +1,22 @@
 #pragma once
 #include <BsCorePrerequisites.h>
-#include <Resources/BsResource.h>
 #include <Reflection/BsRTTIType.h>
+#include <Resources/BsResource.h>
 
 namespace bs
 {
-    class AnimatedMeshRTTI;
-    class MeshWithMaterialsRTTI;
+  class AnimatedMeshRTTI;
+  class MeshWithMaterialsRTTI;
 
-    /**
-     * Type IDs for RTTI (Asset saving)
-     */
-    enum ZenResourcesTypeIds
-    {
-      TID_AnimatedMesh = 400001,
-      TID_MeshWithMaterials = 400002
-    };
-}
+  /**
+   * Type IDs for RTTI (Asset saving)
+   */
+  enum ZenResourcesTypeIds
+  {
+    TID_AnimatedMesh = 400001,
+    TID_MeshWithMaterials = 400002
+  };
+}  // namespace bs
 
 namespace BsZenLib
 {
@@ -102,7 +102,8 @@ namespace BsZenLib
       /**
        * Create from a Mesh and a list of Materials
        */
-      static HModelScriptFile create(bs::Vector<HMeshWithMaterials> meshes, bs::Vector<bs::HAnimationClip> clips);
+      static HModelScriptFile create(bs::Vector<HMeshWithMaterials> meshes,
+                                     bs::Vector<bs::HAnimationClip> clips);
 
       /**
        * @return The imported mesh
@@ -113,6 +114,28 @@ namespace BsZenLib
        * @return The imported animation clips for this mesh
        */
       bs::Vector<bs::HAnimationClip> getAnimationClips() const { return mAnimationClips; }
+
+      /**
+       * Looks up the mesh with the given name.
+       *
+       * @param  name  Name of the mesh (*not* the filename!), UPPERCASE, without extension,
+       *               for example: `DRAGON_FIRE_BODY`
+       *
+       * @return Handle of the found mesh. Invalid handle if the given mesh was not found.
+       */
+      HMeshWithMaterials getMeshByName(const bs::String& name)
+      {
+        auto it = mMeshesByName.find(name);
+
+        if (it == mMeshesByName.end())
+        {
+          return {};
+        }
+        else
+        {
+          return it->second;
+        }
+      }
 
       /** @copydoc Resource::getResourceDependencies */
       void getResourceDependencies(bs::FrameVector<bs::HResource>& dependencies) const override;
@@ -132,57 +155,71 @@ namespace BsZenLib
       friend class bs::AnimatedMeshRTTI;
       static bs::RTTITypeBase* getRTTIStatic();
       bs::RTTITypeBase* getRTTI() const override { return getRTTIStatic(); }
+      void _buildMeshesByNameMap();
 
     private:
       bs::Vector<HMeshWithMaterials> mMeshes;
+      bs::Map<bs::String, HMeshWithMaterials> mMeshesByName;
       bs::Vector<bs::HAnimationClip> mAnimationClips;
     };
 
-
-  }  // namespace Resources
+  }  // namespace Res
 }  // namespace BsZenLib
 
 // Need to extend namespace bs because of the RTTI-makros
 namespace bs
 {
-    class AnimatedMeshRTTI : public bs::RTTIType<BsZenLib::Res::ModelScriptFile, Resource, AnimatedMeshRTTI>
+  class AnimatedMeshRTTI
+      : public bs::RTTIType<BsZenLib::Res::ModelScriptFile, Resource, AnimatedMeshRTTI>
+  {
+  public:
+    BS_BEGIN_RTTI_MEMBERS
+    BS_RTTI_MEMBER_REFL_ARRAY(mMeshes, 0)
+    BS_RTTI_MEMBER_REFL_ARRAY(mAnimationClips, 1)
+    BS_END_RTTI_MEMBERS
+
+    void onDeserializationEnded(IReflectable* obj, SerializationContext* context) override
     {
-    public:
-      BS_BEGIN_RTTI_MEMBERS
-      BS_RTTI_MEMBER_REFL_ARRAY(mMeshes, 0)
-      BS_RTTI_MEMBER_REFL_ARRAY(mAnimationClips, 1)
-      BS_END_RTTI_MEMBERS
+      auto* modelScript = static_cast<BsZenLib::Res::ModelScriptFile*>(obj);
 
-      const String& getRTTIName() override
-      {
-        static String name = "ModelScriptFile";
-        return name;
-      }
+      modelScript->_buildMeshesByNameMap();
+    }
 
-      UINT32 getRTTIId() override { return TID_AnimatedMesh; }
-
-      SPtr<IReflectable> newRTTIObject() override { return bs_shared_ptr_new<BsZenLib::Res::ModelScriptFile>(); }
-    };
-
-
-    class MeshWithMaterialsRTTI
-        : public RTTIType<BsZenLib::Res::MeshWithMaterials, Resource, MeshWithMaterialsRTTI>
+    const String& getRTTIName() override
     {
-    public:
-      BS_BEGIN_RTTI_MEMBERS
-      BS_RTTI_MEMBER_REFL(mMesh, 0)
-      BS_RTTI_MEMBER_REFL_ARRAY(mMaterials, 1)
-      BS_END_RTTI_MEMBERS
+      static String name = "ModelScriptFile";
+      return name;
+    }
 
-      const String& getRTTIName() override
-      {
-        static String name = "MeshWithMaterials";
-        return name;
-      }
+    UINT32 getRTTIId() override { return TID_AnimatedMesh; }
 
-      UINT32 getRTTIId() override { return TID_MeshWithMaterials; }
+    SPtr<IReflectable> newRTTIObject() override
+    {
+      return bs_shared_ptr_new<BsZenLib::Res::ModelScriptFile>();
+    }
+  };
 
-      SPtr<IReflectable> newRTTIObject() override { return bs_shared_ptr_new<BsZenLib::Res::MeshWithMaterials>(); }
-    };
+  class MeshWithMaterialsRTTI
+      : public RTTIType<BsZenLib::Res::MeshWithMaterials, Resource, MeshWithMaterialsRTTI>
+  {
+  public:
+    BS_BEGIN_RTTI_MEMBERS
+    BS_RTTI_MEMBER_REFL(mMesh, 0)
+    BS_RTTI_MEMBER_REFL_ARRAY(mMaterials, 1)
+    BS_END_RTTI_MEMBERS
 
-}
+    const String& getRTTIName() override
+    {
+      static String name = "MeshWithMaterials";
+      return name;
+    }
+
+    UINT32 getRTTIId() override { return TID_MeshWithMaterials; }
+
+    SPtr<IReflectable> newRTTIObject() override
+    {
+      return bs_shared_ptr_new<BsZenLib::Res::MeshWithMaterials>();
+    }
+  };
+
+}  // namespace bs
