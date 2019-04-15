@@ -9,7 +9,7 @@ install:
   - git fetch
   - git pull
   - .\bootstrap-vcpkg.bat
-  - .\vcpkg.exe install physfs glm libsquish
+  - .\vcpkg.exe install --triplet x64-windows physfs glm libsquish
   - cd %APPVEYOR_BUILD_FOLDER%
 
 build_script:
