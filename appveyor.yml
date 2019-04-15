@@ -1,12 +1,23 @@
 version: 0.1.{build}
 image: Visual Studio 2017
 
+cache:
+    - c:\tools\vcpkg\installed\
+
+install:
+  - cd C:\tools\vcpkg
+  - git fetch
+  - git pull
+  - .\bootstrap-vcpkg.bat
+  - .\vcpkg.exe install physfs glm libsquish
+  - cd %APPVEYOR_BUILD_FOLDER%
+
 build_script:
    - git submodule update --init --recursive
    - 
    - mkdir build
    - cd build
-   - cmake -G"Visual Studio 15 2017 Win64" -DBSZENLIB_DOWNLOAD_BSF_BINARIES=On -DCMAKE_BUILD_TYPE=Release ..
+   - cmake -G"Visual Studio 15 2017 Win64" -DVCPKG_TARGET_TRIPLET=x64-windows -DCMAKE_TOOLCHAIN_FILE=C:/tools/vcpkg/scripts/buildsystems/vcpkg.cmake -DBSZENLIB_DOWNLOAD_BSF_BINARIES=On -DCMAKE_BUILD_TYPE=Release ..
    - cmake --build . --config Release -j 4
    - 
    - cp -r bsf-binaries/bin/* bin/Release
