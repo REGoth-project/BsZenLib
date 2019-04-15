@@ -70,7 +70,7 @@ bs::HAnimationClip BsZenLib::ImportMAN(const ZenLoad::zCModelMeshLib& meshLib,
     bs::String command = "PLAYCLIP:" + bs::String(def.animation.m_Next.c_str());
     float endOfAnimation = clip->getLength();
 
-    gDebug().logDebug(def.fullAnimationName + " - Event: " + command);
+    // gDebug().logDebug(def.fullAnimationName + " - Event: " + command);
     events.push_back(AnimationEvent(command, endOfAnimation));
   }
 
