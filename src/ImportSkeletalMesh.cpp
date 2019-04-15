@@ -338,11 +338,11 @@ public:
         HMeshWithMaterials imported =
             MeshWithMaterials::create(loader.getImportedMesh(), loader.getImportedMaterials());
 
-        const bool overwrite = true;
-        gResources().save(imported, GothicPathToCachedSkeletalMesh(meshFile), overwrite);
-
         if (imported)
         {
+          const bool overwrite = true;
+          gResources().save(imported, GothicPathToCachedSkeletalMesh(meshFile), overwrite);
+
           mMeshes.push_back(imported);
         }
         else
