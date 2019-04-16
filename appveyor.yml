@@ -9,7 +9,7 @@ install:
   - git fetch
   - git pull
   - .\bootstrap-vcpkg.bat
-  - .\vcpkg.exe install --triplet x64-windows physfs glm libsquish
+  - .\vcpkg.exe install --triplet x64-windows-static physfs glm libsquish
   - cd %APPVEYOR_BUILD_FOLDER%
 
 build_script:
@@ -17,13 +17,6 @@ build_script:
    - 
    - mkdir build
    - cd build
-   - cmake -G"Visual Studio 15 2017 Win64" -DBUILD_SHARED_LIBS=ON -DVCPKG_TARGET_TRIPLET=x64-windows -DCMAKE_TOOLCHAIN_FILE=C:/tools/vcpkg/scripts/buildsystems/vcpkg.cmake -DBSZENLIB_DOWNLOAD_BSF_BINARIES=On -DCMAKE_BUILD_TYPE=Release ..
+   - cmake -G"Visual Studio 15 2017 Win64" -DVCPKG_TARGET_TRIPLET=x64-windows-static -DCMAKE_TOOLCHAIN_FILE=C:/tools/vcpkg/scripts/buildsystems/vcpkg.cmake -DBSZENLIB_DOWNLOAD_BSF_BINARIES=On -DCMAKE_BUILD_TYPE=Release ..
    - cmake --build . --config Release -j 4
-   - 
-   - cp -r C:/tools/vcpkg/installed/x64-windows/bin/* bin/Release
-   - cp -r bsf-binaries/bin/* bin/Release
-   - 7z a BsZenLib.zip bin/
-   - 
-   - mv BsZenLib.zip BsZenLib-%appveyor_repo_branch%-%APPVEYOR_BUILD_VERSION%-win32.zip
-   - appveyor PushArtifact BsZenLib-%appveyor_repo_branch%-%APPVEYOR_BUILD_VERSION%-win32.zip
 
