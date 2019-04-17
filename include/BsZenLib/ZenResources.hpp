@@ -52,6 +52,8 @@ namespace BsZenLib
        * Create from a Mesh and a list of Materials
        */
       static HMeshWithMaterials create(bs::HMesh mesh, bs::Vector<bs::HMaterial> materials);
+      static HMeshWithMaterials create(bs::HMesh mesh, bs::Vector<bs::HMaterial> materials,
+                                       bs::Map<bs::String, HMeshWithMaterials> attachments);
 
       /**
        * @return The imported mesh
@@ -65,6 +67,23 @@ namespace BsZenLib
 
       /** @copydoc Resource::getResourceDependencies */
       void getResourceDependencies(bs::FrameVector<bs::HResource>& dependencies) const override;
+
+      /**
+       * @return Map of node names -> attached mesh
+       */
+      bs::Map<bs::String, HMeshWithMaterials> getNodeAttachments() const
+      {
+        bs::Map<bs::String, HMeshWithMaterials> map;
+
+        assert(mAttachmentNodeNames.size() == mNodeAttachments.size());
+
+        for (auto i = 0; i < mAttachmentNodeNames.size(); i++)
+        {
+          map[mAttachmentNodeNames[i]] = mNodeAttachments[i];
+        }
+
+        return map;
+      }
 
     private:
       /**
@@ -85,6 +104,11 @@ namespace BsZenLib
     private:
       bs::HMesh mMesh;
       bs::Vector<bs::HMaterial> mMaterials;
+
+      // This could be stored as a pair, but two vectors are easier to serialize.
+      // At index i, both store the name of a node and the Mesh attached to that node.
+      bs::Vector<bs::String> mAttachmentNodeNames;
+      bs::Vector<HMeshWithMaterials> mNodeAttachments;
     };
 
     /**
@@ -206,6 +230,8 @@ namespace bs
     BS_BEGIN_RTTI_MEMBERS
     BS_RTTI_MEMBER_REFL(mMesh, 0)
     BS_RTTI_MEMBER_REFL_ARRAY(mMaterials, 1)
+    BS_RTTI_MEMBER_PLAIN_ARRAY(mAttachmentNodeNames, 2)
+    BS_RTTI_MEMBER_REFL_ARRAY(mNodeAttachments, 3)
     BS_END_RTTI_MEMBERS
 
     const String& getRTTIName() override
@@ -221,5 +247,4 @@ namespace bs
       return bs_shared_ptr_new<BsZenLib::Res::MeshWithMaterials>();
     }
   };
-
 }  // namespace bs

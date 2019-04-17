@@ -3,6 +3,7 @@
 #include "ImportAnimation.hpp"
 #include "ImportMaterial.hpp"
 #include "ImportPath.hpp"
+#include "ImportStaticMesh.hpp"
 #include <Animation/BsSkeleton.h>
 #include <Components/BsCRenderable.h>
 #include <FileSystem/BsFileSystem.h>
@@ -57,10 +58,12 @@ public:
     workaroundEmptyMesh();
     importAndCacheGeometry();
     importAndCacheSkeletalMeshMaterials();
+    importAndCacheAttachments();
   }
 
   HMesh getImportedMesh() const { return mImportedMesh; }
   Vector<HMaterial> getImportedMaterials() const { return mImportedMeshMaterials; }
+  Map<String, HMeshWithMaterials> getNodeAttachments() const { return mNodeAttachments; }
 
 private:
   /**
@@ -73,10 +76,7 @@ private:
     return mMeshSkin.isValid();
   }
 
-  void packMesh()
-  {
-    mMeshSkin.packMesh(mPackedMesh, 0.01f);
-  }
+  void packMesh() { mMeshSkin.packMesh(mPackedMesh, 0.01f); }
 
   /**
    * bs:f does not like completely empty meshes. So if the mesh IS empty,
@@ -84,8 +84,7 @@ private:
    */
   void workaroundEmptyMesh()
   {
-    if (!mPackedMesh.vertices.empty())
-      return;
+    if (!mPackedMesh.vertices.empty()) return;
 
     ZenLoad::SkeletalVertex v = {};
     mPackedMesh.vertices.push_back(v);
@@ -141,6 +140,11 @@ private:
 
       mImportedMeshMaterials.push_back(imported);
     }
+  }
+
+  void importAndCacheAttachments()
+  {
+    mNodeAttachments = ImportAndCacheNodeAttachments(mMdlFile, mVDFS);
   }
 
   /**
@@ -273,6 +277,7 @@ private:
   ZenLoad::PackedSkeletalMesh mPackedMesh;
   HMesh mImportedMesh;
   Vector<HMaterial> mImportedMeshMaterials;
+  Map<String, HMeshWithMaterials> mNodeAttachments;
 };
 
 /**
@@ -335,8 +340,8 @@ public:
       {
         SkeletalMeshGeometryLoader loader(meshFile, mBindPose, mSkeleton, mVDFS);
 
-        HMeshWithMaterials imported =
-            MeshWithMaterials::create(loader.getImportedMesh(), loader.getImportedMaterials());
+        HMeshWithMaterials imported = MeshWithMaterials::create(
+            loader.getImportedMesh(), loader.getImportedMaterials(), loader.getNodeAttachments());
 
         if (imported)
         {
@@ -661,4 +666,27 @@ bool BsZenLib::HasCachedMDS(const bs::String& mdsFile)
 HModelScriptFile BsZenLib::LoadCachedMDS(const bs::String& mdsFile)
 {
   return gResources().load<ModelScriptFile>(GothicPathToCachedModelScript(mdsFile));
+}
+
+bs::Map<bs::String, HMeshWithMaterials> BsZenLib::ImportAndCacheNodeAttachments(
+    const bs::String& mdlFile, const VDFS::FileIndex& vdfs)
+{
+  ZenLoad::zCModelMeshLib lib(mdlFile.c_str(), vdfs);
+
+  if (!lib.isValid()) return {};
+
+  bs::Map<bs::String, HMeshWithMaterials> attachments;
+
+  for (const auto& a : lib.getAttachments())
+  {
+    ZenLoad::PackedMesh packed;
+    a.second.packMesh(packed, 0.01f);
+
+    String cacheName = mdlFile + "-attach-" + a.first.c_str();
+    String attachTo = a.first.c_str();
+
+    attachments[attachTo] = ImportAndCacheStaticMesh(cacheName, packed, vdfs);
+  }
+
+  return attachments;
 }

@@ -1,10 +1,11 @@
 #include "ZenResources.hpp"
-#include <Resources/BsResources.h>
 #include <Mesh/BsMesh.h>
+#include <Resources/BsResources.h>
 
 using namespace BsZenLib::Res;
 
-HModelScriptFile ModelScriptFile::create(bs::Vector<HMeshWithMaterials> meshes, bs::Vector<bs::HAnimationClip> clips)
+HModelScriptFile ModelScriptFile::create(bs::Vector<HMeshWithMaterials> meshes,
+                                         bs::Vector<bs::HAnimationClip> clips)
 {
   HModelScriptFile h = create();
   h->mMeshes = meshes;
@@ -16,7 +17,8 @@ HModelScriptFile ModelScriptFile::create(bs::Vector<HMeshWithMaterials> meshes, 
   return h;
 }
 
-void ModelScriptFile::_buildMeshesByNameMap() {
+void ModelScriptFile::_buildMeshesByNameMap()
+{
   // These are set again
   for (auto& m : mMeshes)
   {
@@ -29,8 +31,7 @@ void ModelScriptFile::_buildMeshesByNameMap() {
   }
 }
 
-void ModelScriptFile::getResourceDependencies(
-    bs::FrameVector<bs::HResource>& dependencies) const
+void ModelScriptFile::getResourceDependencies(bs::FrameVector<bs::HResource>& dependencies) const
 {
   for (auto mesh : mMeshes)
   {
@@ -66,6 +67,19 @@ HMeshWithMaterials MeshWithMaterials::create(bs::HMesh mesh, bs::Vector<bs::HMat
 
   return h;
 }
+HMeshWithMaterials MeshWithMaterials::create(bs::HMesh mesh, bs::Vector<bs::HMaterial> materials,
+                                             bs::Map<bs::String, HMeshWithMaterials> attachments)
+{
+  HMeshWithMaterials h = create(mesh, materials);
+
+  for (const auto& a : attachments)
+  {
+    h->mAttachmentNodeNames.push_back(a.first);
+    h->mNodeAttachments.push_back(a.second);
+  }
+
+  return h;
+}
 
 void MeshWithMaterials::getResourceDependencies(bs::FrameVector<bs::HResource>& dependencies) const
 {
@@ -74,6 +88,11 @@ void MeshWithMaterials::getResourceDependencies(bs::FrameVector<bs::HResource>& 
   for (auto material : mMaterials)
   {
     dependencies.push_back(material);
+  }
+
+  for (auto mesh : mNodeAttachments)
+  {
+    dependencies.push_back(mesh);
   }
 }
 
