@@ -1,13 +1,13 @@
 #include "ImportMaterial.hpp"
-#include "ImportTexture.hpp"
 #include "ImportPath.hpp"
-#include <zenload/zTypes.h>
+#include "ImportTexture.hpp"
 #include <FileSystem/BsFileSystem.h>
-#include <Resources/BsBuiltinResources.h>
-#include <Resources/BsResources.h>
+#include <Importer/BsImporter.h>
 #include <Material/BsMaterial.h>
 #include <Material/BsShader.h>
-#include <Importer/BsImporter.h>
+#include <Resources/BsBuiltinResources.h>
+#include <Resources/BsResources.h>
+#include <zenload/zTypes.h>
 
 using namespace bs;
 
@@ -20,14 +20,13 @@ static HShader loadWorldShader()
   String shaderName = "World.bsl";
   Path cachedShader = BsZenLib::GothicPathToCachedMaterial(shaderName);
 
-  if(FileSystem::isFile(cachedShader))
-    return gResources().load<Shader>(cachedShader);
+  if (FileSystem::isFile(cachedShader)) return gResources().load<Shader>(cachedShader);
 
-  HShader shader = gImporter().import<Shader>("data/shader/" + shaderName);
+  HShader shader = gImporter().import<Shader>("content/shaders/" + shaderName);
 
   // Save to cache
   const bool overwrite = true;
-  gResources().save(shader, BsZenLib::GothicPathToCachedMaterial(shader->getName()), overwrite);
+  gResources().save(shader, BsZenLib::GothicPathToCachedMaterial(shaderName), overwrite);
 
   return shader;
 }
@@ -41,8 +40,9 @@ HMaterial BsZenLib::ImportAndCacheMaterialWithTextures(const String& cacheName,
                                                        const ZenLoad::zCMaterialData& material,
                                                        const VDFS::FileIndex& vdfs)
 {
+  // Commented out: May want to fall back to the default shader later
   HShader shader = gBuiltinResources().getBuiltinShader(BuiltinShader::Standard);
-  //Commented out: Doesn't work yet. -- HShader shader = loadWorldShader();
+  // Commented out: Doesn't work yet. -- HShader shader = loadWorldShader();
 
   HMaterial bsfMaterial = Material::create(shader);
 
