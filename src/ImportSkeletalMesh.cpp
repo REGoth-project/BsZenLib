@@ -377,6 +377,12 @@ public:
 
   Vector<HAnimationClip> getAnimations() const { return mAnimationClips; }
 
+  /**
+   * Strips the extension from the model script file and returns the part
+   * without the extension (and without the ".")
+   */
+  String getModelScriptName() const { return stripExtension(mModelScriptFile); }
+
 private:
   /**
    * Removes the extension from a given file name or path.
@@ -394,12 +400,6 @@ private:
 
     return in.substr(0, in.length() - 4);
   }
-
-  /**
-   * Strips the extension from the model script file and returns the part
-   * without the extension (and without the ".")
-   */
-  String getModelScriptName() const { return stripExtension(mModelScriptFile); }
 
   /**
    * Uses the supplied model script file (MDS, MSB) to get the matching hierarchy file (MDH).
@@ -660,7 +660,7 @@ HModelScriptFile BsZenLib::ImportAndCacheMDS(const bs::String& mdsFile, const VD
 
   HModelScriptFile mds = ModelScriptFile::create(importer.getMeshes(), importer.getAnimations());
 
-  mds->setName(mdsFile);
+  mds->setName(importer.getModelScriptName());
 
   const bool overwrite = true;
   gResources().save(mds, GothicPathToCachedModelScript(mdsFile), overwrite);
