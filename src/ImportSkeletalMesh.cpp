@@ -382,8 +382,18 @@ private:
    * Removes the extension from a given file name or path.
    *
    * Given a string of "sample.ext", this will return "sample".
+   * If there is no extension, then the input is passed through as it is.
    */
-  String stripExtension(const String& in) const { return in.substr(0, in.length() - 4); }
+  String stripExtension(const String& in) const
+  {
+    if (in.find_first_of('.') == bs::String::npos)
+    {
+      // No extension to remove
+      return in;
+    }
+
+    return in.substr(0, in.length() - 4);
+  }
 
   /**
    * Strips the extension from the model script file and returns the part
