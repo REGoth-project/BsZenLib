@@ -22,6 +22,7 @@
 
 #include "ImportTexture.hpp"
 #include "ImportPath.hpp"
+#include "ResourceManifest.hpp"
 #include <FileSystem/BsFileSystem.h>
 #include <Image/BsColor.h>
 #include <Image/BsPixelData.h>
@@ -67,6 +68,7 @@ bs::HTexture BsZenLib::ImportAndCacheTexture(const bs::String& virtualFilePath,
   Path path = GothicPathToCachedTexture(virtualFilePath.c_str());
 
   gResources().save(fromOriginal, path, overwrite);
+  AddToResourceManifest(fromOriginal, path);
 
   return fromOriginal;
 }

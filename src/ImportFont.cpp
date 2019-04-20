@@ -1,6 +1,7 @@
+#include "ResourceManifest.hpp"
 #include <BsZenLib/ImportFont.hpp>
-#include <BsZenLib/ImportTexture.hpp>
 #include <BsZenLib/ImportPath.hpp>
+#include <BsZenLib/ImportTexture.hpp>
 #include <FileSystem/BsFileSystem.h>
 #include <Math/BsVector2.h>
 #include <Resources/BsResources.h>
@@ -141,6 +142,7 @@ bs::HFont BsZenLib::ImportAndCacheFont(const bs::String& originalFileName,
 
   const bool overwrite = true;
   bs::gResources().save(font, GothicPathToCachedFont(originalFileName), overwrite);
+  AddToResourceManifest(font, GothicPathToCachedFont(originalFileName));
 
   return font;
 }

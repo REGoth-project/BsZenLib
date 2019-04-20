@@ -89,6 +89,7 @@ add_library(BsZenLib
   src/ImportAnimation.cpp
   src/ImportFont.cpp
   src/ZenResources.cpp
+  src/ResourceManifest.cpp
   src/CacheUtility.cpp
   )
 

@@ -1,6 +1,7 @@
 #include "ImportAnimation.hpp"
 #include "ImportPath.hpp"
 #include "ImportSkeletalMesh.hpp"
+#include "ResourceManifest.hpp"
 #include <Animation/BsAnimationClip.h>
 #include <Animation/BsAnimationUtility.h>
 #include <FileSystem/BsFileSystem.h>
@@ -82,6 +83,7 @@ bs::HAnimationClip BsZenLib::ImportMAN(const ZenLoad::zCModelMeshLib& meshLib,
 
   const bool overwrite = true;
   gResources().save(clip, GothicPathToCachedAnimationClip(def.fullAnimationName), overwrite);
+  AddToResourceManifest(clip, GothicPathToCachedAnimationClip(def.fullAnimationName));
 
   return clip;
 }
