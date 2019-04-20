@@ -10,6 +10,20 @@ using namespace BsZenLib;
 Res::HMeshWithMaterials BsZenLib::ImportAndCacheMorphMesh(const bs::String& originalFileName,
                                                           const VDFS::FileIndex& vdfs)
 {
+  bs::String actualName = originalFileName;
+
+  enum
+  {
+    CompareCaseSensitive = false,
+    ConvertToLowerCase = true,
+  };
+
+  // Resolve uncompiled file extension
+  if (bs::StringUtil::endsWith(originalFileName, ".mms", ConvertToLowerCase))
+  {
+    actualName = originalFileName.substr(0, originalFileName.size() - 4) + ".MMB";
+  }
+
   ZenLoad::zCMorphMesh mesh(originalFileName.c_str(), vdfs);
 
   if (mesh.getMesh().getNumSubmeshes() == 0) return {};
