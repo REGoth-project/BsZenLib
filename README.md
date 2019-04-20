@@ -15,6 +15,8 @@ Most modern Linux distros provide a way to install them via the native package
 manager. Ubuntu 18.04+ is known to ship recent enough versions, older distros do not
 and installing from source may be necessary.
 
+On Windows, just double-click on `build.bat`. It will manage everything automatically.
+
 Dependencies on Windows are best managed using [vcpkg](https://github.com/Microsoft/vcpkg), you can
 find instructions on how to build it on the official repository. Once vcpkg is installed, you should
 install the following packages `physfs glm libsquish` by running
