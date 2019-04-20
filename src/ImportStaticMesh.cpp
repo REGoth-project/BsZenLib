@@ -1,6 +1,7 @@
 #include "ImportStaticMesh.hpp"
 #include "ImportMaterial.hpp"
 #include "ImportPath.hpp"
+#include "ResourceManifest.hpp"
 #include <Components/BsCRenderable.h>
 #include <FileSystem/BsFileSystem.h>
 #include <RenderAPI/BsVertexDataDesc.h>
@@ -39,8 +40,7 @@ static void transferIndices(SPtr<MeshData> target, const ZenLoad::PackedMesh& pa
 BsZenLib::Res::HMeshWithMaterials BsZenLib::ImportAndCacheStaticMesh(
     const bs::String& originalFileName, const VDFS::FileIndex& vdfs)
 {
-
-	gDebug().logDebug("Caching Static Mesh: " + originalFileName);
+  gDebug().logDebug("Caching Static Mesh: " + originalFileName);
 
   HMesh mesh = ImportAndCacheStaticMeshGeometry(originalFileName, vdfs);
 
@@ -68,6 +68,7 @@ BsZenLib::Res::HMeshWithMaterials BsZenLib::ImportAndCacheStaticMesh(
 
   const bool overwrite = true;
   gResources().save(combined, GothicPathToCachedStaticMesh(originalFileName), overwrite);
+  AddToResourceManifest(combined, GothicPathToCachedStaticMesh(originalFileName));
 
   return combined;
 }
@@ -76,8 +77,7 @@ BsZenLib::Res::HMeshWithMaterials BsZenLib::ImportAndCacheStaticMesh(
     const bs::String& originalFileName, const ZenLoad::PackedMesh& packedMesh,
     const VDFS::FileIndex& vdfs)
 {
-
-	gDebug().logDebug("Caching Static Mesh: " + originalFileName);
+  gDebug().logDebug("Caching Static Mesh: " + originalFileName);
 
   HMesh mesh = ImportAndCacheStaticMeshGeometry(originalFileName, packedMesh);
 
@@ -87,7 +87,8 @@ BsZenLib::Res::HMeshWithMaterials BsZenLib::ImportAndCacheStaticMesh(
     return {};
   }
 
-  Vector<HMaterial> materials = ImportAndCacheStaticMeshMaterials(originalFileName, packedMesh, vdfs);
+  Vector<HMaterial> materials =
+      ImportAndCacheStaticMeshMaterials(originalFileName, packedMesh, vdfs);
 
   if (materials.empty())
   {
@@ -105,6 +106,7 @@ BsZenLib::Res::HMeshWithMaterials BsZenLib::ImportAndCacheStaticMesh(
 
   const bool overwrite = true;
   gResources().save(combined, GothicPathToCachedStaticMesh(originalFileName), overwrite);
+  AddToResourceManifest(combined, GothicPathToCachedStaticMesh(originalFileName));
 
   return combined;
 }
@@ -145,6 +147,7 @@ bs::HMesh BsZenLib::ImportAndCacheStaticMeshGeometry(const bs::String& originalF
 
   const bool overwrite = true;
   gResources().save(mesh, path, overwrite);
+  AddToResourceManifest(mesh, path);
 
   return mesh;
 }

@@ -73,6 +73,7 @@ bs::HSceneObject BsZenLib::ImportAndCacheZEN(const std::string& zen, const VDFS:
 
   // const bool overwrite = false;
   // gResources().save(worldPrefab, BsZenLib::GothicPathToCachedWorld(zen.c_str()), overwrite);
+  // AddToResourceManifest(worldPrefab, BsZenLib::GothicPathToCachedWorld(zen.c_str()));
 
   return worldSO;
 }

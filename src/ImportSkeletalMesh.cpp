@@ -4,6 +4,7 @@
 #include "ImportMaterial.hpp"
 #include "ImportPath.hpp"
 #include "ImportStaticMesh.hpp"
+#include "ResourceManifest.hpp"
 #include <Animation/BsSkeleton.h>
 #include <Components/BsCRenderable.h>
 #include <FileSystem/BsFileSystem.h>
@@ -141,6 +142,7 @@ private:
 
     const bool overwrite = true;
     gResources().save(mesh, GothicPathToCachedSkeletalMesh(mMdlFile + "-geometry"), overwrite);
+    AddToResourceManifest(mesh, GothicPathToCachedSkeletalMesh(mMdlFile + "-geometry"));
   }
 
   void importAndCacheSkeletalMeshMaterials()
@@ -472,6 +474,7 @@ public:
         {
           const bool overwrite = true;
           gResources().save(imported, GothicPathToCachedSkeletalMesh(meshFile), overwrite);
+          AddToResourceManifest(imported, GothicPathToCachedSkeletalMesh(meshFile));
 
           mMeshes.push_back(imported);
         }
@@ -700,6 +703,7 @@ public:
     {
       const bool overwrite = true;
       gResources().save(imported, GothicPathToCachedSkeletalMesh(modelFile), overwrite);
+      AddToResourceManifest(imported, GothicPathToCachedSkeletalMesh(modelFile));
 
       mMeshes.push_back(imported);
     }
@@ -758,6 +762,7 @@ HModelScriptFile BsZenLib::ImportAndCacheMDS(const bs::String& mdsFile, const VD
 
   const bool overwrite = true;
   gResources().save(mds, GothicPathToCachedModelScript(mdsFile), overwrite);
+  AddToResourceManifest(mds, GothicPathToCachedModelScript(mdsFile));
 
   return mds;
 }

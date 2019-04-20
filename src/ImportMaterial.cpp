@@ -1,6 +1,7 @@
 #include "ImportMaterial.hpp"
 #include "ImportPath.hpp"
 #include "ImportTexture.hpp"
+#include "ResourceManifest.hpp"
 #include <FileSystem/BsFileSystem.h>
 #include <Importer/BsImporter.h>
 #include <Material/BsMaterial.h>
@@ -11,9 +12,41 @@
 
 using namespace bs;
 
+/**
+ * Stores shaders to be used if the importer encouters a specific kind of material.
+ *
+ * See BsZenLib::SetShaderFor().
+ */
+bs::Map<BsZenLib::ShaderKind, bs::HShader> s_ShadersByKind;
+
 static HTexture loadOrCacheTexture(const String& virtualFilePath, const VDFS::FileIndex& vdfs);
+static BsZenLib::ShaderKind guessShaderKindFromZMaterial(const ZenLoad::zCMaterialData& mat);
 
 // - Implementation --------------------------------------------------------------------------------
+
+static HShader getShaderForZMaterial(const ZenLoad::zCMaterialData& mat)
+{
+  using namespace BsZenLib;
+
+  ShaderKind kind = guessShaderKindFromZMaterial(mat);
+
+  auto it = s_ShadersByKind.find(kind);
+
+  if (it == s_ShadersByKind.end())
+  {
+    return gBuiltinResources().getBuiltinShader(BuiltinShader::Standard);
+  }
+  else
+  {
+    return it->second;
+  }
+}
+
+static BsZenLib::ShaderKind guessShaderKindFromZMaterial(const ZenLoad::zCMaterialData& mat)
+{
+  // TODO: Implement
+  return BsZenLib::ShaderKind::Opaque;
+}
 
 static HShader loadWorldShader()
 {
@@ -27,8 +60,15 @@ static HShader loadWorldShader()
   // Save to cache
   const bool overwrite = true;
   gResources().save(shader, BsZenLib::GothicPathToCachedMaterial(shaderName), overwrite);
+  BsZenLib::AddToResourceManifest(shader, BsZenLib::GothicPathToCachedMaterial(shaderName));
 
   return shader;
+}
+
+void BsZenLib::SetShaderFor(ShaderKind kind, bs::HShader shader)
+{
+  //
+  s_ShadersByKind[kind] = shader;
 }
 
 bs::String BsZenLib::BuildMaterialNameForSubmesh(const bs::String& meshName, UINT32 submesh)
@@ -40,9 +80,7 @@ HMaterial BsZenLib::ImportAndCacheMaterialWithTextures(const String& cacheName,
                                                        const ZenLoad::zCMaterialData& material,
                                                        const VDFS::FileIndex& vdfs)
 {
-  // Commented out: May want to fall back to the default shader later
-  HShader shader = gBuiltinResources().getBuiltinShader(BuiltinShader::Standard);
-  // Commented out: Doesn't work yet. -- HShader shader = loadWorldShader();
+  HShader shader = getShaderForZMaterial(material);
 
   HMaterial bsfMaterial = Material::create(shader);
 
@@ -53,6 +91,7 @@ HMaterial BsZenLib::ImportAndCacheMaterialWithTextures(const String& cacheName,
   // Save to cache
   const bool overwrite = true;
   gResources().save(bsfMaterial, GothicPathToCachedMaterial(cacheName), overwrite);
+  AddToResourceManifest(bsfMaterial, GothicPathToCachedMaterial(cacheName));
 
   return bsfMaterial;
 }
