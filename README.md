@@ -9,7 +9,7 @@ https://regoth-project.github.io/BsZenLib/index.html
 # Building
 
 BsZenLib requires the following packages to be installed on the system:
-`physfs-dev >= 3.0.0` `libsquish-dev` `libglm-dev`
+`physfs-dev >= 3.0.0` `libsquish-dev`
 
 Most modern Linux distros provide a way to install them via the native package
 manager. Ubuntu 18.04+ is known to ship recent enough versions, older distros do not
@@ -19,8 +19,8 @@ On Windows, just double-click on `build.bat`. It will manage everything automati
 
 Dependencies on Windows are best managed using [vcpkg](https://github.com/Microsoft/vcpkg), you can
 find instructions on how to build it on the official repository. Once vcpkg is installed, you should
-install the following packages `physfs glm libsquish` by running
-`vcpkg.exe install --target x64-windows-static physfs glm libsquish`
+install the following packages `physfs libsquish` by running
+`vcpkg.exe install --target x64-windows-static physfs libsquish`
 
 You will need the bsframework for building BsZenLib. You can either download or compile it yourself, or have CMake download prebuilt binaries 
 for you.

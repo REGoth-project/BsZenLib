@@ -3,7 +3,7 @@ git clone https://github.com/Microsoft/vcpkg.git
 cd vcpkg
 call bootstrap-vcpkg.bat
 set VCPKG_ROOT=%CURRENT_DIR%\vcpkg
-vcpkg.exe install --triplet x64-windows-static glm physfs libsquish
+vcpkg.exe install --triplet x64-windows-static physfs libsquish
 cd ..
 mkdir build
 cd build
