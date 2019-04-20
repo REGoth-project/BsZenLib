@@ -36,17 +36,42 @@ struct SkeletalVertex
 
 // - Implementation --------------------------------------------------------------------------------
 
+static Matrix4 convertMatrix(const ZMath::Matrix& m)
+{
+  Matrix4 bs = {m.mv[0], m.mv[1], m.mv[2],  m.mv[3],  m.mv[4],  m.mv[5],  m.mv[6],  m.mv[7],
+                m.mv[8], m.mv[9], m.mv[10], m.mv[11], m.mv[12], m.mv[13], m.mv[14], m.mv[15]};
+
+  return bs.transpose();
+}
+
+/**
+ * Removes the extension from a given file name or path.
+ *
+ * Given a string of "sample.ext", this will return "sample".
+ * If there is no extension, then the input is passed through as it is.
+ */
+static bs::String stripExtension(const bs::String& in)
+{
+  if (in.find_first_of('.') == bs::String::npos)
+  {
+    // No extension to remove
+    return in;
+  }
+
+  return in.substr(0, in.length() - 4);
+}
+
 /**
  * Loads a mesh used with skeletal animation, stored inside .MDL or .MDM-files.
  */
 class SkeletalMeshGeometryLoader
 {
 public:
-  SkeletalMeshGeometryLoader(const String& mdlFile, Vector<Matrix4> bindPose,
+  SkeletalMeshGeometryLoader(const String& mdlFile, Vector<Matrix4> mBindPose,
                              SPtr<Skeleton> skeleton, const VDFS::FileIndex& vdfs)
       : mMdlFile(mdlFile)
       , mVDFS(vdfs)
-      , mBindPose(bindPose)
+      , mBindPose(mBindPose)
       , mSkeleton(skeleton)
   {
     if (!loadMeshSkin())
@@ -280,6 +305,106 @@ private:
   Map<String, HMeshWithMaterials> mNodeAttachments;
 };
 
+class SkeletonImporter
+{
+public:
+  SkeletonImporter(const bs::String& hierarchyFile, const VDFS::FileIndex& vdfs)
+      : mMeshHierarchyFile(hierarchyFile)
+      , mVDFS(vdfs)
+  {
+  }
+
+  /**
+   * Loads the node hierarchy for the model script.
+   * This includes a tree of all nodes, their names and local positions.
+   */
+  bool loadHierarchy()
+  {
+    mMeshHierarchy = ZenLoad::zCModelMeshLib(mMeshHierarchyFile.c_str(), mVDFS, 0.01f);
+
+    return mMeshHierarchy.isValid();
+  }
+
+  /**
+   * Calculates the bind-pose from the hierarchy stored inside the ModelMeshLib.
+   */
+  void makeBindPose()
+  {
+    const auto& nodes = mMeshHierarchy.getNodes();
+    const auto numNodes = nodes.size();
+
+    mBindPose.resize(numNodes);
+    Vector<Matrix4> nodeTransforms;
+
+    for (const auto& node : nodes)
+    {
+      nodeTransforms.push_back(convertMatrix(node.transformLocal));
+    }
+
+    // Calculate actual node matrices
+    for (auto i = 0; i < numNodes; i++)
+    {
+      // TODO: There is a flag indicating whether the animation root should translate the vob
+      // position Move root node to (0,0,0)
+      if (i == 0)
+      {
+        Vector3 position;
+        Quaternion rotation;
+        Vector3 scale;
+
+        nodeTransforms[i].decomposition(position, rotation, scale);
+
+        nodeTransforms[i].setTRS(Vector3(0.0f, 0.0f, 0.0f), rotation, scale);
+      }
+
+      if (nodes[i].parentValid())
+      {
+        mBindPose[i] = mBindPose[nodes[i].parentIndex] * nodeTransforms[i];
+      }
+      else
+      {
+        mBindPose[i] = nodeTransforms[i];
+      }
+    }
+  }
+
+  /**
+   * Generates a bs::f skeleton from the loaded hierarchy.
+   */
+  void makeSkeleton()
+  {
+    Vector<BONE_DESC> bones;
+
+    for (size_t i = 0; i < mMeshHierarchy.getNodes().size(); i++)
+    {
+      const ZenLoad::ModelNode& node = mMeshHierarchy.getNodes()[i];
+
+      bones.emplace_back();
+      bones.back().name = node.name.c_str();
+      bones.back().parent = node.parentValid() ? node.parentIndex : UINT32_MAX;
+      bones.back().invBindPose = mBindPose[i].inverse();
+
+      Vector3 position;
+      Quaternion rotation;
+      Vector3 scale;
+
+      convertMatrix(node.transformLocal).decomposition(position, rotation, scale);
+
+      // position *= 0.01f;  // Scale centimeters -> meters
+
+      bones.back().localTfrm = Transform(position, rotation, scale);
+    }
+
+    mSkeleton = Skeleton::create(&bones[0], (UINT32)bones.size());
+  }
+
+  bs::SPtr<bs::Skeleton> mSkeleton;
+  bs::Vector<bs::Matrix4> mBindPose;
+  ZenLoad::zCModelMeshLib mMeshHierarchy;
+  bs::String mMeshHierarchyFile;
+  const VDFS::FileIndex& mVDFS;
+};
+
 /**
  * Import a model script file and all of its dependencies.
  *
@@ -314,23 +439,22 @@ public:
   ModelScriptFileImporter(const bs::String& modelScriptFile, const VDFS::FileIndex& vdfs)
       : mModelScriptFile(modelScriptFile)
       , mVDFS(vdfs)
+      , mMeshHierarchy(getHierarchyFile(), vdfs)
   {
     useMsbFileIfPossible();
-
-    mHierarchyFile = getHierarchyFile();
 
     if (!loadModelScript())
     {
       BS_EXCEPT(InternalErrorException, "Could not load model script: " + modelScriptFile);
     }
 
-    if (!loadHierarchy())
+    if (!mMeshHierarchy.loadHierarchy())
     {
       BS_EXCEPT(InternalErrorException, "Could not load model hierarchy: " + getHierarchyFile());
     }
 
-    mBindPose = makeBindPose();
-    mSkeleton = makeSkeleton();
+    mMeshHierarchy.makeBindPose();
+    mMeshHierarchy.makeSkeleton();
 
     for (const auto& mesh : mModelScriptParser->meshesASC())
     {
@@ -338,7 +462,8 @@ public:
 
       if (!meshFile.empty())
       {
-        SkeletalMeshGeometryLoader loader(meshFile, mBindPose, mSkeleton, mVDFS);
+        SkeletalMeshGeometryLoader loader(meshFile, mMeshHierarchy.mBindPose,
+                                          mMeshHierarchy.mSkeleton, mVDFS);
 
         HMeshWithMaterials imported = MeshWithMaterials::create(
             loader.getImportedMesh(), loader.getImportedMaterials(), loader.getNodeAttachments());
@@ -359,7 +484,7 @@ public:
 
     for (const auto& ani : mAnimationsToImport)
     {
-      HAnimationClip clip = ImportMAN(mMeshHierarchy, ani, mVDFS);
+      HAnimationClip clip = ImportMAN(mMeshHierarchy.mMeshHierarchy, ani, mVDFS);
 
       if (clip)
       {
@@ -384,23 +509,6 @@ public:
   String getModelScriptName() const { return stripExtension(mModelScriptFile); }
 
 private:
-  /**
-   * Removes the extension from a given file name or path.
-   *
-   * Given a string of "sample.ext", this will return "sample".
-   * If there is no extension, then the input is passed through as it is.
-   */
-  String stripExtension(const String& in) const
-  {
-    if (in.find_first_of('.') == bs::String::npos)
-    {
-      // No extension to remove
-      return in;
-    }
-
-    return in.substr(0, in.length() - 4);
-  }
-
   /**
    * Uses the supplied model script file (MDS, MSB) to get the matching hierarchy file (MDH).
    *
@@ -429,17 +537,6 @@ private:
     if (mVDFS.hasFile(asMDM.c_str())) return asMDM;
 
     return "";
-  }
-
-  /**
-   * Loads the node hierarchy for the model script.
-   * This includes a tree of all nodes, their names and local positions.
-   */
-  bool loadHierarchy()
-  {
-    mMeshHierarchy = ZenLoad::zCModelMeshLib(getHierarchyFile().c_str(), mVDFS, 0.01f);
-
-    return mMeshHierarchy.isValid();
   }
 
   void useMsbFileIfPossible()
@@ -558,109 +655,106 @@ private:
     return true;
   }
 
-  /**
-   * Calculates the bind-pose from the hierarchy stored inside the ModelMeshLib.
-   */
-  Vector<Matrix4> makeBindPose()
-  {
-    const auto& nodes = mMeshHierarchy.getNodes();
-    const auto numNodes = nodes.size();
-
-    Vector<Matrix4> bindPose(numNodes);
-    Vector<Matrix4> nodeTransforms;
-
-    for (const auto& node : nodes)
-    {
-      nodeTransforms.push_back(convertMatrix(node.transformLocal));
-    }
-
-    // Calculate actual node matrices
-    for (auto i = 0; i < numNodes; i++)
-    {
-      // TODO: There is a flag indicating whether the animation root should translate the vob
-      // position Move root node to (0,0,0)
-      if (i == 0)
-      {
-        Vector3 position;
-        Quaternion rotation;
-        Vector3 scale;
-
-        nodeTransforms[i].decomposition(position, rotation, scale);
-
-        nodeTransforms[i].setTRS(Vector3(0.0f, 0.0f, 0.0f), rotation, scale);
-      }
-
-      if (nodes[i].parentValid())
-      {
-        bindPose[i] = bindPose[nodes[i].parentIndex] * nodeTransforms[i];
-      }
-      else
-      {
-        bindPose[i] = nodeTransforms[i];
-      }
-    }
-
-    return bindPose;
-  }
-
-  Matrix4 convertMatrix(const ZMath::Matrix& m)
-  {
-    Matrix4 bs = {m.mv[0], m.mv[1], m.mv[2],  m.mv[3],  m.mv[4],  m.mv[5],  m.mv[6],  m.mv[7],
-                  m.mv[8], m.mv[9], m.mv[10], m.mv[11], m.mv[12], m.mv[13], m.mv[14], m.mv[15]};
-
-    return bs.transpose();
-  }
-
-  /**
-   * Generates a bs::f skeleton from the loaded hierarchy.
-   */
-  bs::SPtr<bs::Skeleton> makeSkeleton()
-  {
-    Vector<BONE_DESC> bones;
-
-    for (size_t i = 0; i < mMeshHierarchy.getNodes().size(); i++)
-    {
-      const ZenLoad::ModelNode& node = mMeshHierarchy.getNodes()[i];
-
-      bones.emplace_back();
-      bones.back().name = node.name.c_str();
-      bones.back().parent = node.parentValid() ? node.parentIndex : UINT32_MAX;
-      bones.back().invBindPose = mBindPose[i].inverse();
-
-      Vector3 position;
-      Quaternion rotation;
-      Vector3 scale;
-
-      convertMatrix(node.transformLocal).decomposition(position, rotation, scale);
-
-      // position *= 0.01f;  // Scale centimeters -> meters
-
-      bones.back().localTfrm = Transform(position, rotation, scale);
-    }
-
-    return Skeleton::create(&bones[0], (UINT32)bones.size());
-  }
-
   String mModelScriptFile;
-  String mHierarchyFile;
   Vector<String> mAnimationFiles;
   Vector<AnimationToImport> mAnimationsToImport;
   Vector<HAnimationClip> mAnimationClips;
   Vector<HMeshWithMaterials> mMeshes;
-  bs::SPtr<bs::Skeleton> mSkeleton;
   const VDFS::FileIndex& mVDFS;
-  ZenLoad::zCModelMeshLib mMeshHierarchy;
-  bs::Vector<bs::Matrix4> mBindPose;
+  SkeletonImporter mMeshHierarchy;
+
   SPtr<ZenLoad::ModelScriptParser> mModelScriptParser;
+};
+
+/**
+ * This will import an .MDL-file and put the results into a simple ModelMeshScript so
+ * it can be used in a similar way.
+ *
+ * Usually, every (skeletal) animated mesh comes with a MDS-file, except some interactive
+ * objects, which don't have any animations. Those are loaded via the .MDL file by the
+ * original.
+ */
+class ModelFileImporter
+{
+public:
+  ModelFileImporter(const bs::String& modelFile, const VDFS::FileIndex& vdfs)
+      : mVDFS(vdfs)
+      , mModelFile(modelFile)
+      , mMeshHierarchy(modelFile, vdfs)
+  {
+    if (!mMeshHierarchy.loadHierarchy())
+    {
+      BS_EXCEPT(InternalErrorException, "Could not load model hierarchy: " + modelFile);
+    }
+
+    mMeshHierarchy.makeBindPose();
+    mMeshHierarchy.makeSkeleton();
+
+    SkeletalMeshGeometryLoader loader(modelFile, mMeshHierarchy.mBindPose, mMeshHierarchy.mSkeleton,
+                                      mVDFS);
+
+    HMeshWithMaterials imported = MeshWithMaterials::create(
+        loader.getImportedMesh(), loader.getImportedMaterials(), loader.getNodeAttachments());
+
+    if (imported)
+    {
+      const bool overwrite = true;
+      gResources().save(imported, GothicPathToCachedSkeletalMesh(modelFile), overwrite);
+
+      mMeshes.push_back(imported);
+    }
+    else
+    {
+      gDebug().logWarning("[SkeletalMesh] Failed to import mesh: " + modelFile);
+    }
+  }
+
+  Vector<HMeshWithMaterials> getMeshes() const { return mMeshes; }
+
+  /**
+   * Strips the extension from the model file and returns the part
+   * without the extension (and without the ".")
+   */
+  String getModelName() const { return stripExtension(mModelFile); }
+
+private:
+  Vector<HMeshWithMaterials> mMeshes;
+  const VDFS::FileIndex& mVDFS;
+  SkeletonImporter mMeshHierarchy;
+  bs::String mModelFile;
 };
 
 HModelScriptFile BsZenLib::ImportAndCacheMDS(const bs::String& mdsFile, const VDFS::FileIndex& vdfs)
 {
-  ModelScriptFileImporter importer(mdsFile, vdfs);
+  HModelScriptFile mds;
+  bs::String actualFileName = mdsFile;
 
-  HModelScriptFile mds = ModelScriptFile::create(importer.getMeshes(), importer.getAnimations());
+  // Might got the uncompiled filename as input (Only for MDL-loading)
+  if (mdsFile.find(".ASC") != bs::String::npos)
+  {
+    actualFileName = stripExtension(mdsFile) + ".MDL";
+  }
 
-  mds->setName(importer.getModelScriptName());
+  if (actualFileName.find(".MDS") != bs::String::npos)
+  {
+    ModelScriptFileImporter importer(actualFileName, vdfs);
+
+    mds = ModelScriptFile::create(importer.getMeshes(), importer.getAnimations());
+
+    mds->setName(importer.getModelScriptName());
+  }
+  else if (actualFileName.find(".MDL") != bs::String::npos)
+  {
+    ModelFileImporter importer(actualFileName, vdfs);
+
+    mds = ModelScriptFile::create(importer.getMeshes(), {});
+
+    mds->setName(importer.getModelName());
+  }
+  else
+  {
+    BS_EXCEPT(InternalErrorException, "Unsupported Model File:" + mdsFile);
+  }
 
   const bool overwrite = true;
   gResources().save(mds, GothicPathToCachedModelScript(mdsFile), overwrite);

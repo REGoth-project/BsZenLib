@@ -34,6 +34,8 @@ namespace BsZenLib
    *  - A list of supported meshes
    *  - Definitions for each animation to be played
    *
+   * @note  This function will also import .MDL files and put them into simple Model Scripts.
+   *
    * @param file .MDS-file to import. This function will try to find a matching .MDS-file
    *             and load that instead if it exists.
    * @param vdfs VDFS to load from.
