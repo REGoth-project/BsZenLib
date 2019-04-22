@@ -55,6 +55,11 @@ bs::Path BsZenLib::GothicPathToCachedFont(const bs::String& virtualFilePath)
   return GetCacheDirectory() + Path("fonts") + Path(virtualFilePath + ".asset");
 }
 
+bs::Path BsZenLib::GothicPathToCachedShader(const bs::String& shaderName)
+{
+  return GetCacheDirectory() + Path("shaders") + Path(shaderName + ".asset");
+}
+
 bs::Path BsZenLib::GetCacheDirectory()
 {
   return Path(CACHE_DIRECTORY).makeAbsolute(FileSystem::getWorkingDirectoryPath());

@@ -14,6 +14,7 @@ namespace BsZenLib
   bs::Path GothicPathToCachedAnimationClip(const bs::String& virtualFilePath);
   bs::Path GothicPathToCachedModelScript(const bs::String& virtualFilePath);
   bs::Path GothicPathToCachedManifest(const bs::String& virtualFilePath);
+  bs::Path GothicPathToCachedShader(const bs::String& shaderName);
   bs::Path GothicPathToCachedWorld(const bs::String& worldName);
   bs::Path GothicPathToCachedFont(const bs::String& virtualFilePath);
   bs::Path GetCacheDirectory();
