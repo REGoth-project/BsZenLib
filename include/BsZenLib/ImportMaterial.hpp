@@ -17,6 +17,30 @@ namespace VDFS
 
 namespace BsZenLib
 {
+
+  enum class ShaderKind
+  {
+    Opaque,
+    Transparent,
+    AlphaMasked,
+  };
+
+  /**
+   * Stores the given shader for use if the importer encounters a material that would
+   * match it.
+   *
+   * This function stores global state and therefore should only be called in the init-phase.
+   * If you feel like you need to switch a shader during loading, then you should add it as
+   * an other shader-kind if possible.
+   *
+   * If no shader was set for a specific material kind, then the bs:f standard shader will be
+   * used.
+   *
+   * @param  kind    Kind of material this shader will be used for
+   * @param  shader  Shader to use for materials of the given kind
+   */
+  void SetShaderFor(ShaderKind kind, bs::HShader shader);
+
   /**
    * Will import (and cache) a Material from the original game along with all textures it is
    * depending on.
