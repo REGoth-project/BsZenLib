@@ -487,7 +487,16 @@ public:
 
     for (const auto& ani : mAnimationsToImport)
     {
-      HAnimationClip clip = ImportMAN(mMeshHierarchy.mMeshHierarchy, ani, mVDFS);
+      HAnimationClip clip;
+
+      if (HasCachedMAN(ani.fullAnimationName))
+      {
+        clip = LoadCachedAnimation(ani.fullAnimationName);
+      }
+      else
+      {
+        clip = ImportMAN(mMeshHierarchy.mMeshHierarchy, ani, mVDFS);
+      }
 
       if (clip)
       {
@@ -794,7 +803,14 @@ bs::Map<bs::String, HMeshWithMaterials> BsZenLib::ImportAndCacheNodeAttachments(
     String cacheName = mdlFile + "-attach-" + a.first.c_str();
     String attachTo = a.first.c_str();
 
-    attachments[attachTo] = ImportAndCacheStaticMesh(cacheName, packed, vdfs);
+    if (HasCachedStaticMesh(cacheName))
+    {
+      attachments[attachTo] = LoadCachedStaticMesh(cacheName);
+    }
+    else
+    {
+      attachments[attachTo] = ImportAndCacheStaticMesh(cacheName, packed, vdfs);
+    }
   }
 
   return attachments;

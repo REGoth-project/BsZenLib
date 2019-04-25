@@ -49,6 +49,24 @@ namespace BsZenLib
   bs::HAnimationClip ImportMAN(const ZenLoad::zCModelMeshLib& meshLib,
                              const AnimationToImport& def, const VDFS::FileIndex& vdfs);
 
+  /**
+   * Checks whether the given Animation clip has been cached.
+   *
+   * @param  fullAnimationName  `fullAnimationName`-field from AnimationToImport-structure.
+   *
+   * @return Whether the Animation has been cached.
+   */
+  bool HasCachedMAN(const bs::String& fullAnimationName);
+
+  /**
+   * Loads the animation with the given name from cache.
+   *
+   * @param  fullAnimationName  `fullAnimationName`-field from AnimationToImport-structure.
+   *
+   * @return Hande to the cached animiation clip.
+   */
+  bs::HAnimationClip LoadCachedAnimation(const bs::String& fullAnimationName);
+
   bs::HAnimation ImportAndCacheAnimation(const bs::String& virtualFilePath,
                                          const bs::String& modelMeshLibPath,
                                          const VDFS::FileIndex& vdfs);

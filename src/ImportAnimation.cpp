@@ -51,9 +51,21 @@ static AnimationCurvesWithRootMotion convertSamples(const std::vector<ZenLoad::M
                                                     const ZenLoad::zCModelScriptAni& def,
                                                     const ZenLoad::ModelAnimationParser& parser);
 
+bool BsZenLib::HasCachedMAN(const bs::String& fullAnimationName)
+{
+  return bs::FileSystem::exists(GothicPathToCachedAnimationClip(fullAnimationName));
+}
+
+bs::HAnimationClip BsZenLib::LoadCachedAnimation(const bs::String& fullAnimationName)
+{
+  return bs::gResources().load<bs::AnimationClip>(GothicPathToCachedAnimationClip(fullAnimationName));
+}
+
 bs::HAnimationClip BsZenLib::ImportMAN(const ZenLoad::zCModelMeshLib& meshLib,
                                        const AnimationToImport& def, const VDFS::FileIndex& vdfs)
 {
+  gDebug().logDebug("Caching Animation: " + def.fullAnimationName);
+
   // Import keyframes and convert them to curves (From .MAN-file)
   AnimationCurvesWithRootMotion samples =
       importAnimationSamples(def.fullAnimationName + ".MAN", meshLib, def.animation, vdfs);
