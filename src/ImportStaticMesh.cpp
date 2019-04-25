@@ -269,7 +269,7 @@ static Vector<StaticMeshVertex> transformVertices(const ZenLoad::PackedMesh& pac
     newVertex.position = Vector3(oldVertex.Position.x, oldVertex.Position.y, oldVertex.Position.z);
     newVertex.normal = Vector3(oldVertex.Normal.x, oldVertex.Normal.y, oldVertex.Normal.z);
     newVertex.texCoord = Vector2(oldVertex.TexCoord.x, oldVertex.TexCoord.y);
-
+    newVertex.color = oldVertex.Color;
     newVertex.tangent = Vector3();
     newVertex.bitangent = Vector3();
 

@@ -29,6 +29,7 @@ struct SkeletalVertex
   Vector3 position;
   Vector3 normal;
   Vector2 texCoord;
+  uint32_t color;
   Vector3 tangent;
   Vector3 bitangent;
   UINT8 boneIndices[4];
@@ -189,6 +190,8 @@ private:
       newVertex.normal = Vector3(oldVertex.Normal.x, oldVertex.Normal.y, oldVertex.Normal.z);
       newVertex.texCoord = Vector2(oldVertex.TexCoord.x, oldVertex.TexCoord.y);
 
+      newVertex.color = oldVertex.Color;
+
       newVertex.tangent = Vector3();
       newVertex.bitangent = Vector3();
 
@@ -253,6 +256,7 @@ private:
     vertexDataDesc->addVertElem(VET_FLOAT3, VES_POSITION);
     vertexDataDesc->addVertElem(VET_FLOAT3, VES_NORMAL);
     vertexDataDesc->addVertElem(VET_FLOAT2, VES_TEXCOORD);
+    vertexDataDesc->addVertElem(VET_COLOR, VES_COLOR);
     vertexDataDesc->addVertElem(VET_FLOAT3, VES_TANGENT);
     vertexDataDesc->addVertElem(VET_FLOAT3, VES_BITANGENT);
     vertexDataDesc->addVertElem(VET_UBYTE4, VES_BLEND_INDICES);
