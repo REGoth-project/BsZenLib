@@ -24,12 +24,8 @@ static BsZenLib::ShaderKind guessShaderKindFromZMaterial(const ZenLoad::zCMateri
 
 // - Implementation --------------------------------------------------------------------------------
 
-static HShader getShaderForZMaterial(const ZenLoad::zCMaterialData& mat)
+bs::HShader BsZenLib::GetShaderOfKind(ShaderKind kind)
 {
-  using namespace BsZenLib;
-
-  ShaderKind kind = guessShaderKindFromZMaterial(mat);
-
   auto it = s_ShadersByKind.find(kind);
 
   if (it == s_ShadersByKind.end())
@@ -40,6 +36,15 @@ static HShader getShaderForZMaterial(const ZenLoad::zCMaterialData& mat)
   {
     return it->second;
   }
+}
+
+static HShader getShaderForZMaterial(const ZenLoad::zCMaterialData& mat)
+{
+  using namespace BsZenLib;
+
+  ShaderKind kind = guessShaderKindFromZMaterial(mat);
+
+  return BsZenLib::GetShaderOfKind(kind);
 }
 
 static BsZenLib::ShaderKind guessShaderKindFromZMaterial(const ZenLoad::zCMaterialData& mat)

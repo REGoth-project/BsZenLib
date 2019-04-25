@@ -42,6 +42,15 @@ namespace BsZenLib
   void SetShaderFor(ShaderKind kind, bs::HShader shader);
 
   /**
+   * Returns the shader being used for the given kind, e.g. Opaque.
+   *
+   * If no shader has been assigned yet, the bs:f standard shader will be returned.
+   *
+   * @return Shader assigned to the given kind.
+   **/
+  bs::HShader GetShaderOfKind(ShaderKind kind);
+
+  /**
    * Will import (and cache) a Material from the original game along with all textures it is
    * depending on.
    *
