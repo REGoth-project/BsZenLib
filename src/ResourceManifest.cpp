@@ -35,6 +35,14 @@ namespace BsZenLib
     }
 
     s_GothicCache->registerResource(resource.getUUID(), filePath);
+  }
+
+  void SaveResourceManifest()
+  {
+    if (!s_GothicCache)
+    {
+      LoadResourceManifest();
+    }
 
     bs::Path manifestPath = BsZenLib::GothicPathToCachedManifest(GOTHIC_CACHE_MANIFEST_NAME);
     bs::ResourceManifest::save(s_GothicCache, manifestPath, BsZenLib::GetCacheDirectory());
