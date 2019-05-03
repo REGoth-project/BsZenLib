@@ -128,8 +128,6 @@ static AnimationCurvesWithRootMotion importAnimationSamples(const String& manFil
     }
   }
 
-  if (meshLib.getNodes().size() != parser.getNodeIndex().size()) return {};
-
   return convertSamples(meshLib.getNodes(), def, parser);
 }
 
@@ -145,6 +143,12 @@ static AnimationCurvesWithRootMotion convertSamples(const std::vector<ZenLoad::M
   size_t numFrames = lastFrame - startFrame + 1;
   size_t numNodes = parser.getNodeIndex().size();
   float speed = def.m_Speed;
+
+  // Some animations seem to be empty? Is this a bug or are they supposed to be empty?
+  if (numFramesTotal == 0 || numFrames == 0)
+  {
+    return {};
+  }
 
   if (startFrame > lastFrame ||           // This sometimes happens?
       startFrame + 1 > numFramesTotal ||  // Can be a huge number...
