@@ -401,7 +401,10 @@ public:
       bones.back().localTfrm = Transform(position, rotation, scale);
     }
 
-    mSkeleton = Skeleton::create(&bones[0], (UINT32)bones.size());
+    if (!bones.empty())
+    {
+      mSkeleton = Skeleton::create(&bones[0], (UINT32)bones.size());
+    }
   }
 
   bs::SPtr<bs::Skeleton> mSkeleton;
@@ -468,11 +471,36 @@ public:
 
       if (!meshFile.empty())
       {
-        SkeletalMeshGeometryLoader loader(meshFile, mMeshHierarchy.mBindPose,
-                                          mMeshHierarchy.mSkeleton, mVDFS);
+        SkeletonImporter skeleton(meshFile, mVDFS);
 
-        HMeshWithMaterials imported = MeshWithMaterials::create(
-            loader.getImportedMesh(), loader.getImportedMaterials(), loader.getNodeAttachments());
+        if (skeleton.loadHierarchy())
+        {
+          skeleton.makeBindPose();
+          skeleton.makeSkeleton();
+        }
+
+        HMeshWithMaterials imported;
+
+        // The meshfile might come with it's own skeleton, so we have to use that to not get weirdly
+        // broken models. For example, the basic HUM_BODY_NAKED0.MDM uses a general skeleton and
+        // does not have a matching .MDL file containing both mesh and skeleton.
+        // However, most Armors come as .MDL file, which also contains a skeleton. Hence, we try
+        // to use that and fall back to the generic one.
+        if (skeleton.mSkeleton != nullptr)
+        {
+          SkeletalMeshGeometryLoader loader(meshFile, skeleton.mBindPose, skeleton.mSkeleton, mVDFS);
+
+          imported = MeshWithMaterials::create(
+              loader.getImportedMesh(), loader.getImportedMaterials(), loader.getNodeAttachments());
+        }
+        else
+        {
+          SkeletalMeshGeometryLoader loader(meshFile, mMeshHierarchy.mBindPose,
+                                            mMeshHierarchy.mSkeleton, mVDFS);
+
+          imported = MeshWithMaterials::create(
+              loader.getImportedMesh(), loader.getImportedMaterials(), loader.getNodeAttachments());
+        }
 
         if (imported)
         {
