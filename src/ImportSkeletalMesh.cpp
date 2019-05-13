@@ -609,7 +609,18 @@ private:
 
     if (zen.getFileSize() == 0) return false;
 
-    mModelScriptParser = bs_unique_ptr_new<ZenLoad::ModelScriptBinParser>(zen);
+    if (bs::StringUtil::endsWith(mModelScriptFile, ".msb"))
+    {
+      mModelScriptParser = bs_unique_ptr_new<ZenLoad::ModelScriptBinParser>(zen);
+    }
+    else if (bs::StringUtil::endsWith(mModelScriptFile, ".mds"))
+    {
+      mModelScriptParser = bs_unique_ptr_new<ZenLoad::ModelScriptTextParser>(zen);
+    }
+    else
+    {
+      BS_EXCEPT(InternalErrorException, "Could not determine file type of " + mModelScriptFile);
+    }
 
     ModelScriptParser& p = *mModelScriptParser;
 
@@ -691,8 +702,9 @@ private:
         break;
 
         case ModelScriptParser::CHUNK_ERROR:
-          assert(false);
-          return false;
+          // Happens on some files, e.g. LURKER.MDS from Gothic I. The import seems to turn out fine though.
+          bs::gDebug().logWarning("[ImportSkeletalMesh] Error while parsing model script " + mModelScriptFile + ", trying to keep going...");
+          break;
       }
     }
 
