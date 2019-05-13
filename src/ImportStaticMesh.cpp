@@ -145,6 +145,8 @@ bs::HMesh BsZenLib::ImportAndCacheStaticMeshGeometry(const bs::String& originalF
 
   if (!mesh) return {};
 
+  mesh->setName(originalFileName);
+
   const bool overwrite = true;
   gResources().save(mesh, path, overwrite);
   AddToResourceManifest(mesh, path);
