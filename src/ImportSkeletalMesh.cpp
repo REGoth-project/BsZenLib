@@ -822,7 +822,7 @@ HModelScriptFile BsZenLib::ImportAndCacheMDS(const bs::String& mdsFile, const VD
 
 bool BsZenLib::HasCachedMDS(const bs::String& mdsFile)
 {
-  return FileSystem::isFile(GothicPathToCachedModelScript(mdsFile));
+  return HasCachedResource(GothicPathToCachedModelScript(mdsFile));
 }
 
 HModelScriptFile BsZenLib::LoadCachedMDS(const bs::String& mdsFile)

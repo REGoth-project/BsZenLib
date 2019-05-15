@@ -8,18 +8,19 @@
 #include "ImportZEN.hpp"
 #include "ImportPath.hpp"
 #include "ImportStaticMesh.hpp"
+#include "ResourceManifest.hpp"
+#include <Components/BsCMeshCollider.h>
 #include <Components/BsCRenderable.h>
 #include <Debug/BsDebug.h>
 #include <FileSystem/BsFileSystem.h>
+#include <Physics/BsMeshCollider.h>
+#include <Physics/BsPhysicsMesh.h>
 #include <Resources/BsBuiltinResources.h>
 #include <Resources/BsResources.h>
 #include <Scene/BsSceneObject.h>
 #include <zenload/zCMesh.h>
 #include <zenload/zCProgMeshProto.h>
 #include <zenload/zenParser.h>
-#include <Components/BsCMeshCollider.h>
-#include <Physics/BsPhysicsMesh.h>
-#include <Physics/BsMeshCollider.h>
 
 using namespace bs;
 using namespace BsZenLib;
@@ -55,7 +56,7 @@ Vector<UUID> GetDependenciesRecursive(UUID uuid)
 
 bool BsZenLib::HasCachedZEN(const bs::String& zen)
 {
-  return FileSystem::isFile(GothicPathToCachedWorld(zen.c_str()));
+  return HasCachedResource(GothicPathToCachedWorld(zen.c_str()));
 }
 
 bs::HPrefab BsZenLib::LoadCachedZEN(const bs::String& zen)
@@ -153,7 +154,8 @@ static HSceneObject addWorldMesh(const bs::String& worldName, ZenLoad::ZenParser
   }
   else
   {
-    HPhysicsMesh physicsMesh = PhysicsMesh::create(mesh->getMesh()->getCachedData(), PhysicsMeshType::Triangle);
+    HPhysicsMesh physicsMesh =
+        PhysicsMesh::create(mesh->getMesh()->getCachedData(), PhysicsMeshType::Triangle);
 
     GameObjectHandle<CMeshCollider> collider = meshSO->addComponent<CMeshCollider>();
     collider->setMesh(physicsMesh);

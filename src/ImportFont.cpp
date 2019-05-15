@@ -154,5 +154,5 @@ bs::HFont BsZenLib::LoadCachedFont(const bs::String& originalFileName)
 
 bool BsZenLib::HasCachedFont(const bs::String& originalFileName)
 {
-  return bs::FileSystem::isFile(GothicPathToCachedFont(originalFileName));
+  return HasCachedResource(GothicPathToCachedFont(originalFileName));
 }

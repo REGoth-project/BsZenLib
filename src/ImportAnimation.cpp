@@ -53,7 +53,7 @@ static AnimationCurvesWithRootMotion convertSamples(const std::vector<ZenLoad::M
 
 bool BsZenLib::HasCachedMAN(const bs::String& fullAnimationName)
 {
-  return bs::FileSystem::exists(GothicPathToCachedAnimationClip(fullAnimationName));
+  return HasCachedResource(GothicPathToCachedAnimationClip(fullAnimationName));
 }
 
 bs::HAnimationClip BsZenLib::LoadCachedAnimation(const bs::String& fullAnimationName)

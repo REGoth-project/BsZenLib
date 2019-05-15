@@ -120,5 +120,5 @@ HMaterial BsZenLib::LoadCachedMaterial(const String& cacheName)
 
 bool BsZenLib::HasCachedMaterial(const String& cacheName)
 {
-  return FileSystem::isFile(GothicPathToCachedMaterial(cacheName));
+  return HasCachedResource(GothicPathToCachedMaterial(cacheName));
 }

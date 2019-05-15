@@ -35,4 +35,9 @@ namespace BsZenLib
    */
   void SaveResourceManifest();
 
+  /**
+   * @return Whether the given resource was cached and saved to the manifest before.
+   */
+  bool HasCachedResource(const bs::Path& filePath);
+
 }  // namespace BsZenLib

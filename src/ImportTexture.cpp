@@ -45,7 +45,7 @@ static HTexture createDXTnTexture(const String& name, std::vector<uint8_t>& ddsD
 
 bool BsZenLib::HasCachedTexture(const String& virtualFilePath)
 {
-  return FileSystem::isFile(GothicPathToCachedTexture(virtualFilePath.c_str()));
+  return HasCachedResource(GothicPathToCachedTexture(virtualFilePath.c_str()));
 }
 
 HTexture BsZenLib::LoadCachedTexture(const String& virtualFilePath)

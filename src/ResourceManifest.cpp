@@ -48,4 +48,15 @@ namespace BsZenLib
     bs::ResourceManifest::save(s_GothicCache, manifestPath, BsZenLib::GetCacheDirectory());
   }
 
+  bool HasCachedResource(const bs::Path& filePath)
+  {
+    if (!s_GothicCache)
+    {
+      LoadResourceManifest();
+    }
+
+    return s_GothicCache->filePathExists(filePath);
+  }
+
+
 }  // namespace BsZenLib
