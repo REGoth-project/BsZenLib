@@ -62,6 +62,17 @@ HModelScriptFile ModelScriptFile::create()
   return static_resource_cast<ModelScriptFile>(bs::gResources()._createResourceHandle(sptr));
 }
 
+bs::SPtr<ModelScriptFile> ModelScriptFile::createEmpty()
+{
+  using namespace bs;
+
+  SPtr<ModelScriptFile> sptr =
+      bs_core_ptr<ModelScriptFile>(new (bs_alloc<ModelScriptFile>()) ModelScriptFile());
+  sptr->_setThisPtr(sptr);
+
+  return sptr;
+}
+
 bs::RTTITypeBase* ModelScriptFile::getRTTIStatic() { return bs::AnimatedMeshRTTI::instance(); }
 
 HMeshWithMaterials MeshWithMaterials::create(bs::HMesh mesh, bs::Vector<bs::HMaterial> materials)
@@ -85,6 +96,17 @@ HMeshWithMaterials MeshWithMaterials::create(bs::HMesh mesh, bs::Vector<bs::HMat
   }
 
   return h;
+}
+
+bs::SPtr<MeshWithMaterials> MeshWithMaterials::createEmpty()
+{
+  using namespace bs;
+
+  SPtr<MeshWithMaterials> sptr =
+      bs_core_ptr<MeshWithMaterials>(new (bs_alloc<MeshWithMaterials>()) MeshWithMaterials());
+  sptr->_setThisPtr(sptr);
+
+  return sptr;
 }
 
 void MeshWithMaterials::getResourceDependencies(bs::FrameVector<bs::HResource>& dependencies) const

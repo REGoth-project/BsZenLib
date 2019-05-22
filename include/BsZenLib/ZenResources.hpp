@@ -91,6 +91,11 @@ namespace BsZenLib
        */
       static HMeshWithMaterials create();
 
+      /**
+       * Create empty object to be filled via RTTI.
+       */
+      static bs::SPtr<MeshWithMaterials> createEmpty();
+
     public:
       MeshWithMaterials()
           : bs::Resource(/*requiresGpuInit*/ false)
@@ -170,6 +175,11 @@ namespace BsZenLib
        */
       static HModelScriptFile create();
 
+      /**
+       * Create empty object to be filled via RTTI.
+       */
+      static bs::SPtr<ModelScriptFile> createEmpty();
+
     public:
       ModelScriptFile()
           : bs::Resource(/*requiresGpuInit*/ false)
@@ -219,7 +229,7 @@ namespace bs
 
     SPtr<IReflectable> newRTTIObject() override
     {
-      return bs_shared_ptr_new<BsZenLib::Res::ModelScriptFile>();
+      return BsZenLib::Res::ModelScriptFile::createEmpty();
     }
   };
 
@@ -244,7 +254,7 @@ namespace bs
 
     SPtr<IReflectable> newRTTIObject() override
     {
-      return bs_shared_ptr_new<BsZenLib::Res::MeshWithMaterials>();
+      return BsZenLib::Res::MeshWithMaterials::createEmpty();
     }
   };
 }  // namespace bs
