@@ -22,6 +22,12 @@ void ModelScriptFile::_buildMeshesByNameMap()
   // These are set again
   for (auto& m : mMeshes)
   {
+    if (!m || !m.isLoaded())
+    {
+      bs::gDebug().logWarning("[ZenResources] Empty mesh found while loading ModelScript " + getName());
+      continue;
+    }
+
     bs::String nameUpperCase = m->getName();
     bs::StringUtil::toUpperCase(nameUpperCase);
 
