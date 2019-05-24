@@ -80,11 +80,18 @@ bs::HAnimationClip BsZenLib::ImportMAN(const ZenLoad::zCModelMeshLib& meshLib,
   // Notify about the next animation if needed
   if (!def.animation.m_Next.empty())
   {
-    bs::String command = "PLAYCLIP:" + bs::String(def.animation.m_Next.c_str());
     float endOfAnimation = clip->getLength();
 
-    // gDebug().logDebug(def.fullAnimationName + " - Event: " + command);
-    events.push_back(AnimationEvent(command, endOfAnimation));
+    if (def.animation.m_Next == def.animation.m_Name)
+    {
+      events.push_back(AnimationEvent("LOOP", endOfAnimation));
+    }
+    else
+    {
+      bs::String command = "PLAYCLIP:" + bs::String(def.animation.m_Next.c_str());
+
+      events.push_back(AnimationEvent(command, endOfAnimation));
+    }
   }
 
   clip->setEvents(events);
