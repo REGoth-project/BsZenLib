@@ -104,6 +104,7 @@ static HTexture createRGBA8Texture(const String& name, UINT32 width, UINT32 heig
   desc.width = width;
   desc.height = height;
   desc.format = PF_RGBA8;
+  desc.hwGamma = true;
 
   SPtr<PixelData> pixelData = PixelData::create(desc.width,   //
                                                 desc.height,  //
