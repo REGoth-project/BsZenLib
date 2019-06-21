@@ -86,7 +86,7 @@ private:
     }
     else
     {
-      return BsZenLib::ImportTexture(fontBitmapFile, mFileIndex);
+      return BsZenLib::ImportAndCacheTexture(fontBitmapFile, mFileIndex);
     }
   }
 
