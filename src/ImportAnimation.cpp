@@ -77,6 +77,10 @@ bs::HAnimationClip BsZenLib::ImportMAN(const ZenLoad::zCModelMeshLib& meshLib,
 
   Vector<AnimationEvent> events;
 
+  // Gothics default layer is 1, while bsf uses 0. Therefore, subtract 1 here.
+  bs::INT32 layer = def.animation.m_Layer - 1;
+  events.push_back(AnimationEvent("LAYER:" + bs::toString(layer), 0));
+
   // Notify about the next animation if needed
   if (!def.animation.m_Next.empty())
   {
