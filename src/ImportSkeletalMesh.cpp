@@ -519,20 +519,20 @@ public:
 
     for (const auto& ani : mAnimationsToImport)
     {
-      HAnimationClip clip;
+      HZAnimation animation;
 
       if (HasCachedMAN(ani.fullAnimationName))
       {
-        clip = LoadCachedAnimation(ani.fullAnimationName);
+        animation = LoadCachedAnimation(ani.fullAnimationName);
       }
       else
       {
-        clip = ImportMAN(mMeshHierarchy.mMeshHierarchy, ani, mVDFS);
+        animation = ImportMAN(mMeshHierarchy.mMeshHierarchy, ani, mVDFS);
       }
 
-      if (clip)
+      if (animation)
       {
-        mAnimationClips.push_back(clip);
+        mAnimations.push_back(animation);
       }
       else
       {
@@ -544,7 +544,7 @@ public:
 
   Vector<HMeshWithMaterials> getMeshes() const { return mMeshes; }
 
-  Vector<HAnimationClip> getAnimations() const { return mAnimationClips; }
+  Vector<HZAnimation> getAnimations() const { return mAnimations; }
 
   /**
    * Strips the extension from the model script file and returns the part
@@ -714,7 +714,7 @@ private:
   String mModelScriptFile;
   Vector<String> mAnimationFiles;
   Vector<AnimationToImport> mAnimationsToImport;
-  Vector<HAnimationClip> mAnimationClips;
+  Vector<HZAnimation> mAnimations;
   Vector<HMeshWithMaterials> mMeshes;
   const VDFS::FileIndex& mVDFS;
   SkeletonImporter mMeshHierarchy;

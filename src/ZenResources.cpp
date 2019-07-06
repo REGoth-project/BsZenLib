@@ -4,12 +4,35 @@
 
 using namespace BsZenLib::Res;
 
+bs::RTTITypeBase* ZAnimationClip::getRTTIStatic() { return ZAnimationClipRTTI::instance(); }
+
+bs::SPtr<ZAnimationClip> ZAnimationClip::createEmpty()
+{
+  using namespace bs;
+
+  SPtr<ZAnimationClip> sptr = bs_core_ptr<ZAnimationClip>(new (bs_alloc<ZAnimationClip>()) ZAnimationClip());
+  sptr->_setThisPtr(sptr);
+
+  return sptr;
+}
+
+HZAnimation ZAnimationClip::create()
+{
+  using namespace bs;
+
+  SPtr<ZAnimationClip> sptr = createEmpty();
+  sptr->initialize();
+
+  // Create a handle
+  return static_resource_cast<ZAnimationClip>(bs::gResources()._createResourceHandle(sptr));
+}
+
 HModelScriptFile ModelScriptFile::create(bs::Vector<HMeshWithMaterials> meshes,
-                                         bs::Vector<bs::HAnimationClip> clips)
+                                         bs::Vector<HZAnimation> animations)
 {
   HModelScriptFile h = create();
   h->mMeshes = meshes;
-  h->mAnimationClips = clips;
+  h->mAnimations = animations;
 
   // Needs to be also called after deserialization!
   h->_buildMeshesByNameMap();
@@ -24,7 +47,8 @@ void ModelScriptFile::_buildMeshesByNameMap()
   {
     if (!m || !m.isLoaded())
     {
-      bs::gDebug().logWarning("[ZenResources] Empty mesh found while loading ModelScript " + getName());
+      bs::gDebug().logWarning("[ZenResources] Empty mesh found while loading ModelScript " +
+                              getName());
       continue;
     }
 
@@ -44,7 +68,7 @@ void ModelScriptFile::getResourceDependencies(bs::FrameVector<bs::HResource>& de
     dependencies.push_back(mesh);
   }
 
-  for (auto clip : mAnimationClips)
+  for (auto clip : mAnimations)
   {
     dependencies.push_back(clip);
   }
@@ -73,7 +97,7 @@ bs::SPtr<ModelScriptFile> ModelScriptFile::createEmpty()
   return sptr;
 }
 
-bs::RTTITypeBase* ModelScriptFile::getRTTIStatic() { return bs::AnimatedMeshRTTI::instance(); }
+bs::RTTITypeBase* ModelScriptFile::getRTTIStatic() { return ModelScriptFileRTTI::instance(); }
 
 HMeshWithMaterials MeshWithMaterials::create(bs::HMesh mesh, bs::Vector<bs::HMaterial> materials)
 {
@@ -133,10 +157,10 @@ HMeshWithMaterials MeshWithMaterials::create()
   sptr->initialize();
 
   // Create a handle
-  return static_resource_cast<MeshWithMaterials>(gResources()._createResourceHandle(sptr));
+  return static_resource_cast<MeshWithMaterials>(bs::gResources()._createResourceHandle(sptr));
 }
 
 bs::RTTITypeBase* MeshWithMaterials::getRTTIStatic()
 {
-  return bs::MeshWithMaterialsRTTI::instance();
+  return MeshWithMaterialsRTTI::instance();
 }

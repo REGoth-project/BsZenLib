@@ -30,9 +30,14 @@ bs::Path BsZenLib::GothicPathToCachedSkeletalMesh(const bs::String& virtualFileP
   return GetCacheDirectory() + Path("skeletal-meshes") + Path(virtualFilePath + ".asset");
 }
 
-bs::Path BsZenLib::GothicPathToCachedAnimationClip(const bs::String& virtualFilePath)
+bs::Path BsZenLib::GothicPathToCachedZAnimation(const bs::String& virtualFilePath)
 {
   return GetCacheDirectory() + Path("animations") + Path(virtualFilePath + ".asset");
+}
+
+bs::Path BsZenLib::GothicPathToCachedAnimationClip(const bs::String& virtualFilePath)
+{
+  return GetCacheDirectory() + Path("animation-clips") + Path(virtualFilePath + ".asset");
 }
 
 bs::Path BsZenLib::GothicPathToCachedModelScript(const bs::String& virtualFilePath)

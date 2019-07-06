@@ -53,16 +53,16 @@ static AnimationCurvesWithRootMotion convertSamples(const std::vector<ZenLoad::M
 
 bool BsZenLib::HasCachedMAN(const bs::String& fullAnimationName)
 {
-  return HasCachedResource(GothicPathToCachedAnimationClip(fullAnimationName));
+  return HasCachedResource(GothicPathToCachedZAnimation(fullAnimationName));
 }
 
-bs::HAnimationClip BsZenLib::LoadCachedAnimation(const bs::String& fullAnimationName)
+Res::HZAnimation BsZenLib::LoadCachedAnimation(const bs::String& fullAnimationName)
 {
-  return bs::gResources().load<bs::AnimationClip>(GothicPathToCachedAnimationClip(fullAnimationName));
+  return bs::gResources().load<ZAnimationClip>(GothicPathToCachedZAnimation(fullAnimationName));
 }
 
-bs::HAnimationClip BsZenLib::ImportMAN(const ZenLoad::zCModelMeshLib& meshLib,
-                                       const AnimationToImport& def, const VDFS::FileIndex& vdfs)
+Res::HZAnimation BsZenLib::ImportMAN(const ZenLoad::zCModelMeshLib& meshLib,
+                                     const AnimationToImport& def, const VDFS::FileIndex& vdfs)
 {
   gDebug().logDebug("Caching Animation: " + def.fullAnimationName);
 
@@ -74,28 +74,40 @@ bs::HAnimationClip BsZenLib::ImportMAN(const ZenLoad::zCModelMeshLib& meshLib,
   SPtr<AnimationCurves> pCurves = bs::bs_shared_ptr_new<AnimationCurves>(samples.curves);
 
   HAnimationClip clip = AnimationClip::create(pCurves, false, 1, pRootMotion);
+  HZAnimation anim = ZAnimationClip::create();
+
+  anim->mClip = clip;
+  anim->mShouldQueueIntoLayer = (def.animation.m_Flags & ZenLoad::MSB_QUEUE_ANI) != 0;
+  anim->mShouldRotateModel = (def.animation.m_Flags & ZenLoad::MSB_ROTATE_MODEL) != 0;
+  anim->mIsFlyingAnimation = (def.animation.m_Flags & ZenLoad::MSB_FLY) != 0;
+  anim->mShouldMoveModel = (def.animation.m_Flags & ZenLoad::MSB_MOVE_MODEL) != 0;
+  anim->mIsIdleAnimation = (def.animation.m_Flags & ZenLoad::MSB_IDLE) != 0;
+  anim->mIsLooping = def.animation.m_Next == def.animation.m_Name;
+
+  switch (def.animation.m_Dir)
+  {
+    case ZenLoad::MSB_BACKWARD:
+      anim->mDirection = ZAnimationClip::Direction::Reverse;
+      break;
+
+    default:
+    case ZenLoad::MSB_FORWARD:
+      anim->mDirection = ZAnimationClip::Direction::Forward;
+      break;
+  }
 
   Vector<AnimationEvent> events;
 
   // Gothics default layer is 1, while bsf uses 0. Therefore, subtract 1 here.
-  bs::INT32 layer = def.animation.m_Layer - 1;
-  events.push_back(AnimationEvent("LAYER:" + bs::toString(layer), 0));
+  bs::INT32 layer = anim->mLayer = def.animation.m_Layer - 1;
 
   // Notify about the next animation if needed
-  if (!def.animation.m_Next.empty())
+  if (!anim->mIsLooping)
   {
+    bs::String command = "PLAYCLIP:" + bs::String(def.animation.m_Next.c_str());
+
     float endOfAnimation = clip->getLength();
-
-    if (def.animation.m_Next == def.animation.m_Name)
-    {
-      events.push_back(AnimationEvent("LOOP", endOfAnimation));
-    }
-    else
-    {
-      bs::String command = "PLAYCLIP:" + bs::String(def.animation.m_Next.c_str());
-
-      events.push_back(AnimationEvent(command, endOfAnimation));
-    }
+    events.emplace_back(command, endOfAnimation);
   }
 
   clip->setEvents(events);
@@ -103,12 +115,16 @@ bs::HAnimationClip BsZenLib::ImportMAN(const ZenLoad::zCModelMeshLib& meshLib,
   // TODO: clip->setEvents(...) for sounds/particles/other
 
   clip->setName(def.fullAnimationName);
+  anim->setName(def.fullAnimationName);
 
   const bool overwrite = true;
   gResources().save(clip, GothicPathToCachedAnimationClip(def.fullAnimationName), overwrite);
   AddToResourceManifest(clip, GothicPathToCachedAnimationClip(def.fullAnimationName));
 
-  return clip;
+  gResources().save(anim, GothicPathToCachedZAnimation(def.fullAnimationName), overwrite);
+  AddToResourceManifest(anim, GothicPathToCachedZAnimation(def.fullAnimationName));
+
+  return anim;
 }
 
 static AnimationCurvesWithRootMotion importAnimationSamples(const String& manFile,

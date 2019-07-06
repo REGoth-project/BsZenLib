@@ -13,7 +13,7 @@ namespace ZenLoad
 {
   struct zCMaterialData;
   class zCModelMeshLib;
-}
+}  // namespace ZenLoad
 
 namespace VDFS
 {
@@ -40,14 +40,15 @@ namespace BsZenLib
   /**
    * Import a single animation clip.
    *
-   * Converts the animation samples in the given .MAN-File for bs::f and creates an animation clip out of it.
+   * Converts the animation samples in the given .MAN-File for bs::f and creates an animation clip
+   * out of it.
    *
-   * bs::f does support animation events, but the only data you can give to it are a string and a time.
-   * For that reason, a simple text based command format is used. Commands are structured like `command:action`.
-   * For example, `PLAYANIM:S_RUNL` will play an animation called `S_RUNL`.
+   * bs::f does support animation events, but the only data you can give to it are a string and a
+   * time. For that reason, a simple text based command format is used. Commands are structured like
+   * `command:action`. For example, `PLAYANIM:S_RUNL` will play an animation called `S_RUNL`.
    */
-  bs::HAnimationClip ImportMAN(const ZenLoad::zCModelMeshLib& meshLib,
-                             const AnimationToImport& def, const VDFS::FileIndex& vdfs);
+  Res::HZAnimation ImportMAN(const ZenLoad::zCModelMeshLib& meshLib, const AnimationToImport& def,
+                             const VDFS::FileIndex& vdfs);
 
   /**
    * Checks whether the given Animation clip has been cached.
@@ -65,9 +66,5 @@ namespace BsZenLib
    *
    * @return Hande to the cached animiation clip.
    */
-  bs::HAnimationClip LoadCachedAnimation(const bs::String& fullAnimationName);
-
-  bs::HAnimation ImportAndCacheAnimation(const bs::String& virtualFilePath,
-                                         const bs::String& modelMeshLibPath,
-                                         const VDFS::FileIndex& vdfs);
+  Res::HZAnimation LoadCachedAnimation(const bs::String& fullAnimationName);
 }  // namespace BsZenLib
