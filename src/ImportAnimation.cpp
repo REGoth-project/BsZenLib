@@ -77,6 +77,7 @@ Res::HZAnimation BsZenLib::ImportMAN(const ZenLoad::zCModelMeshLib& meshLib,
   HZAnimation anim = ZAnimationClip::create();
 
   anim->mClip = clip;
+  anim->mNext = def.animation.m_Next.c_str();
 
   anim->mShouldQueueIntoLayer = (def.animation.m_Flags & ZenLoad::MSB_QUEUE_ANI) != 0;
   anim->mShouldRotateModel = (def.animation.m_Flags & ZenLoad::MSB_ROTATE_MODEL) != 0;
@@ -152,7 +153,14 @@ BsZenLib::Res::HZAnimation BsZenLib::AliasAnimation(const AnimationToAlias& def)
     BS_EXCEPT(InvalidStateException, "Animation to alias has to have been cached before!");
   }
 
-  anim->mClip = toAlias->mClip;
+  SPtr<RootMotion> pRootMotion = toAlias->mClip->getRootMotion();
+  SPtr<AnimationCurves> pCurves = toAlias->mClip->getCurves();
+
+  // Need to create a new clip here since every alias could define its own events
+  HAnimationClip clip = AnimationClip::create(pCurves, false, 1, pRootMotion);
+
+  anim->mClip = clip;
+  anim->mNext = def.animation.m_Next.c_str();
 
   anim->mShouldQueueIntoLayer = (def.animation.m_Flags & ZenLoad::MSB_QUEUE_ANI) != 0;
   anim->mShouldRotateModel = (def.animation.m_Flags & ZenLoad::MSB_ROTATE_MODEL) != 0;
@@ -176,9 +184,38 @@ BsZenLib::Res::HZAnimation BsZenLib::AliasAnimation(const AnimationToAlias& def)
       break;
   }
 
+  Vector<AnimationEvent> events;
+
+  // Notify about the next animation if needed
+  if (!anim->mIsLooping)
+  {
+    if (def.animation.m_Next.empty())
+    {
+      bs::String command = "STOP";
+
+      float endOfAnimation = clip->getLength();
+      events.emplace_back(command, endOfAnimation);
+    }
+    else
+    {
+      bs::String command = "PLAYCLIP:" + bs::String(def.animation.m_Next.c_str());
+
+      float endOfAnimation = clip->getLength();
+      events.emplace_back(command, endOfAnimation);
+    }
+  }
+
+  clip->setEvents(events);
+
+  // TODO: clip->setEvents(...) for sounds/particles/other
+
+  clip->setName(def.fullAnimationName);
   anim->setName(def.fullAnimationName);
 
   const bool overwrite = true;
+  gResources().save(clip, GothicPathToCachedAnimationClip(def.fullAnimationName), overwrite);
+  AddToResourceManifest(clip, GothicPathToCachedAnimationClip(def.fullAnimationName));
+
   gResources().save(anim, GothicPathToCachedZAnimation(def.fullAnimationName), overwrite);
   AddToResourceManifest(anim, GothicPathToCachedZAnimation(def.fullAnimationName));
 
@@ -199,22 +236,55 @@ BsZenLib::Res::HZAnimation BsZenLib::BlendAnimation(const AnimationToBlend& def)
     BS_EXCEPT(InvalidStateException, "Animation to alias has to have been cached before!");
   }
 
-  anim->mClip = toAlias->mClip;
+  // FIXME: Blending doesn't really work. If we were putting in the animation data of the
+  //        animation to blend to in here, we would never end at a looping animation.
+  HAnimationClip clip = AnimationClip::create();
+
+  anim->mClip = {};
 
   anim->mShouldQueueIntoLayer = toAlias->mShouldQueueIntoLayer;
   anim->mShouldRotateModel = toAlias->mShouldRotateModel;
   anim->mIsFlyingAnimation = toAlias->mIsFlyingAnimation;
   anim->mShouldMoveModel = toAlias->mShouldMoveModel;
   anim->mIsIdleAnimation = toAlias->mIsIdleAnimation;
-  anim->mIsLooping = toAlias->mIsLooping;
+  anim->mIsLooping = false; // Blends cannot loop
   anim->mDirection = toAlias->mDirection;
 
   // Gothics default layer is 1, while bsf uses 0. Therefore, subtract 1 here.
-  bs::INT32 layer = anim->mLayer = def.animation.m_Layer - 1;
+  anim->mLayer = def.animation.m_Layer - 1;
 
+  Vector<AnimationEvent> events;
+
+  // Notify about the next animation if needed
+  if (!anim->mIsLooping)
+  {
+    if (def.animation.m_Next.empty())
+    {
+      bs::String command = "STOP";
+
+      float endOfAnimation = clip->getLength();
+      events.emplace_back(command, endOfAnimation);
+    }
+    else
+    {
+      bs::String command = "PLAYCLIP:" + bs::String(def.animation.m_Next.c_str());
+
+      float endOfAnimation = clip->getLength();
+      events.emplace_back(command, endOfAnimation);
+    }
+  }
+
+  clip->setEvents(events);
+
+  // TODO: clip->setEvents(...) for sounds/particles/other
+
+  clip->setName(def.fullAnimationName);
   anim->setName(def.fullAnimationName);
 
   const bool overwrite = true;
+  gResources().save(clip, GothicPathToCachedAnimationClip(def.fullAnimationName), overwrite);
+  AddToResourceManifest(clip, GothicPathToCachedAnimationClip(def.fullAnimationName));
+
   gResources().save(anim, GothicPathToCachedZAnimation(def.fullAnimationName), overwrite);
   AddToResourceManifest(anim, GothicPathToCachedZAnimation(def.fullAnimationName));
 
