@@ -105,10 +105,20 @@ Res::HZAnimation BsZenLib::ImportMAN(const ZenLoad::zCModelMeshLib& meshLib,
   // Notify about the next animation if needed
   if (!anim->mIsLooping)
   {
-    bs::String command = "PLAYCLIP:" + bs::String(def.animation.m_Next.c_str());
+    if (def.animation.m_Next.empty())
+    {
+      bs::String command = "STOP";
 
-    float endOfAnimation = clip->getLength();
-    events.emplace_back(command, endOfAnimation);
+      float endOfAnimation = clip->getLength();
+      events.emplace_back(command, endOfAnimation);
+    }
+    else
+    {
+      bs::String command = "PLAYCLIP:" + bs::String(def.animation.m_Next.c_str());
+
+      float endOfAnimation = clip->getLength();
+      events.emplace_back(command, endOfAnimation);
+    }
   }
 
   clip->setEvents(events);
