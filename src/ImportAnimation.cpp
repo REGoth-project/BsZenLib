@@ -77,12 +77,16 @@ Res::HZAnimation BsZenLib::ImportMAN(const ZenLoad::zCModelMeshLib& meshLib,
   HZAnimation anim = ZAnimationClip::create();
 
   anim->mClip = clip;
+
   anim->mShouldQueueIntoLayer = (def.animation.m_Flags & ZenLoad::MSB_QUEUE_ANI) != 0;
   anim->mShouldRotateModel = (def.animation.m_Flags & ZenLoad::MSB_ROTATE_MODEL) != 0;
   anim->mIsFlyingAnimation = (def.animation.m_Flags & ZenLoad::MSB_FLY) != 0;
   anim->mShouldMoveModel = (def.animation.m_Flags & ZenLoad::MSB_MOVE_MODEL) != 0;
   anim->mIsIdleAnimation = (def.animation.m_Flags & ZenLoad::MSB_IDLE) != 0;
   anim->mIsLooping = def.animation.m_Next == def.animation.m_Name;
+
+  // Gothics default layer is 1, while bsf uses 0. Therefore, subtract 1 here.
+  anim->mLayer = def.animation.m_Layer - 1;
 
   switch (def.animation.m_Dir)
   {
@@ -97,9 +101,6 @@ Res::HZAnimation BsZenLib::ImportMAN(const ZenLoad::zCModelMeshLib& meshLib,
   }
 
   Vector<AnimationEvent> events;
-
-  // Gothics default layer is 1, while bsf uses 0. Therefore, subtract 1 here.
-  bs::INT32 layer = anim->mLayer = def.animation.m_Layer - 1;
 
   // Notify about the next animation if needed
   if (!anim->mIsLooping)
@@ -126,6 +127,84 @@ Res::HZAnimation BsZenLib::ImportMAN(const ZenLoad::zCModelMeshLib& meshLib,
 
   return anim;
 }
+
+BsZenLib::Res::HZAnimation BsZenLib::AliasAnimation(const AnimationToAlias& def)
+{
+  HZAnimation anim = ZAnimationClip::create();
+
+  HZAnimation toAlias = LoadCachedAnimation(def.fullAnimationName);
+
+  if (!toAlias)
+  {
+    BS_EXCEPT(InvalidStateException, "Animation to alias has to have been cached before!");
+  }
+
+  anim->mClip = toAlias->mClip;
+
+  anim->mShouldQueueIntoLayer = (def.animation.m_Flags & ZenLoad::MSB_QUEUE_ANI) != 0;
+  anim->mShouldRotateModel = (def.animation.m_Flags & ZenLoad::MSB_ROTATE_MODEL) != 0;
+  anim->mIsFlyingAnimation = (def.animation.m_Flags & ZenLoad::MSB_FLY) != 0;
+  anim->mShouldMoveModel = (def.animation.m_Flags & ZenLoad::MSB_MOVE_MODEL) != 0;
+  anim->mIsIdleAnimation = (def.animation.m_Flags & ZenLoad::MSB_IDLE) != 0;
+  anim->mIsLooping = def.animation.m_Next == def.animation.m_Name;
+
+  // Gothics default layer is 1, while bsf uses 0. Therefore, subtract 1 here.
+  anim->mLayer = def.animation.m_Layer - 1;
+
+  switch (def.animation.m_Dir)
+  {
+    case ZenLoad::MSB_BACKWARD:
+      anim->mDirection = ZAnimationClip::Direction::Reverse;
+      break;
+
+    default:
+    case ZenLoad::MSB_FORWARD:
+      anim->mDirection = ZAnimationClip::Direction::Forward;
+      break;
+  }
+
+  anim->setName(def.fullAnimationName);
+
+  const bool overwrite = true;
+  gResources().save(anim, GothicPathToCachedZAnimation(def.fullAnimationNameOfAlias), overwrite);
+  AddToResourceManifest(anim, GothicPathToCachedZAnimation(def.fullAnimationNameOfAlias));
+
+  return anim;
+}
+
+BsZenLib::Res::HZAnimation BlendAnimation(const AnimationToBlend& def)
+{
+  HZAnimation anim = ZAnimationClip::create();
+
+  HZAnimation toAlias = LoadCachedAnimation(def.fullAnimationName);
+
+  if (!toAlias)
+  {
+    BS_EXCEPT(InvalidStateException, "Animation to alias has to have been cached before!");
+  }
+
+  anim->mClip = toAlias->mClip;
+
+  anim->mShouldQueueIntoLayer = toAlias->mShouldQueueIntoLayer;
+  anim->mShouldRotateModel = toAlias->mShouldRotateModel;
+  anim->mIsFlyingAnimation = toAlias->mIsFlyingAnimation;
+  anim->mShouldMoveModel = toAlias->mShouldMoveModel;
+  anim->mIsIdleAnimation = toAlias->mIsIdleAnimation;
+  anim->mIsLooping = toAlias->mIsLooping;
+  anim->mDirection = toAlias->mDirection;
+
+  // Gothics default layer is 1, while bsf uses 0. Therefore, subtract 1 here.
+  bs::INT32 layer = anim->mLayer = def.animation.m_Layer - 1;
+
+  anim->setName(def.fullAnimationName);
+
+  const bool overwrite = true;
+  gResources().save(anim, GothicPathToCachedZAnimation(def.fullAnimationNameOfBlend), overwrite);
+  AddToResourceManifest(anim, GothicPathToCachedZAnimation(def.fullAnimationNameOfBlend));
+
+  return anim;
+}
+
 
 static AnimationCurvesWithRootMotion importAnimationSamples(const String& manFile,
                                                             const ZenLoad::zCModelMeshLib& meshLib,

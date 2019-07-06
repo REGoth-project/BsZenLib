@@ -641,29 +641,29 @@ private:
           // stored in chunks handled below
           for (auto& sfx : p.sfx())
           {
-            import.eventsSfx.push_back(sfx);
+            import.events.sfx.push_back(sfx);
           }
           p.sfx().clear();
 
           for (auto& sfx : p.sfxGround())
           {
-            import.eventsSfxGround.push_back(sfx);
+            import.events.sfxGround.push_back(sfx);
           }
           p.sfxGround().clear();
 
           for (auto& tag : p.tag())
           {
-            import.eventsTag.push_back(tag);
+            import.events.tag.push_back(tag);
           }
           p.tag().clear();
           for (auto& pfx : p.pfx())
           {
-            import.eventsPfx.push_back(pfx);
+            import.events.pfx.push_back(pfx);
           }
           p.pfx().clear();
           for (auto& pfxStop : p.pfxStop())
           {
-            import.eventsPfxStop.push_back(pfxStop);
+            import.events.pfxStop.push_back(pfxStop);
           }
           p.pfxStop().clear();
 

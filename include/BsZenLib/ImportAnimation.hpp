@@ -22,19 +22,39 @@ namespace VDFS
 
 namespace BsZenLib
 {
+  struct EventsToImport
+  {
+    bs::Vector<ZenLoad::zCModelScriptEventSfx> sfx;
+    bs::Vector<ZenLoad::zCModelScriptEventSfx> sfxGround;
+
+    bs::Vector<ZenLoad::zCModelScriptEventPfx> pfx;
+    bs::Vector<ZenLoad::zCModelScriptEventPfxStop> pfxStop;
+
+    bs::Vector<ZenLoad::zCModelScriptEventTag> tag;
+  };
+
   struct AnimationToImport
   {
     bs::String fullAnimationName;
 
     ZenLoad::zCModelScriptAni animation;
+    EventsToImport events;
+  };
 
-    bs::Vector<ZenLoad::zCModelScriptEventSfx> eventsSfx;
-    bs::Vector<ZenLoad::zCModelScriptEventSfx> eventsSfxGround;
+  struct AnimationToAlias
+  {
+    bs::String fullAnimationName;
+    bs::String fullAnimationNameOfAlias;
 
-    bs::Vector<ZenLoad::zCModelScriptEventPfx> eventsPfx;
-    bs::Vector<ZenLoad::zCModelScriptEventPfxStop> eventsPfxStop;
+    ZenLoad::zCModelScriptAniAlias animation;
+  };
 
-    bs::Vector<ZenLoad::zCModelScriptEventTag> eventsTag;
+  struct AnimationToBlend
+  {
+    bs::String fullAnimationName;
+    bs::String fullAnimationNameOfBlend;
+
+    ZenLoad::zCModelScriptAniBlend animation;
   };
 
   /**
@@ -49,6 +69,20 @@ namespace BsZenLib
    */
   Res::HZAnimation ImportMAN(const ZenLoad::zCModelMeshLib& meshLib, const AnimationToImport& def,
                              const VDFS::FileIndex& vdfs);
+
+  /**
+   * Alias a single animation clip and give it a different name and properties.
+   *
+   * The animation to alias has to have been cached before.
+   */
+  Res::HZAnimation AliasAnimation(const AnimationToAlias& def);
+
+  /**
+   * Define a blend to the given animation.
+   *
+   * The animation to blend has to have been cached before.
+   */
+  Res::HZAnimation BlendAnimation(const AnimationToBlend& def);
 
   /**
    * Checks whether the given Animation clip has been cached.
