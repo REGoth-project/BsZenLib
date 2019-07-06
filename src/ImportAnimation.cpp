@@ -150,7 +150,8 @@ BsZenLib::Res::HZAnimation BsZenLib::AliasAnimation(const AnimationToAlias& def)
 
   if (!toAlias)
   {
-    BS_EXCEPT(InvalidStateException, "Animation to alias has to have been cached before!");
+    // BS_EXCEPT(InvalidStateException, "Animation to alias has to have been cached before!");
+    return {};
   }
 
   SPtr<RootMotion> pRootMotion = toAlias->mClip->getRootMotion();
@@ -233,7 +234,8 @@ BsZenLib::Res::HZAnimation BsZenLib::BlendAnimation(const AnimationToBlend& def)
 
   if (!toAlias)
   {
-    BS_EXCEPT(InvalidStateException, "Animation to alias has to have been cached before!");
+    // BS_EXCEPT(InvalidStateException, "Animation to blend has to have been cached before!");
+    return {};
   }
 
   // FIXME: Blending doesn't really work. If we were putting in the animation data of the
