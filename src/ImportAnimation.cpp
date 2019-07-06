@@ -130,9 +130,12 @@ Res::HZAnimation BsZenLib::ImportMAN(const ZenLoad::zCModelMeshLib& meshLib,
 
 BsZenLib::Res::HZAnimation BsZenLib::AliasAnimation(const AnimationToAlias& def)
 {
+  gDebug().logDebug("Aliasing Animation: " + def.fullAnimationName + " to " +
+                    def.fullAnimationNameOfAlias);
+
   HZAnimation anim = ZAnimationClip::create();
 
-  HZAnimation toAlias = LoadCachedAnimation(def.fullAnimationName);
+  HZAnimation toAlias = LoadCachedAnimation(def.fullAnimationNameOfAlias);
 
   if (!toAlias)
   {
@@ -166,17 +169,20 @@ BsZenLib::Res::HZAnimation BsZenLib::AliasAnimation(const AnimationToAlias& def)
   anim->setName(def.fullAnimationName);
 
   const bool overwrite = true;
-  gResources().save(anim, GothicPathToCachedZAnimation(def.fullAnimationNameOfAlias), overwrite);
-  AddToResourceManifest(anim, GothicPathToCachedZAnimation(def.fullAnimationNameOfAlias));
+  gResources().save(anim, GothicPathToCachedZAnimation(def.fullAnimationName), overwrite);
+  AddToResourceManifest(anim, GothicPathToCachedZAnimation(def.fullAnimationName));
 
   return anim;
 }
 
-BsZenLib::Res::HZAnimation BlendAnimation(const AnimationToBlend& def)
+BsZenLib::Res::HZAnimation BsZenLib::BlendAnimation(const AnimationToBlend& def)
 {
+  gDebug().logDebug("Blending Animation: " + def.fullAnimationName + " to " +
+                    def.fullAnimationNameOfBlend);
+
   HZAnimation anim = ZAnimationClip::create();
 
-  HZAnimation toAlias = LoadCachedAnimation(def.fullAnimationName);
+  HZAnimation toAlias = LoadCachedAnimation(def.fullAnimationNameOfBlend);
 
   if (!toAlias)
   {
@@ -199,12 +205,11 @@ BsZenLib::Res::HZAnimation BlendAnimation(const AnimationToBlend& def)
   anim->setName(def.fullAnimationName);
 
   const bool overwrite = true;
-  gResources().save(anim, GothicPathToCachedZAnimation(def.fullAnimationNameOfBlend), overwrite);
-  AddToResourceManifest(anim, GothicPathToCachedZAnimation(def.fullAnimationNameOfBlend));
+  gResources().save(anim, GothicPathToCachedZAnimation(def.fullAnimationName), overwrite);
+  AddToResourceManifest(anim, GothicPathToCachedZAnimation(def.fullAnimationName));
 
   return anim;
 }
-
 
 static AnimationCurvesWithRootMotion importAnimationSamples(const String& manFile,
                                                             const ZenLoad::zCModelMeshLib& meshLib,

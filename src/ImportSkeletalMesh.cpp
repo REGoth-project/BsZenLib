@@ -540,6 +540,40 @@ public:
                             ani.fullAnimationName);
       }
     }
+
+    for (const auto& ani : mAnimationsToAlias)
+    {
+      HZAnimation animation;
+
+      animation = AliasAnimation(ani);
+
+      if (animation)
+      {
+        mAnimations.push_back(animation);
+      }
+      else
+      {
+        gDebug().logWarning("[ImportSkeletalMesh] Failed to alias animation: " +
+                            ani.fullAnimationName + " to " + ani.fullAnimationNameOfAlias);
+      }
+    }
+
+    for (const auto& ani : mAnimationsToBlend)
+    {
+      HZAnimation animation;
+
+      animation = BlendAnimation(ani);
+
+      if (animation)
+      {
+        mAnimations.push_back(animation);
+      }
+      else
+      {
+        gDebug().logWarning("[ImportSkeletalMesh] Failed to blend animation: " +
+                            ani.fullAnimationName + " to " + ani.fullAnimationNameOfBlend);
+      }
+    }
   }
 
   Vector<HMeshWithMaterials> getMeshes() const { return mMeshes; }
@@ -671,6 +705,50 @@ private:
         }
         break;
 
+        case ModelScriptParser::CHUNK_ANI_BLEND:
+        {
+          String qname = getModelScriptName() + '-' + p.blend().m_Name.c_str();
+          String qnameBlend = getModelScriptName() + '-' + p.blend().m_Next.c_str();
+
+          // FIXME: Some animations alias or blend to "STAND", for which they simply
+          //        supply an empty string. We need a way to create an actual "STAND"
+          //        animation rather than not playing an animation at all.
+          if (p.blend().m_Next.empty())
+          {
+            qnameBlend = getModelScriptName() + '-' + "S_RUN";
+          }
+
+          AnimationToBlend import = {};
+          import.fullAnimationName = qname;
+          import.fullAnimationNameOfBlend = qnameBlend;
+          import.animation = p.blend();
+
+          mAnimationsToBlend.push_back(import);
+        }
+        break;
+
+        case ModelScriptParser::CHUNK_ANI_ALIAS:
+        {
+          String qname = getModelScriptName() + '-' + p.alias().m_Name.c_str();
+          String qnameAlias = getModelScriptName() + '-' + p.alias().m_Alias.c_str();
+
+          // FIXME: Some animations alias or blend to "STAND", for which they simply
+          //        supply an empty string. We need a way to create an actual "STAND"
+          //        animation rather than not playing an animation at all.
+          if (p.alias().m_Alias.empty())
+          {
+            qnameAlias = getModelScriptName() + '-' + "S_RUN";
+          }
+
+          AnimationToAlias import = {};
+          import.fullAnimationName = qname;
+          import.fullAnimationNameOfAlias = qnameAlias;
+          import.animation = p.alias();
+
+          mAnimationsToAlias.push_back(import);
+        }
+        break;
+
         // This will be only called on binary files, with exactly one sfx-entry!
         case ModelScriptParser::CHUNK_EVENT_SFX:
         {
@@ -702,8 +780,10 @@ private:
         break;
 
         case ModelScriptParser::CHUNK_ERROR:
-          // Happens on some files, e.g. LURKER.MDS from Gothic I. The import seems to turn out fine though.
-          bs::gDebug().logWarning("[ImportSkeletalMesh] Error while parsing model script " + mModelScriptFile + ", trying to keep going...");
+          // Happens on some files, e.g. LURKER.MDS from Gothic I. The import seems to turn out fine
+          // though.
+          bs::gDebug().logWarning("[ImportSkeletalMesh] Error while parsing model script " +
+                                  mModelScriptFile + ", trying to keep going...");
           break;
       }
     }
@@ -714,6 +794,8 @@ private:
   String mModelScriptFile;
   Vector<String> mAnimationFiles;
   Vector<AnimationToImport> mAnimationsToImport;
+  Vector<AnimationToBlend> mAnimationsToBlend;
+  Vector<AnimationToAlias> mAnimationsToAlias;
   Vector<HZAnimation> mAnimations;
   Vector<HMeshWithMaterials> mMeshes;
   const VDFS::FileIndex& mVDFS;
