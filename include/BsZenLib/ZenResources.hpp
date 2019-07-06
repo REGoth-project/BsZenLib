@@ -21,7 +21,8 @@ namespace BsZenLib
     class MeshWithMaterialsRTTI;
     class ModelScriptFile;
     class ModelScriptFileRTTI;
-    class ZAnimationClip;
+
+    struct ZAnimationClip;
     class ZAnimationClipRTTI;
 
     typedef bs::ResourceHandle<MeshWithMaterials> HMeshWithMaterials;
