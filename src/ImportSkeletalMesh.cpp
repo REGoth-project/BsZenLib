@@ -512,7 +512,7 @@ public:
         }
         else
         {
-          gDebug().logWarning("[SkeletalMesh] Failed to import mesh: " + meshFile);
+          BS_LOG(Warning, Uncategorized, "[SkeletalMesh] Failed to import mesh: " + meshFile);
         }
       }
     }
@@ -536,8 +536,8 @@ public:
       }
       else
       {
-        gDebug().logWarning("[ImportSkeletalMesh] Failed to import animation: " +
-                            ani.fullAnimationName);
+        BS_LOG(Warning, Uncategorized,
+               "[ImportSkeletalMesh] Failed to import animation: " + ani.fullAnimationName);
       }
     }
 
@@ -553,8 +553,9 @@ public:
       }
       else
       {
-        gDebug().logWarning("[ImportSkeletalMesh] Failed to alias animation: " +
-                            ani.fullAnimationName + " to " + ani.fullAnimationNameOfAlias);
+        BS_LOG(Warning, Uncategorized,
+               "[ImportSkeletalMesh] Failed to alias animation: " + ani.fullAnimationName + " to " +
+                   ani.fullAnimationNameOfAlias);
       }
     }
 
@@ -570,8 +571,9 @@ public:
       }
       else
       {
-        gDebug().logWarning("[ImportSkeletalMesh] Failed to blend animation: " +
-                            ani.fullAnimationName + " to " + ani.fullAnimationNameOfBlend);
+        BS_LOG(Warning, Uncategorized,
+               "[ImportSkeletalMesh] Failed to blend animation: " + ani.fullAnimationName + " to " +
+                   ani.fullAnimationNameOfBlend);
       }
     }
   }
@@ -782,8 +784,9 @@ private:
         case ModelScriptParser::CHUNK_ERROR:
           // Happens on some files, e.g. LURKER.MDS from Gothic I. The import seems to turn out fine
           // though.
-          bs::gDebug().logWarning("[ImportSkeletalMesh] Error while parsing model script " +
-                                  mModelScriptFile + ", trying to keep going...");
+          BS_LOG(Warning, Uncategorized,
+                 "[ImportSkeletalMesh] Error while parsing model script " + mModelScriptFile +
+                     ", trying to keep going...");
           break;
       }
     }
@@ -844,7 +847,7 @@ public:
     }
     else
     {
-      gDebug().logWarning("[SkeletalMesh] Failed to import mesh: " + modelFile);
+      BS_LOG(Warning, Uncategorized, "[SkeletalMesh] Failed to import mesh: " + modelFile);
     }
   }
 

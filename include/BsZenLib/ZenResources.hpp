@@ -66,9 +66,6 @@ namespace BsZenLib
        */
       bs::Vector<bs::HMaterial> getMaterials() const { return mMaterials; }
 
-      /** @copydoc Resource::getResourceDependencies */
-      void getResourceDependencies(bs::FrameVector<bs::HResource>& dependencies) const override;
-
       /**
        * @return Map of node names -> attached mesh
        */
@@ -235,9 +232,6 @@ namespace BsZenLib
           return it->second;
         }
       }
-
-      /** @copydoc Resource::getResourceDependencies */
-      void getResourceDependencies(bs::FrameVector<bs::HResource>& dependencies) const override;
 
     private:
       /**

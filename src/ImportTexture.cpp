@@ -58,7 +58,7 @@ HTexture BsZenLib::LoadCachedTexture(const String& virtualFilePath)
 bs::HTexture BsZenLib::ImportAndCacheTexture(const bs::String& virtualFilePath,
                                              const VDFS::FileIndex& vdfs)
 {
-  gDebug().logDebug("Caching Texture: " + virtualFilePath);
+  BS_LOG(Info, Uncategorized, "Caching Texture: " + virtualFilePath);
 
   HTexture fromOriginal = ImportTexture(virtualFilePath, vdfs);
 

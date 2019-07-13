@@ -64,7 +64,7 @@ Res::HZAnimation BsZenLib::LoadCachedAnimation(const bs::String& fullAnimationNa
 Res::HZAnimation BsZenLib::ImportMAN(const ZenLoad::zCModelMeshLib& meshLib,
                                      const AnimationToImport& def, const VDFS::FileIndex& vdfs)
 {
-  gDebug().logDebug("Caching Animation: " + def.fullAnimationName);
+  BS_LOG(Info, Uncategorized, "Caching Animation: " + def.fullAnimationName);
 
   // Import keyframes and convert them to curves (From .MAN-file)
   AnimationCurvesWithRootMotion samples =
@@ -141,8 +141,8 @@ Res::HZAnimation BsZenLib::ImportMAN(const ZenLoad::zCModelMeshLib& meshLib,
 
 BsZenLib::Res::HZAnimation BsZenLib::AliasAnimation(const AnimationToAlias& def)
 {
-  gDebug().logDebug("Aliasing Animation: " + def.fullAnimationName + " to " +
-                    def.fullAnimationNameOfAlias);
+  BS_LOG(Info, Uncategorized,
+         "Aliasing Animation: " + def.fullAnimationName + " to " + def.fullAnimationNameOfAlias);
 
   HZAnimation anim = ZAnimationClip::create();
 
@@ -225,8 +225,8 @@ BsZenLib::Res::HZAnimation BsZenLib::AliasAnimation(const AnimationToAlias& def)
 
 BsZenLib::Res::HZAnimation BsZenLib::BlendAnimation(const AnimationToBlend& def)
 {
-  gDebug().logDebug("Blending Animation: " + def.fullAnimationName + " to " +
-                    def.fullAnimationNameOfBlend);
+  BS_LOG(Info, Uncategorized,
+         "Blending Animation: " + def.fullAnimationName + " to " + def.fullAnimationNameOfBlend);
 
   HZAnimation anim = ZAnimationClip::create();
 
@@ -249,7 +249,7 @@ BsZenLib::Res::HZAnimation BsZenLib::BlendAnimation(const AnimationToBlend& def)
   anim->mIsFlyingAnimation = toAlias->mIsFlyingAnimation;
   anim->mShouldMoveModel = toAlias->mShouldMoveModel;
   anim->mIsIdleAnimation = toAlias->mIsIdleAnimation;
-  anim->mIsLooping = false; // Blends cannot loop
+  anim->mIsLooping = false;  // Blends cannot loop
   anim->mDirection = toAlias->mDirection;
 
   // Gothics default layer is 1, while bsf uses 0. Therefore, subtract 1 here.

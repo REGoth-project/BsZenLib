@@ -144,13 +144,13 @@ static HSceneObject addWorldMesh(const bs::String& worldName, ZenLoad::ZenParser
 
   if (!actualMesh)
   {
-    gDebug().logError("Mesh not there?");
+    BS_LOG(Error, Uncategorized, "Mesh not there?");
     return {};
   }
 
   if (!actualMesh->getCachedData())
   {
-    gDebug().logError("Cannot extract world mesh for physics, no mesh data available!");
+    BS_LOG(Error, Uncategorized, "Cannot extract world mesh for physics, no mesh data available!");
   }
   else
   {
@@ -187,7 +187,7 @@ static HSceneObject walkTree(const ZenLoad::zCVobData& root, const VDFS::FileInd
   {
     rootSO = SceneObject::create(root.objectClass.c_str());
 
-    gDebug().logDebug("[ImportZEN] Add Vob: " + bs::String(root.objectClass.c_str()));
+    BS_LOG(Error, Uncategorized, "[ImportZEN] Add Vob: " + bs::String(root.objectClass.c_str()));
   }
 
   Matrix4 worldMatrix = convertMatrix(root.worldMatrix);

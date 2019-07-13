@@ -40,13 +40,13 @@ static void transferIndices(SPtr<MeshData> target, const ZenLoad::PackedMesh& pa
 BsZenLib::Res::HMeshWithMaterials BsZenLib::ImportAndCacheStaticMesh(
     const bs::String& originalFileName, const VDFS::FileIndex& vdfs)
 {
-  gDebug().logDebug("Caching Static Mesh: " + originalFileName);
+  BS_LOG(Info, Uncategorized, "Caching Static Mesh: " + originalFileName);
 
   HMesh mesh = ImportAndCacheStaticMeshGeometry(originalFileName, vdfs);
 
   if (!mesh)
   {
-    gDebug().logWarning("Load Failed (Mesh): " + originalFileName);
+    BS_LOG(Warning, Uncategorized, "Load Failed (Mesh): " + originalFileName);
     return {};
   }
 
@@ -54,7 +54,7 @@ BsZenLib::Res::HMeshWithMaterials BsZenLib::ImportAndCacheStaticMesh(
 
   if (materials.empty())
   {
-    gDebug().logWarning("Load Failed (Materials): " + originalFileName);
+    BS_LOG(Warning, Uncategorized, "Load Failed (Materials): " + originalFileName);
     return {};
   }
 
@@ -62,7 +62,7 @@ BsZenLib::Res::HMeshWithMaterials BsZenLib::ImportAndCacheStaticMesh(
 
   if (!combined)
   {
-    gDebug().logWarning("Load Failed (Combined): " + originalFileName);
+    BS_LOG(Warning, Uncategorized, "Load Failed (Combined): " + originalFileName);
     return {};
   }
 
@@ -77,13 +77,13 @@ BsZenLib::Res::HMeshWithMaterials BsZenLib::ImportAndCacheStaticMesh(
     const bs::String& originalFileName, const ZenLoad::PackedMesh& packedMesh,
     const VDFS::FileIndex& vdfs)
 {
-  gDebug().logDebug("Caching Static Mesh: " + originalFileName);
+  BS_LOG(Info, Uncategorized, "Caching Static Mesh: " + originalFileName);
 
   HMesh mesh = ImportAndCacheStaticMeshGeometry(originalFileName, packedMesh);
 
   if (!mesh)
   {
-    gDebug().logWarning("Load Failed (Mesh): " + originalFileName);
+    BS_LOG(Warning, Uncategorized, "Load Failed (Mesh): " + originalFileName);
     return {};
   }
 
@@ -92,7 +92,7 @@ BsZenLib::Res::HMeshWithMaterials BsZenLib::ImportAndCacheStaticMesh(
 
   if (materials.empty())
   {
-    gDebug().logWarning("Load Failed (Materials): " + originalFileName);
+    BS_LOG(Warning, Uncategorized, "Load Failed (Materials): " + originalFileName);
     return {};
   }
 
@@ -100,7 +100,7 @@ BsZenLib::Res::HMeshWithMaterials BsZenLib::ImportAndCacheStaticMesh(
 
   if (!combined)
   {
-    gDebug().logWarning("Load Failed (Combined): " + originalFileName);
+    BS_LOG(Warning, Uncategorized, "Load Failed (Combined): " + originalFileName);
     return {};
   }
 
