@@ -88,12 +88,12 @@ HTexture BsZenLib::ImportTexture(const String& path, const VDFS::FileIndex& vdfs
 
   ZenLoad::DDSURFACEDESC2 surfaceDesc = ZenLoad::getSurfaceDesc(ddsData);
 
-  // return createDXTnTexture(path, ddsData, surfaceDesc);
+  return createDXTnTexture(path, ddsData, surfaceDesc);
 
   // Optionally convert to RGBA8, which is easier to work with
-  std::vector<uint8_t> rgbaData;
-  ZenLoad::convertDDSToRGBA8(ddsData, rgbaData);
-  return createRGBA8Texture(path, surfaceDesc.dwWidth, surfaceDesc.dwHeight, rgbaData);
+  // std::vector<uint8_t> rgbaData;
+  // ZenLoad::convertDDSToRGBA8(ddsData, rgbaData);
+  // return createRGBA8Texture(path, surfaceDesc.dwWidth, surfaceDesc.dwHeight, rgbaData);
 }
 
 static HTexture createRGBA8Texture(const String& name, UINT32 width, UINT32 height,
@@ -154,6 +154,7 @@ static HTexture createDXTnTexture(const String& name, std::vector<uint8_t>& ddsD
   desc.width = surfaceDesc.dwWidth;
   desc.height = surfaceDesc.dwHeight;
   desc.numMips = surfaceDesc.dwMipMapCount;
+  desc.hwGamma = true;
 
   switch (surfaceDesc.ddpfPixelFormat.dwFourCC)
   {
