@@ -99,6 +99,9 @@ target_include_directories(BsZenLib PRIVATE include/BsZenLib)
 target_link_libraries(BsZenLib PUBLIC vdfs)
 target_include_directories(BsZenLib PUBLIC include)
 
+# Make sure our calls to BS_LOG work
+target_compile_definitions(BsZenLib PRIVATE -DBS_LOG_VERBOSITY=LogVerbosity::Log)
+
 ###############################################################################
 #                               Add Samples, etc                              #
 ###############################################################################
