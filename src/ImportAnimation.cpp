@@ -64,11 +64,12 @@ Res::HZAnimation BsZenLib::LoadCachedAnimation(const bs::String& fullAnimationNa
 Res::HZAnimation BsZenLib::ImportMAN(const ZenLoad::zCModelMeshLib& meshLib,
                                      const AnimationToImport& def, const VDFS::FileIndex& vdfs)
 {
-  BS_LOG(Info, Uncategorized, "Caching Animation: " + def.fullAnimationName);
+  BS_LOG(Info, Uncategorized, "Caching Animation: {0} ({1})", def.fullAnimationName,
+         def.manFileName);
 
   // Import keyframes and convert them to curves (From .MAN-file)
   AnimationCurvesWithRootMotion samples =
-      importAnimationSamples(def.fullAnimationName + ".MAN", meshLib, def.animation, vdfs);
+      importAnimationSamples(def.manFileName + ".MAN", meshLib, def.animation, vdfs);
 
   SPtr<RootMotion> pRootMotion = bs::bs_shared_ptr_new<RootMotion>(samples.rootMotion);
   SPtr<AnimationCurves> pCurves = bs::bs_shared_ptr_new<AnimationCurves>(samples.curves);
@@ -139,88 +140,30 @@ Res::HZAnimation BsZenLib::ImportMAN(const ZenLoad::zCModelMeshLib& meshLib,
   return anim;
 }
 
-BsZenLib::Res::HZAnimation BsZenLib::AliasAnimation(const AnimationToAlias& def)
+BsZenLib::Res::HZAnimation BsZenLib::AliasAnimation(const ZenLoad::zCModelMeshLib& meshLib,
+                                                    const AnimationToAlias& def,
+                                                    const VDFS::FileIndex& vdfs)
 {
   BS_LOG(Info, Uncategorized,
          "Aliasing Animation: " + def.fullAnimationName + " to " + def.fullAnimationNameOfAlias);
 
-  HZAnimation anim = ZAnimationClip::create();
+  AnimationToImport a;
 
-  HZAnimation toAlias = LoadCachedAnimation(def.fullAnimationNameOfAlias);
+  // Patch the existing animation with the settings of the alias
+  a.animation = def.animationSource;
+  a.animation.m_Layer = def.animation.m_Layer;
+  a.animation.m_Next = def.animation.m_Next;
+  a.animation.m_BlendIn = def.animation.m_BlendIn;
+  a.animation.m_BlendOut = def.animation.m_BlendOut;
+  a.animation.m_Flags = def.animation.m_Flags;
+  a.animation.m_Dir = def.animation.m_Dir;
 
-  if (!toAlias)
-  {
-    // BS_EXCEPT(InvalidStateException, "Animation to alias has to have been cached before!");
-    return {};
-  }
+  a.fullAnimationName = def.fullAnimationName;
+  a.manFileName = def.fullAnimationNameOfAlias;
 
-  SPtr<RootMotion> pRootMotion = toAlias->mClip->getRootMotion();
-  SPtr<AnimationCurves> pCurves = toAlias->mClip->getCurves();
+  // TODO: Pass events
 
-  // Need to create a new clip here since every alias could define its own events
-  HAnimationClip clip = AnimationClip::create(pCurves, false, 1, pRootMotion);
-
-  anim->mClip = clip;
-  anim->mNext = def.animation.m_Next.c_str();
-
-  anim->mShouldQueueIntoLayer = (def.animation.m_Flags & ZenLoad::MSB_QUEUE_ANI) != 0;
-  anim->mShouldRotateModel = (def.animation.m_Flags & ZenLoad::MSB_ROTATE_MODEL) != 0;
-  anim->mIsFlyingAnimation = (def.animation.m_Flags & ZenLoad::MSB_FLY) != 0;
-  anim->mShouldMoveModel = (def.animation.m_Flags & ZenLoad::MSB_MOVE_MODEL) != 0;
-  anim->mIsIdleAnimation = (def.animation.m_Flags & ZenLoad::MSB_IDLE) != 0;
-  anim->mIsLooping = def.animation.m_Next == def.animation.m_Name;
-
-  // Gothics default layer is 1, while bsf uses 0. Therefore, subtract 1 here.
-  anim->mLayer = def.animation.m_Layer - 1;
-
-  switch (def.animation.m_Dir)
-  {
-    case ZenLoad::MSB_BACKWARD:
-      anim->mDirection = ZAnimationClip::Direction::Reverse;
-      break;
-
-    default:
-    case ZenLoad::MSB_FORWARD:
-      anim->mDirection = ZAnimationClip::Direction::Forward;
-      break;
-  }
-
-  Vector<AnimationEvent> events;
-
-  // Notify about the next animation if needed
-  if (!anim->mIsLooping)
-  {
-    if (def.animation.m_Next.empty())
-    {
-      bs::String command = "STOP";
-
-      float endOfAnimation = clip->getLength();
-      events.emplace_back(command, endOfAnimation);
-    }
-    else
-    {
-      bs::String command = "PLAYCLIP:" + bs::String(def.animation.m_Next.c_str());
-
-      float endOfAnimation = clip->getLength();
-      events.emplace_back(command, endOfAnimation);
-    }
-  }
-
-  clip->setEvents(events);
-
-  // TODO: clip->setEvents(...) for sounds/particles/other
-
-  clip->setName(def.fullAnimationName);
-  anim->setName(def.fullAnimationName);
-
-  const bool overwrite = true;
-  gResources().save(clip, GothicPathToCachedAnimationClip(def.fullAnimationName), overwrite);
-  AddToResourceManifest(clip, GothicPathToCachedAnimationClip(def.fullAnimationName));
-
-  gResources().save(anim, GothicPathToCachedZAnimation(def.fullAnimationName), overwrite);
-  AddToResourceManifest(anim, GothicPathToCachedZAnimation(def.fullAnimationName));
-
-  return anim;
+  return ImportMAN(meshLib, a, vdfs);
 }
 
 BsZenLib::Res::HZAnimation BsZenLib::BlendAnimation(const AnimationToBlend& def)
@@ -375,11 +318,22 @@ static AnimationCurvesWithRootMotion convertSamples(const std::vector<ZenLoad::M
 
     for (size_t frame = 0; frame < numFrames; frame++)
     {
+      size_t frameIdx = [&]() {
+        if (def.m_Dir == ZenLoad::EModelScriptAniDir::MSB_BACKWARD)
+        {
+          return numFrames - frame;
+        }
+        else
+        {
+          return frame;
+        }
+      }();
+
       // One Frame is stored as a continuous array of samples for each node.
       // That means, that for each frame, there are as many samples as there are
       // nodes. To get all samples for only one node, you have to skip all the others
       // to get to the next frame.
-      size_t realFrame = frame + startFrame;
+      size_t realFrame = frameIdx + startFrame;
       size_t sampleIdx = numNodes * realFrame + nodeIdx;
       const ZenLoad::zCModelAniSample& sample = parser.getSamples()[sampleIdx];
 

@@ -31,11 +31,13 @@ namespace BsZenLib
     bs::Vector<ZenLoad::zCModelScriptEventPfxStop> pfxStop;
 
     bs::Vector<ZenLoad::zCModelScriptEventTag> tag;
+    bs::Vector<ZenLoad::zCModelScriptEventMMStartAni> mmStartAni;
   };
 
   struct AnimationToImport
   {
     bs::String fullAnimationName;
+    bs::String manFileName;
 
     ZenLoad::zCModelScriptAni animation;
     EventsToImport events;
@@ -47,6 +49,7 @@ namespace BsZenLib
     bs::String fullAnimationNameOfAlias;
 
     ZenLoad::zCModelScriptAniAlias animation;
+    ZenLoad::zCModelScriptAni animationSource;
   };
 
   struct AnimationToBlend
@@ -75,7 +78,8 @@ namespace BsZenLib
    *
    * The animation to alias has to have been cached before.
    */
-  Res::HZAnimation AliasAnimation(const AnimationToAlias& def);
+  Res::HZAnimation AliasAnimation(const ZenLoad::zCModelMeshLib& meshLib,
+                                  const AnimationToAlias& def, const VDFS::FileIndex& vdfs);
 
   /**
    * Define a blend to the given animation.

@@ -517,6 +517,15 @@ public:
       }
     }
 
+    // Need to look up the animation sources later for aliasing
+    bs::Map<bs::String, bs::UINT32> animationsByName;
+    for (bs::UINT32 i = 0; i < (bs::UINT32)mAnimationsToImport.size(); i++)
+    {
+      const auto& ani = mAnimationsToImport[i];
+
+      animationsByName[ani.fullAnimationName] = i;
+    }
+
     for (const auto& ani : mAnimationsToImport)
     {
       HZAnimation animation;
@@ -541,21 +550,33 @@ public:
       }
     }
 
-    for (const auto& ani : mAnimationsToAlias)
+    for (auto& ani : mAnimationsToAlias)
     {
       HZAnimation animation;
 
-      animation = AliasAnimation(ani);
+      auto source = animationsByName.find(ani.fullAnimationNameOfAlias);
 
-      if (animation)
+      if (source == animationsByName.end())
       {
-        mAnimations.push_back(animation);
+        BS_LOG(Warning, Uncategorized,
+               "[ImportSkeletalMesh] Failed to alias animation: {0} to {1} (Source not found)",
+               ani.fullAnimationName, ani.fullAnimationNameOfAlias);
       }
       else
       {
-        BS_LOG(Warning, Uncategorized,
-               "[ImportSkeletalMesh] Failed to alias animation: " + ani.fullAnimationName + " to " +
-                   ani.fullAnimationNameOfAlias);
+        ani.animationSource = mAnimationsToImport[source->second].animation;
+        animation = AliasAnimation(mMeshHierarchy.mMeshHierarchy, ani, mVDFS);
+
+        if (animation)
+        {
+          mAnimations.push_back(animation);
+        }
+        else
+        {
+          BS_LOG(Warning, Uncategorized,
+                 "[ImportSkeletalMesh] Failed to alias animation: {0} to {1} (Import Failed)",
+                 ani.fullAnimationName, ani.fullAnimationNameOfAlias);
+        }
       }
     }
 
@@ -671,6 +692,7 @@ private:
 
           AnimationToImport import = {};
           import.fullAnimationName = qname;
+          import.manFileName = qname;
           import.animation = p.ani();
 
           // In case this was an ASCII-File, these will be filled. Binary files have single ones
@@ -702,6 +724,11 @@ private:
             import.events.pfxStop.push_back(pfxStop);
           }
           p.pfxStop().clear();
+          for (auto& mmStartAni : p.mmStartAni())
+          {
+            import.events.mmStartAni.push_back(mmStartAni);
+          }
+          p.mmStartAni().clear();
 
           mAnimationsToImport.push_back(import);
         }
