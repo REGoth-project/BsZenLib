@@ -176,7 +176,7 @@ static HTexture createDXTnTexture(const String& name, std::vector<uint8_t>& ddsD
 
   HTexture texture = Texture::create(desc);
 
-  for (UINT32 i = 0; i < surfaceDesc.dwMipMapCount; i++)
+  for (UINT32 i = 0; i < surfaceDesc.dwMipMapCount + 1; i++)
   {
     UINT32 mipWidth, mipHeight, mipDepth;
     PixelUtil::getSizeForMipLevel(desc.width, desc.height, 1, i, mipWidth, mipHeight, mipDepth);
