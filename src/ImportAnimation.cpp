@@ -321,7 +321,7 @@ static AnimationCurvesWithRootMotion convertSamples(const std::vector<ZenLoad::M
       size_t frameIdx = [&]() {
         if (def.m_Dir == ZenLoad::EModelScriptAniDir::MSB_BACKWARD)
         {
-          return numFrames - frame;
+          return numFrames - frame - 1;
         }
         else
         {
