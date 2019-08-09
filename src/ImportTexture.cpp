@@ -79,7 +79,8 @@ HTexture BsZenLib::ImportTexture(const String& path, const VDFS::FileIndex& vdfs
 
   if (ztexData.empty())
   {
-    // TODO: Read uncompiled TGA
+    BS_LOG(Warning, Uncategorized, "Import of uncompiled textures is not implemented! ({0})", path);
+
     return HTexture();
   }
 
@@ -87,6 +88,14 @@ HTexture BsZenLib::ImportTexture(const String& path, const VDFS::FileIndex& vdfs
   ZenLoad::convertZTEX2DDS(ztexData, ddsData);
 
   ZenLoad::DDSURFACEDESC2 surfaceDesc = ZenLoad::getSurfaceDesc(ddsData);
+
+  if ((surfaceDesc.ddpfPixelFormat.dwFlags & ZenLoad::DDPF_FOURCC) == 0)
+  {
+    BS_LOG(Warning, Uncategorized, "Import of uncompressed RGBA textures is not implemented! ({0})",
+           path);
+
+    return HTexture();
+  }
 
   return createDXTnTexture(path, ddsData, surfaceDesc);
 
@@ -171,7 +180,8 @@ static HTexture createDXTnTexture(const String& name, std::vector<uint8_t>& ddsD
       break;
     default:
       BS_EXCEPT(InternalErrorException,
-                "Cannot import DXTn-texture " + name + ", unsupported FOURCC!")
+                "Cannot import DXTn-texture " + name +
+                    ", unsupported FOURCC: " + bs::toString(surfaceDesc.ddpfPixelFormat.dwFourCC));
   }
 
   HTexture texture = Texture::create(desc);
