@@ -23,6 +23,7 @@
 #include "ImportTexture.hpp"
 #include "ImportPath.hpp"
 #include "ResourceManifest.hpp"
+#include <FreeImage.h>
 #include <FileSystem/BsFileSystem.h>
 #include <Image/BsColor.h>
 #include <Image/BsPixelData.h>
@@ -40,6 +41,7 @@ static HTexture createRGBA8Texture(const String& name, UINT32 width, UINT32 heig
                                    const std::vector<uint8_t>& rgbaData);
 static HTexture createDXTnTexture(const String& name, std::vector<uint8_t>& ddsData,
                                   const ZenLoad::DDSURFACEDESC2& surfaceDesc);
+static std::vector<bs::UINT8> convertToRGBA8(std::vector<uint8_t>& ddsData);
 
 // - Implementation --------------------------------------------------------------------------------
 
@@ -73,8 +75,10 @@ bs::HTexture BsZenLib::ImportAndCacheTexture(const bs::String& virtualFilePath,
   return fromOriginal;
 }
 
-HTexture BsZenLib::ImportTexture(const String& path, const VDFS::FileIndex& vdfs)
+HTexture BsZenLib::ImportTexture(const String& _path, const VDFS::FileIndex& vdfs)
 {
+  String path = "SKYDAY_LAYER0_A0.TGA";
+
   std::vector<uint8_t> ztexData = readCompiledTexture(path, vdfs);
 
   if (ztexData.empty())
@@ -89,20 +93,49 @@ HTexture BsZenLib::ImportTexture(const String& path, const VDFS::FileIndex& vdfs
 
   ZenLoad::DDSURFACEDESC2 surfaceDesc = ZenLoad::getSurfaceDesc(ddsData);
 
-  if ((surfaceDesc.ddpfPixelFormat.dwFlags & ZenLoad::DDPF_FOURCC) == 0)
+  // Load uncompressed DDS textures
+  if ((surfaceDesc.ddpfPixelFormat.dwFlags & ZenLoad::DDPF_FOURCC) != 0)
   {
-    BS_LOG(Warning, Uncategorized, "Import of uncompressed RGBA textures is not implemented! ({0})",
-           path);
+    // Optionally convert to RGBA8, which is easier to work with.
+    // Commented out because it's usually only needed during testing.
+    /*
+    std::vector<uint8_t> rgbaData;
+    ZenLoad::convertDDSToRGBA8(ddsData, rgbaData);
+    return createRGBA8Texture(path, surfaceDesc.dwWidth, surfaceDesc.dwHeight, rgbaData);
+    */
 
-    return HTexture();
+    return createDXTnTexture(path, ddsData, surfaceDesc);
   }
+  else
+  {
+    // Uncompressed or weird DDS textures are converted to 32bit RGBA
+    auto rgbaData = convertToRGBA8(ddsData);
 
-  return createDXTnTexture(path, ddsData, surfaceDesc);
+    return createRGBA8Texture(path, surfaceDesc.dwWidth, surfaceDesc.dwHeight, rgbaData);
+  }
+}
 
-  // Optionally convert to RGBA8, which is easier to work with
-  // std::vector<uint8_t> rgbaData;
-  // ZenLoad::convertDDSToRGBA8(ddsData, rgbaData);
-  // return createRGBA8Texture(path, surfaceDesc.dwWidth, surfaceDesc.dwHeight, rgbaData);
+static std::vector<bs::UINT8> convertToRGBA8(std::vector<uint8_t>& ddsData)
+{
+  FreeImage_Initialise();
+
+  auto stream = FreeImage_OpenMemory(ddsData.data(), ddsData.size());
+
+  auto imageEncoded = FreeImage_LoadFromMemory(FIF_DDS, stream);
+  auto imageRGBA8 = FreeImage_ConvertTo32Bits(imageEncoded);
+
+  auto imageBytes = FreeImage_GetBits(imageRGBA8);
+  auto imageNumBytes = FreeImage_GetDIBSize(imageRGBA8);
+
+  std::vector<bs::UINT8> rgbaData(imageBytes, imageBytes + imageNumBytes);
+
+  FreeImage_Unload(imageEncoded);
+  FreeImage_Unload(imageRGBA8);
+  FreeImage_CloseMemory(stream);
+
+  FreeImage_DeInitialise();
+
+  return rgbaData;
 }
 
 static HTexture createRGBA8Texture(const String& name, UINT32 width, UINT32 height,
