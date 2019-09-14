@@ -123,7 +123,10 @@ static std::vector<bs::UINT8> convertToRGBA8(std::vector<uint8_t>& ddsData)
   auto imageRGBA8 = FreeImage_ConvertTo32Bits(imageEncoded);
 
   auto imageBytes = FreeImage_GetBits(imageRGBA8);
-  auto imageNumBytes = FreeImage_GetDIBSize(imageRGBA8);
+  auto width = FreeImage_GetWidth(imageRGBA8);
+  auto height = FreeImage_GetHeight(imageRGBA8);
+
+  auto imageNumBytes = 4 * width * height;
 
   std::vector<bs::UINT8> rgbaData(imageBytes, imageBytes + imageNumBytes);
 
