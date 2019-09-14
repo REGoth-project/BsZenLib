@@ -75,10 +75,8 @@ bs::HTexture BsZenLib::ImportAndCacheTexture(const bs::String& virtualFilePath,
   return fromOriginal;
 }
 
-HTexture BsZenLib::ImportTexture(const String& _path, const VDFS::FileIndex& vdfs)
+HTexture BsZenLib::ImportTexture(const String& path, const VDFS::FileIndex& vdfs)
 {
-  String path = "SKYDAY_LAYER0_A0.TGA";
-
   std::vector<uint8_t> ztexData = readCompiledTexture(path, vdfs);
 
   if (ztexData.empty())
