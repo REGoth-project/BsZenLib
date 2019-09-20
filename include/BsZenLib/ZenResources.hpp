@@ -1,5 +1,6 @@
 #pragma once
 #include <BsCorePrerequisites.h>
+#include <RTTI/BsStringRTTI.h>
 #include <Reflection/BsRTTIType.h>
 #include <Resources/BsResource.h>
 
@@ -261,7 +262,8 @@ namespace BsZenLib
       bs::Vector<HZAnimation> mAnimations;
     };
 
-    class ZAnimationClipRTTI : public bs::RTTIType<BsZenLib::Res::ZAnimationClip, bs::Resource, ZAnimationClipRTTI>
+    class ZAnimationClipRTTI
+        : public bs::RTTIType<BsZenLib::Res::ZAnimationClip, bs::Resource, ZAnimationClipRTTI>
     {
     public:
       BS_BEGIN_RTTI_MEMBERS
