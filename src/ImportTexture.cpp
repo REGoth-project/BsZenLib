@@ -23,7 +23,6 @@
 #include "ImportTexture.hpp"
 #include "ImportPath.hpp"
 #include "ResourceManifest.hpp"
-#include <FreeImage.h>
 #include <FileSystem/BsFileSystem.h>
 #include <Image/BsColor.h>
 #include <Image/BsPixelData.h>
@@ -31,6 +30,14 @@
 #include <Resources/BsResources.h>
 #include <vdfs/fileIndex.h>
 #include <zenload/ztex2dds.h>
+
+#ifndef BSZENLIB_ENABLE_FREEIMAGE
+#define BSZENLIB_ENABLE_FREEIMAGE 0
+#endif
+
+#if BSZENLIB_ENABLE_FREEIMAGE
+#include <FreeImage.h>
+#endif
 
 using namespace bs;
 using namespace BsZenLib;
@@ -106,13 +113,22 @@ HTexture BsZenLib::ImportTexture(const String& path, const VDFS::FileIndex& vdfs
   }
   else
   {
+#if BSZENLIB_ENABLE_FREEIMAGE
     // Uncompressed or weird DDS textures are converted to 32bit RGBA
     auto rgbaData = convertToRGBA8(ddsData);
 
     return createRGBA8Texture(path, surfaceDesc.dwWidth, surfaceDesc.dwHeight, rgbaData);
+#else
+
+    BS_LOG(Warning, Uncategorized,
+           "Will not import uncompressed texture {0} - FreeImage support is disabled", path);
+    return {};
+
+#endif
   }
 }
 
+#if BSZENLIB_ENABLE_FREEIMAGE
 static std::vector<bs::UINT8> convertToRGBA8(std::vector<uint8_t>& ddsData)
 {
   FreeImage_Initialise();
@@ -138,6 +154,7 @@ static std::vector<bs::UINT8> convertToRGBA8(std::vector<uint8_t>& ddsData)
 
   return rgbaData;
 }
+#endif
 
 static HTexture createRGBA8Texture(const String& name, UINT32 width, UINT32 height,
                                    const std::vector<uint8_t>& rgbaData)
