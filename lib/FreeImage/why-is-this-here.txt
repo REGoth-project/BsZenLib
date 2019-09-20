@@ -1,0 +1,2 @@
+Binary distributions of bsf do not include FreeImage.h, but it is required for building BsZenLib.
+Therefore, we include the header with BsZenLib.
