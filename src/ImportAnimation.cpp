@@ -1,7 +1,9 @@
 #include "ImportAnimation.hpp"
+
 #include "ImportPath.hpp"
 #include "ImportSkeletalMesh.hpp"
 #include "ResourceManifest.hpp"
+
 #include <Animation/BsAnimationClip.h>
 #include <Animation/BsAnimationUtility.h>
 #include <FileSystem/BsFileSystem.h>
@@ -350,12 +352,6 @@ static AnimationCurvesWithRootMotion convertSamples(const std::vector<ZenLoad::M
       // Matrix3 workaround = createMatrixFromQuaternion(rotation);
       // rotation.fromRotationMatrix(workaround);
 
-      Vector3 localPosition;
-      Quaternion localRotation;
-      Vector3 localScale;
-
-      convertMatrix(node.transformLocal).decomposition(localPosition, localRotation, localScale);
-
       // TODO: Find out whether these are seconds, milliseconds, ...?
       float keyframeTime = frame / parser.getHeader().fpsRate;
 
@@ -365,7 +361,7 @@ static AnimationCurvesWithRootMotion convertSamples(const std::vector<ZenLoad::M
       positionKeyframes[frame].time = keyframeTime;
 
       rotationKeyframes[frame].inTangent = Quaternion(BsZero);
-      rotationKeyframes[frame].outTangent = localRotation;
+      rotationKeyframes[frame].outTangent = Quaternion(BsZero);
       rotationKeyframes[frame].value = rotation;
       rotationKeyframes[frame].time = keyframeTime;
     }
