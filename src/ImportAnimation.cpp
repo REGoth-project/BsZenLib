@@ -275,34 +275,22 @@ static AnimationCurvesWithRootMotion convertSamples(const std::vector<ZenLoad::M
 {
   AnimationCurvesWithRootMotion result = {};
 
-  size_t numFramesTotal = parser.getSamples().size() / nodes.size();
-  size_t startFrame = def.m_FirstFrame;
-  size_t lastFrame = def.m_LastFrame >= 0 ? def.m_LastFrame : numFramesTotal;
-  size_t numFrames = lastFrame - startFrame + 1;
-  size_t numNodes = parser.getNodeIndex().size();
+  size_t numFrames = parser.getHeader().numFrames;
+  size_t numNodesInAnimation = parser.getNodeIndex().size();
+
+  size_t startFrame = 0;
+  size_t lastFrame = numFrames - 1;
+
   float speed = def.m_Speed;
 
   // Some animations seem to be empty? Is this a bug or are they supposed to be empty?
-  if (numFramesTotal == 0 || numFrames == 0)
+  if (numFrames == 0)
   {
     return {};
   }
 
-  if (startFrame > lastFrame ||           // This sometimes happens?
-      startFrame + 1 > numFramesTotal ||  // Can be a huge number...
-      lastFrame + 1 > numFramesTotal)     // This as well
-  {
-    startFrame = 0;
-    lastFrame = numFramesTotal - 1;
-    numFrames = numFramesTotal;
-  }
-
-  assert(startFrame < numFramesTotal);
-  assert(lastFrame < numFramesTotal);
-  assert(numFrames <= numFramesTotal);
-
   Vector<bool> animatedNodes(nodes.size(), false);
-  for (size_t nodeIdx = 0; nodeIdx < numNodes; nodeIdx++)
+  for (size_t nodeIdx = 0; nodeIdx < numNodesInAnimation; nodeIdx++)
   {
     size_t realNodeIdx = parser.getNodeIndex()[nodeIdx];
 
@@ -336,7 +324,7 @@ static AnimationCurvesWithRootMotion convertSamples(const std::vector<ZenLoad::M
       // nodes. To get all samples for only one node, you have to skip all the others
       // to get to the next frame.
       size_t realFrame = frameIdx + startFrame;
-      size_t sampleIdx = numNodes * realFrame + nodeIdx;
+      size_t sampleIdx = numNodesInAnimation * realFrame + nodeIdx;
       const ZenLoad::zCModelAniSample& sample = parser.getSamples()[sampleIdx];
 
       Vector4 sdfsd;
